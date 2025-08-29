@@ -1,9 +1,36 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-100">
-    <h1 class="text-5xl font-bold text-center text-slate-600">Hello Vue 3!</h1>
+  <div
+    class="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed flex items-center justify-center p-5 relative"
+    style="background-image: url('./src/assets/images/background-rac-1.png')"
+  >
+    <div class="relative z-10">
+      <GameBoard />
+    </div>
   </div>
 </template>
 
-<script setup>
-// ... existing code ...
+<script>
+import GameBoard from './components/GameBoard.vue'
+
+export default {
+  name: 'App',
+  components: {
+    GameBoard,
+  },
+}
 </script>
+
+<style>
+/* * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} */
+</style>
