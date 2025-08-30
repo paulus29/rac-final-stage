@@ -10,25 +10,25 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  
+
   // Posisi kartu dalam grid (1-14)
   position: {
     type: Number,
     required: true,
   },
-  
+
   // Status apakah kartu sedang terbuka/dibalik
   isFlipped: {
     type: Boolean,
     default: false,
   },
-  
+
   // Status apakah kartu sudah berhasil dicocokkan
   isMatched: {
     type: Boolean,
     default: false,
   },
-  
+
   // Status apakah kartu sedang dinonaktifkan (tidak bisa diklik)
   isDisabled: {
     type: Boolean,
@@ -100,7 +100,7 @@ const handleClick = () => {
            - transform rotate-y-180: Rotasi 180° pada sumbu Y jika flipped/matched
            - transform-style: preserve-3d: Mempertahankan efek 3D pada child elements
       -->
-      
+
       <!-- === SISI DEPAN KARTU (TERTUTUP) === -->
       <!-- Sisi yang terlihat saat kartu belum dibuka -->
       <div
@@ -120,7 +120,7 @@ const handleClick = () => {
              - font-bold: Teks tebal
              - backface-visibility: hidden: Menyembunyikan sisi belakang saat flip
         -->
-        
+
         <!-- Nomor posisi kartu di pojok kiri atas -->
         <span
           class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white bg-black bg-opacity-50 rounded px-1"
@@ -129,7 +129,7 @@ const handleClick = () => {
         <!-- Tanda tanya sebagai indikator kartu tertutup -->
         <span>?</span>
       </div>
-      
+
       <!-- === SISI BELAKANG KARTU (TERBUKA) === -->
       <!-- Sisi yang terlihat saat kartu dibuka -->
       <div
@@ -142,7 +142,7 @@ const handleClick = () => {
              - transform rotate-y-180: Sudah dirotasi 180° secara default
              - backface-visibility: hidden: Menyembunyikan saat tidak aktif
         -->
-        
+
         <!-- Nomor posisi kartu di pojok kiri atas -->
         <span
           class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white bg-black bg-opacity-50 rounded px-1"

@@ -35,6 +35,30 @@ const timerInterval = ref(null)
 // Flag untuk menonaktifkan klik kartu sementara (saat mengecek kecocokan)
 const isCardDisabled = ref(false)
 
+// === VARIABEL MULTIPLAYER ===
+
+// Pemain yang sedang bermain (1 atau 2)
+const currentPlayer = ref(1)
+
+// Skor untuk Player 1
+const player1Score = ref(0)
+
+// Skor untuk Player 2
+const player2Score = ref(0)
+
+// Jumlah percobaan Player 1
+const player1Attempts = ref(0)
+
+// Jumlah percobaan Player 2
+const player2Attempts = ref(0)
+
+// Nama pemain (bisa dikustomisasi)
+const player1Name = ref('Player 1')
+const player2Name = ref('Player 2')
+
+// Status pemenang (null jika belum ada pemenang)
+const winner = ref(null)
+
 // === FUNGSI-FUNGSI UTAMA UNTUK MENGELOLA PERMAINAN ===
 
 /**
@@ -54,19 +78,27 @@ const initializeGame = () => {
 
   // Buat objek kartu dengan properti yang diperlukan
   cards.value = numbers.map((number) => ({
-    number,           // Angka yang ditampilkan di kartu
+    number, // Angka yang ditampilkan di kartu
     isFlipped: false, // Status apakah kartu sedang terbuka
     isMatched: false, // Status apakah kartu sudah dicocokkan
   }))
 
   // Reset semua variabel game ke kondisi awal
-  flippedCards.value = []        // Kosongkan kartu yang sedang dibuka
-  matchedPairs.value = 0         // Reset jumlah pasangan yang ditemukan
-  score.value = 0                // Reset skor ke 0
-  attempts.value = 0             // Reset jumlah percobaan
-  timer.value = 0                // Reset timer ke 0
-  gameCompleted.value = false    // Set status game belum selesai
-  isCardDisabled.value = false   // Aktifkan kembali klik kartu
+  flippedCards.value = [] // Kosongkan kartu yang sedang dibuka
+  matchedPairs.value = 0 // Reset jumlah pasangan yang ditemukan
+  score.value = 0 // Reset skor ke 0
+  attempts.value = 0 // Reset jumlah percobaan
+  timer.value = 0 // Reset timer ke 0
+  gameCompleted.value = false // Set status game belum selesai
+  isCardDisabled.value = false // Aktifkan kembali klik kartu
+
+  // Reset variabel multiplayer
+  currentPlayer.value = 1 // Mulai dari Player 1
+  player1Score.value = 0 // Reset skor Player 1
+  player2Score.value = 0 // Reset skor Player 2
+  player1Attempts.value = 0 // Reset percobaan Player 1
+  player2Attempts.value = 0 // Reset percobaan Player 2
+  winner.value = null // Reset pemenang
 }
 
 /**
@@ -94,13 +126,13 @@ const startGame = () => {
   if (gameCompleted.value) {
     resetGame()
   }
-  
+
   // Siapkan kartu dan reset variabel game
   initializeGame()
-  
+
   // Tandai bahwa game sudah dimulai
   gameStarted.value = true
-  
+
   // Mulai menghitung waktu
   startTimer()
 }
@@ -110,10 +142,10 @@ const startGame = () => {
  * Menghentikan timer dan menginisialisasi ulang semua variabel
  */
 const resetGame = () => {
-  gameStarted.value = false    // Tandai game belum dimulai
-  gameCompleted.value = false  // Tandai game belum selesai
-  stopTimer()                  // Hentikan timer
-  initializeGame()             // Reset semua variabel ke kondisi awal
+  gameStarted.value = false // Tandai game belum dimulai
+  gameCompleted.value = false // Tandai game belum selesai
+  stopTimer() // Hentikan timer
+  initializeGame() // Reset semua variabel ke kondisi awal
 }
 
 /**
@@ -133,7 +165,7 @@ const startTimer = () => {
 const stopTimer = () => {
   if (timerInterval.value) {
     clearInterval(timerInterval.value) // Hentikan interval
-    timerInterval.value = null         // Reset reference
+    timerInterval.value = null // Reset reference
   }
 }
 
@@ -143,9 +175,9 @@ const stopTimer = () => {
  * @returns {string} Waktu dalam format "MM:SS"
  */
 const formatTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)  // Hitung menit
-  const secs = seconds % 60              // Hitung sisa detik
-  
+  const mins = Math.floor(seconds / 60) // Hitung menit
+  const secs = seconds % 60 // Hitung sisa detik
+
   // Format dengan padding 0 di depan jika perlu (contoh: 01:05)
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
@@ -158,22 +190,30 @@ const formatTime = (seconds) => {
 const handleCardClick = (cardIndex) => {
   // Validasi: cek apakah kartu bisa diklik
   if (
-    isCardDisabled.value ||                    // Kartu sedang dinonaktifkan (saat mengecek match)
-    cards.value[cardIndex].isFlipped ||        // Kartu sudah terbuka
-    cards.value[cardIndex].isMatched           // Kartu sudah dicocokkan
+    isCardDisabled.value || // Kartu sedang dinonaktifkan (saat mengecek match)
+    cards.value[cardIndex].isFlipped || // Kartu sudah terbuka
+    cards.value[cardIndex].isMatched // Kartu sudah dicocokkan
   ) {
     return // Keluar dari fungsi jika tidak valid
   }
 
   // Buka kartu yang diklik
   cards.value[cardIndex].isFlipped = true
-  
+
   // Tambahkan indeks kartu ke array kartu yang sedang terbuka
   flippedCards.value.push(cardIndex)
 
   // Jika sudah ada 2 kartu terbuka, saatnya mengecek kecocokan
   if (flippedCards.value.length === 2) {
-    attempts.value++           // Tambah jumlah percobaan
+    attempts.value++ // Tambah jumlah percobaan total
+
+    // Tambah percobaan untuk pemain yang sedang bermain
+    if (currentPlayer.value === 1) {
+      player1Attempts.value++
+    } else {
+      player2Attempts.value++
+    }
+
     isCardDisabled.value = true // Nonaktifkan klik kartu sementara
 
     // Beri delay 1 detik agar pemain bisa melihat kedua kartu
@@ -190,7 +230,7 @@ const handleCardClick = (cardIndex) => {
 const checkMatch = () => {
   // Ambil indeks kedua kartu yang sedang terbuka
   const [firstIndex, secondIndex] = flippedCards.value
-  
+
   // Ambil objek kartu berdasarkan indeks
   const firstCard = cards.value[firstIndex]
   const secondCard = cards.value[secondIndex]
@@ -200,28 +240,49 @@ const checkMatch = () => {
     // COCOK! Tandai kedua kartu sebagai matched
     firstCard.isMatched = true
     secondCard.isMatched = true
-    
+
     // Update statistik game
-    matchedPairs.value++  // Tambah jumlah pasangan yang ditemukan
-    score.value += 10     // Tambah skor dasar 10 poin
+    matchedPairs.value++ // Tambah jumlah pasangan yang ditemukan
+    score.value += 1 // Tambah skor total
+
+    // Berikan poin ke pemain yang sedang bermain
+    if (currentPlayer.value === 1) {
+      player1Score.value += 1
+    } else {
+      player2Score.value += 1
+    }
 
     // Cek apakah semua pasangan sudah ditemukan (7 pasang)
     if (matchedPairs.value === 7) {
       gameCompleted.value = true // Tandai game selesai
-      stopTimer()                // Hentikan timer
-      
+      stopTimer() // Hentikan timer
+
+      // Tentukan pemenang berdasarkan skor
+      if (player1Score.value > player2Score.value) {
+        winner.value = 1
+      } else if (player2Score.value > player1Score.value) {
+        winner.value = 2
+      } else {
+        winner.value = 'tie' // Seri
+      }
+
       // Berikan bonus skor berdasarkan efisiensi (semakin sedikit percobaan, semakin tinggi bonus)
       score.value += Math.max(0, 100 - attempts.value)
     }
+
+    // Jika cocok, pemain mendapat giliran lagi (tidak berganti pemain)
   } else {
     // TIDAK COCOK! Tutup kembali kedua kartu
     firstCard.isFlipped = false
     secondCard.isFlipped = false
+
+    // Berganti pemain karena tidak cocok
+    currentPlayer.value = currentPlayer.value === 1 ? 2 : 1
   }
 
   // Reset untuk giliran berikutnya
-  flippedCards.value = []        // Kosongkan array kartu yang terbuka
-  isCardDisabled.value = false   // Aktifkan kembali klik kartu
+  flippedCards.value = [] // Kosongkan array kartu yang terbuka
+  isCardDisabled.value = false // Aktifkan kembali klik kartu
 }
 
 // === LIFECYCLE HOOKS ===
@@ -240,8 +301,8 @@ onBeforeUnmount(() => {
   <!-- Logo RAC di pojok kiri atas dengan posisi fixed (tetap saat scroll) -->
   <div class="fixed -top-9 left-12 z-50">
     <img
-      src="/src/assets/images/rac-logo.png"  
-      alt="RAC Logo"                         
+      src="/src/assets/images/rac-logo.png"
+      alt="RAC Logo"
       class="w-90 sm:h-72 object-contain logo-pulse"
     />
     <!-- 
@@ -258,48 +319,32 @@ onBeforeUnmount(() => {
   <!-- === CONTAINER UTAMA GAME === -->
   <!-- Container responsif dengan padding dan alignment tengah -->
   <div class="max-w-4xl mx-auto p-2 sm:p-4 text-center">
-    
     <!-- === HEADER GAME === -->
     <!-- Bagian judul dan statistik game -->
     <div class="mb-4 sm:mb-6">
-      
       <!-- Judul Game -->
       <h1
         class="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 drop-shadow-lg mt-2 sm:mt-3"
       >
         Stage 2 Final
       </h1>
-      
-      <!-- === PANEL STATISTIK === -->
-      <!-- Menampilkan skor, percobaan, dan waktu dalam bentuk badge -->
-      <div class="mt-2 sm:mt-3 flex justify-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap">
-        
-        <!-- Badge Skor -->
-        <div
-          class="bg-white bg-opacity-95 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm min-w-[80px] sm:min-w-[100px]"
-        >
-          <span>Skor: {{ score }}</span>
-        </div>
-        
-        <!-- Badge Percobaan -->
-        <div
-          class="bg-white bg-opacity-95 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm min-w-[90px] sm:min-w-[110px]"
-        >
-          <span>Percobaan: {{ attempts }}</span>
-        </div>
-        
-        <!-- Badge Timer -->
-        <div
-          class="bg-white bg-opacity-95 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm min-w-[80px] sm:min-w-[100px]"
-        >
-          <span>Waktu: {{ formatTime(timer) }}</span>
+
+      <!-- === PANEL STATISTIK GLOBAL === -->
+      <!-- Panel statistik di atas sebelum game board -->
+      <div class="mt-2 sm:mt-3 mb-3 sm:mb-4">
+        <!-- Panel Statistik Global -->
+        <div class="flex justify-center gap-2 sm:gap-3 flex-wrap">
+          <div
+            class="bg-white bg-opacity-95 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm"
+          >
+            <span>Waktu: {{ formatTime(timer) }}</span>
+          </div>
         </div>
       </div>
-      
+
       <!-- === PANEL KONTROL GAME === -->
       <!-- Tombol untuk memulai dan mereset permainan -->
       <div class="flex justify-center gap-2 sm:gap-3 flex-wrap">
-        
         <!-- Tombol Mulai Game / Main Lagi -->
         <button
           @click="startGame"
@@ -309,7 +354,7 @@ onBeforeUnmount(() => {
           <!-- Teks tombol berubah sesuai status game -->
           {{ gameStarted ? (gameCompleted ? 'Main Lagi' : 'Game Berjalan') : 'Mulai Game' }}
         </button>
-        
+
         <!-- Tombol Reset -->
         <button
           @click="resetGame"
@@ -320,35 +365,83 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- === GRID KARTU PERMAINAN === -->
-    <!-- 
-      Grid 4x4 yang menampilkan 14 kartu (7 pasang)
-      Hanya ditampilkan ketika game sudah dimulai
-    -->
+    <!-- === LAYOUT GAME DENGAN PANEL PEMAIN === -->
+    <!-- Layout dengan panel pemain di kiri dan kanan game board -->
     <div
-      class="grid grid-cols-4 gap-3 sm:gap-4 max-w-md sm:max-w-xl mx-auto p-5 sm:p-6 game-grid rounded-xl shadow-xl"
       v-if="gameStarted"
+      class="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-4 lg:gap-6 xl:gap-8"
     >
-      <!-- 
-        Loop untuk menampilkan setiap kartu
-        Setiap kartu menerima props:
-        - number: Angka yang ditampilkan
-        - position: Posisi kartu (1-14)
-        - isFlipped: Status terbuka/tertutup
-        - isMatched: Status sudah dicocokkan
-        - isDisabled: Status nonaktif
-        Event: @card-click untuk menangani klik kartu
-      -->
-      <Card
-        v-for="(card, index) in cards"
-        :key="index"
-        :number="card.number"
-        :position="index + 1"
-        :isFlipped="card.isFlipped"
-        :isMatched="card.isMatched"
-        :isDisabled="isCardDisabled"
-        @card-click="handleCardClick(index)"
-      />
+      <!-- Panel Player 1 - Kiri (Desktop) / Atas (Mobile) -->
+      <div class="order-1 lg:order-1">
+        <div
+          :class="[
+            'px-4 py-3 rounded-lg shadow-lg transition-all duration-300 min-w-[160px] max-w-[200px]',
+            currentPlayer === 1
+              ? 'bg-green-500 text-white'
+              : 'bg-white bg-opacity-95 text-gray-800',
+          ]"
+        >
+          <div class="font-bold text-base mb-2 text-center">{{ player1Name }}</div>
+          <div class="text-sm text-center space-y-1">
+            <div>
+              Skor: <span class="font-semibold">{{ player1Score }}</span>
+            </div>
+            <div>
+              Percobaan: <span class="font-semibold">{{ player1Attempts }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Kartu Permainan - Tengah -->
+      <div class="order-3 lg:order-2">
+        <div
+          class="grid grid-cols-4 gap-3 sm:gap-4 max-w-md sm:max-w-xl p-5 sm:p-6 game-grid rounded-xl shadow-xl"
+        >
+          <!-- 
+            Loop untuk menampilkan setiap kartu
+            Setiap kartu menerima props:
+            - number: Angka yang ditampilkan
+            - position: Posisi kartu (1-14)
+            - isFlipped: Status terbuka/tertutup
+            - isMatched: Status sudah dicocokkan
+            - isDisabled: Status nonaktif
+            Event: @card-click untuk menangani klik kartu
+          -->
+          <Card
+            v-for="(card, index) in cards"
+            :key="index"
+            :number="card.number"
+            :position="index + 1"
+            :isFlipped="card.isFlipped"
+            :isMatched="card.isMatched"
+            :isDisabled="isCardDisabled"
+            @card-click="handleCardClick(index)"
+          />
+        </div>
+      </div>
+
+      <!-- Panel Player 2 - Kanan (Desktop) / Bawah (Mobile) -->
+      <div class="order-2 lg:order-3">
+        <div
+          :class="[
+            'px-4 py-3 rounded-lg shadow-lg transition-all duration-300 min-w-[160px] max-w-[200px]',
+            currentPlayer === 2
+              ? 'bg-green-500 text-white'
+              : 'bg-white bg-opacity-95 text-gray-800',
+          ]"
+        >
+          <div class="font-bold text-base mb-2 text-center">{{ player2Name }}</div>
+          <div class="text-sm text-center space-y-1">
+            <div>
+              Skor: <span class="font-semibold">{{ player2Score }}</span>
+            </div>
+            <div>
+              Percobaan: <span class="font-semibold">{{ player2Attempts }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- === PESAN GAME SELESAI === -->
@@ -358,22 +451,59 @@ onBeforeUnmount(() => {
       class="bg-green-100 bg-opacity-95 border-2 border-green-500 rounded-xl p-3 sm:p-4 mt-4 sm:mt-6 shadow-xl"
     >
       <!-- Judul Selamat -->
-      <h2 class="text-green-600 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
-        🎉 Selamat! Game Selesai! 🎉
-      </h2>
-      
+      <h2 class="text-green-600 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">🎉 Game Selesai! 🎉</h2>
+
+      <!-- Pengumuman Pemenang -->
+      <div class="mb-3 sm:mb-4">
+        <div v-if="winner === 1" class="text-xl sm:text-2xl font-bold text-blue-600 mb-2">
+          🏆 {{ player1Name }} Menang! 🏆
+        </div>
+        <div v-else-if="winner === 2" class="text-xl sm:text-2xl font-bold text-green-600 mb-2">
+          🏆 {{ player2Name }} Menang! 🏆
+        </div>
+        <div
+          v-else-if="winner === 'tie'"
+          class="text-xl sm:text-2xl font-bold text-purple-600 mb-2"
+        >
+          🤝 Seri! 🤝
+        </div>
+      </div>
+
+      <!-- Skor Akhir Kedua Pemain -->
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+        <div class="bg-blue-50 p-2 sm:p-3 rounded-lg border border-blue-200">
+          <div class="font-bold text-blue-800 text-sm sm:text-base">{{ player1Name }}</div>
+          <div class="text-xs sm:text-sm text-blue-600">
+            <div>
+              Skor: <span class="font-bold">{{ player1Score }}</span>
+            </div>
+            <div>
+              Percobaan: <span class="font-bold">{{ player1Attempts }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-green-50 p-2 sm:p-3 rounded-lg border border-green-200">
+          <div class="font-bold text-green-800 text-sm sm:text-base">{{ player2Name }}</div>
+          <div class="text-xs sm:text-sm text-green-600">
+            <div>
+              Skor: <span class="font-bold">{{ player2Score }}</span>
+            </div>
+            <div>
+              Percobaan: <span class="font-bold">{{ player2Attempts }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Statistik Akhir Game -->
       <div class="space-y-1 sm:space-y-2 text-sm sm:text-base">
-        <!-- Skor Akhir (termasuk bonus) -->
-        <p class="text-gray-800 font-semibold">
-          Skor Akhir: <span class="text-green-600">{{ score }}</span>
-        </p>
-        
+        <!-- Skor Total removed -->
+
         <!-- Total Percobaan yang Dilakukan -->
         <p class="text-gray-800 font-semibold">
           Total Percobaan: <span class="text-green-600">{{ attempts }}</span>
         </p>
-        
+
         <!-- Waktu yang Dibutuhkan -->
         <p class="text-gray-800 font-semibold">
           Waktu: <span class="text-green-600">{{ formatTime(timer) }}</span>
@@ -389,15 +519,17 @@ onBeforeUnmount(() => {
     >
       <!-- Judul Instruksi -->
       <h3 class="text-blue-600 text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-center">
-        Cara Bermain:
+        Cara Bermain (Mode 2 Pemain):
       </h3>
-      
+
       <!-- Daftar Aturan Permainan -->
       <ul class="list-disc pl-3 sm:pl-4 space-y-1 sm:space-y-2 text-gray-800 text-xs sm:text-sm">
-        <li class="leading-relaxed">Klik dua kartu untuk melihat angkanya</li>
-        <li class="leading-relaxed">Jika angka sama, kartu akan tetap terbuka</li>
-        <li class="leading-relaxed">Jika berbeda, kartu akan tertutup kembali</li>
-        <li class="leading-relaxed">Temukan semua 7 pasang untuk menang!</li>
+        <li class="leading-relaxed">Permainan dimainkan bergantian oleh 2 pemain</li>
+        <li class="leading-relaxed">Setiap pemain klik dua kartu untuk melihat angkanya</li>
+        <li class="leading-relaxed">Jika angka sama, pemain mendapat poin dan giliran lagi</li>
+        <li class="leading-relaxed">Jika berbeda, kartu tertutup dan berganti pemain</li>
+        <li class="leading-relaxed">Pemain dengan skor tertinggi menang!</li>
+        <li class="leading-relaxed">Temukan semua 7 pasang untuk mengakhiri permainan</li>
       </ul>
     </div>
   </div>
@@ -413,18 +545,18 @@ onBeforeUnmount(() => {
 .game-grid {
   /* Gradient background dari putih ke hijau muda */
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 255, 240, 0.85) 100%);
-  
+
   /* Border hijau transparan */
   border: 2px solid rgba(76, 175, 80, 0.3);
-  
+
   /* Efek blur pada background untuk glass morphism */
   backdrop-filter: blur(10px);
-  
+
   /* Multiple shadow untuk depth dan dimensi */
   box-shadow:
-    0 6px 24px rgba(76, 175, 80, 0.12),    /* Shadow utama hijau */
-    0 3px 12px rgba(0, 0, 0, 0.08),         /* Shadow hitam untuk depth */
-    inset 0 1px 0 rgba(255, 255, 255, 0.2); /* Inner shadow untuk highlight */
+    0 6px 24px rgba(76, 175, 80, 0.12),
+    /* Shadow utama hijau */ 0 3px 12px rgba(0, 0, 0, 0.08),
+    /* Shadow hitam untuk depth */ inset 0 1px 0 rgba(255, 255, 255, 0.2); /* Inner shadow untuk highlight */
 }
 
 /* === RESPONSIVE DESIGN - MEDIA QUERIES === */
@@ -435,11 +567,11 @@ onBeforeUnmount(() => {
  */
 @media (max-width: 480px) {
   .game-grid {
-    padding: 1rem;           /* Padding 16px untuk mobile */
-    border-width: 1px;       /* Border lebih tipis untuk mobile */
-    gap: 0.5rem;             /* Gap 8px antar kartu */
-    max-width: 380px;        /* Lebar maksimal grid untuk mobile */
-    
+    padding: 1rem; /* Padding 16px untuk mobile */
+    border-width: 1px; /* Border lebih tipis untuk mobile */
+    gap: 0.5rem; /* Gap 8px antar kartu */
+    max-width: 380px; /* Lebar maksimal grid untuk mobile */
+
     /* Shadow yang lebih ringan untuk mobile */
     box-shadow:
       0 3px 12px rgba(76, 175, 80, 0.1),
@@ -467,9 +599,9 @@ onBeforeUnmount(() => {
  */
 @media (min-width: 481px) and (max-width: 768px) {
   .game-grid {
-    max-width: 450px;        /* Lebar maksimal untuk tablet */
-    gap: 0.75rem;            /* Gap 12px untuk tablet */
-    padding: 1.25rem;        /* Padding 20px untuk tablet */
+    max-width: 450px; /* Lebar maksimal untuk tablet */
+    gap: 0.75rem; /* Gap 12px untuk tablet */
+    padding: 1.25rem; /* Padding 20px untuk tablet */
   }
 }
 
@@ -479,9 +611,9 @@ onBeforeUnmount(() => {
  */
 @media (min-width: 769px) {
   .game-grid {
-    border-width: 2px;           /* Border penuh untuk desktop */
+    border-width: 2px; /* Border penuh untuk desktop */
     backdrop-filter: blur(12px); /* Blur effect yang lebih kuat */
-    max-width: 500px;            /* Lebar maksimal untuk desktop */
+    max-width: 500px; /* Lebar maksimal untuk desktop */
   }
 }
 
@@ -505,13 +637,13 @@ body {
  */
 @keyframes logoZoom {
   0% {
-    transform: scale(1);     /* Ukuran normal */
+    transform: scale(1); /* Ukuran normal */
   }
   50% {
-    transform: scale(1.2);   /* Membesar 20% */
+    transform: scale(1.2); /* Membesar 20% */
   }
   100% {
-    transform: scale(1);     /* Kembali ke ukuran normal */
+    transform: scale(1); /* Kembali ke ukuran normal */
   }
 }
 
