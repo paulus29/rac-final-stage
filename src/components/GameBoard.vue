@@ -2,6 +2,12 @@
 // Import fungsi Vue dan komponen yang diperlukan
 import { ref, onBeforeUnmount } from 'vue'
 import Card from './GameCard.vue'
+import PlayerPanel from './PlayerPanel.vue'
+import GameCompleteModal from './GameCompleteModal.vue'
+import GameControls from './GameControls.vue'
+import GameInstructions from './GameInstructions.vue'
+import GameStats from './GameStats.vue'
+import PlayerNameInput from './PlayerNameInput.vue'
 
 // === VARIABEL REAKTIF UNTUK MENGELOLA STATE GAME ===
 
@@ -16,6 +22,9 @@ const matchedPairs = ref(0)
 
 // Status apakah permainan sudah dimulai atau belum
 const gameStarted = ref(false)
+
+// Status apakah nama pemain sudah diatur
+const namesSet = ref(false)
 
 // Status apakah permainan sudah selesai (semua pasang ditemukan)
 const gameCompleted = ref(false)
@@ -146,6 +155,30 @@ const resetGame = () => {
   gameCompleted.value = false // Tandai game belum selesai
   stopTimer() // Hentikan timer
   initializeGame() // Reset semua variabel ke kondisi awal
+}
+
+/**
+ * Fungsi untuk mereset ke input nama pemain
+ */
+const resetToNameInput = () => {
+  resetGame()
+  namesSet.value = false
+}
+
+/**
+ * Fungsi untuk menangani input nama pemain
+ */
+const handlePlayerNames = (playerData) => {
+  player1Name.value = playerData.player1Name
+  player2Name.value = playerData.player2Name
+  namesSet.value = true
+}
+
+/**
+ * Fungsi untuk menangani reset dari modal
+ */
+const handleResetFromModal = () => {
+  resetGame()
 }
 
 /**
@@ -330,39 +363,15 @@ onBeforeUnmount(() => {
       </h1>
 
       <!-- === PANEL STATISTIK GLOBAL === -->
-      <!-- Panel statistik di atas sebelum game board -->
-      <div class="mt-2 sm:mt-3 mb-3 sm:mb-4">
-        <!-- Panel Statistik Global -->
-        <div class="flex justify-center gap-2 sm:gap-3 flex-wrap">
-          <div
-            class="bg-white bg-opacity-95 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm"
-          >
-            <span>Waktu: {{ formatTime(timer) }}</span>
-          </div>
-        </div>
-      </div>
+      <GameStats :timer="timer" :formatTime="formatTime" />
 
       <!-- === PANEL KONTROL GAME === -->
-      <!-- Tombol untuk memulai dan mereset permainan -->
-      <div class="flex justify-center gap-2 sm:gap-3 flex-wrap">
-        <!-- Tombol Mulai Game / Main Lagi -->
-        <button
-          @click="startGame"
-          :disabled="gameStarted && !gameCompleted"
-          class="px-3 sm:px-6 py-1.5 sm:py-2 border-none rounded-lg font-bold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-xs sm:text-sm min-w-[100px] sm:min-w-[120px]"
-        >
-          <!-- Teks tombol berubah sesuai status game -->
-          {{ gameStarted ? (gameCompleted ? 'Main Lagi' : 'Game Berjalan') : 'Mulai Game' }}
-        </button>
-
-        <!-- Tombol Reset -->
-        <button
-          @click="resetGame"
-          class="px-3 sm:px-6 py-1.5 sm:py-2 border-none rounded-lg font-bold transition-all duration-300 bg-red-500 text-white hover:bg-red-600 shadow-lg text-xs sm:text-sm min-w-[70px] sm:min-w-[80px]"
-        >
-          Reset
-        </button>
-      </div>
+      <GameControls 
+        :gameStarted="gameStarted" 
+        :gameCompleted="gameCompleted"
+        @start-game="startGame"
+        @reset-game="resetToNameInput"
+      />
     </div>
 
     <!-- === LAYOUT GAME DENGAN PANEL PEMAIN === -->
@@ -373,24 +382,12 @@ onBeforeUnmount(() => {
     >
       <!-- Panel Player 1 - Kiri (Desktop) / Atas (Mobile) -->
       <div class="order-1 lg:order-1">
-        <div
-          :class="[
-            'px-4 py-3 rounded-lg shadow-lg transition-all duration-300 min-w-[160px] max-w-[200px]',
-            currentPlayer === 1
-              ? 'bg-green-500 text-white'
-              : 'bg-white bg-opacity-95 text-gray-800',
-          ]"
-        >
-          <div class="font-bold text-base mb-2 text-center">{{ player1Name }}</div>
-          <div class="text-sm text-center space-y-1">
-            <div>
-              Skor: <span class="font-semibold">{{ player1Score }}</span>
-            </div>
-            <div>
-              Percobaan: <span class="font-semibold">{{ player1Attempts }}</span>
-            </div>
-          </div>
-        </div>
+        <PlayerPanel
+          :playerName="player1Name"
+          :score="player1Score"
+          :attempts="player1Attempts"
+          :isActive="currentPlayer === 1"
+        />
       </div>
 
       <!-- Grid Kartu Permainan - Tengah -->
@@ -423,115 +420,39 @@ onBeforeUnmount(() => {
 
       <!-- Panel Player 2 - Kanan (Desktop) / Bawah (Mobile) -->
       <div class="order-2 lg:order-3">
-        <div
-          :class="[
-            'px-4 py-3 rounded-lg shadow-lg transition-all duration-300 min-w-[160px] max-w-[200px]',
-            currentPlayer === 2
-              ? 'bg-green-500 text-white'
-              : 'bg-white bg-opacity-95 text-gray-800',
-          ]"
-        >
-          <div class="font-bold text-base mb-2 text-center">{{ player2Name }}</div>
-          <div class="text-sm text-center space-y-1">
-            <div>
-              Skor: <span class="font-semibold">{{ player2Score }}</span>
-            </div>
-            <div>
-              Percobaan: <span class="font-semibold">{{ player2Attempts }}</span>
-            </div>
-          </div>
-        </div>
+        <PlayerPanel
+          :playerName="player2Name"
+          :score="player2Score"
+          :attempts="player2Attempts"
+          :isActive="currentPlayer === 2"
+        />
       </div>
     </div>
 
     <!-- === PESAN GAME SELESAI === -->
-    <!-- Panel yang muncul ketika pemain berhasil menyelesaikan permainan -->
-    <div
+    <GameCompleteModal
       v-if="gameCompleted"
-      class="bg-green-100 bg-opacity-95 border-2 border-green-500 rounded-xl p-3 sm:p-4 mt-4 sm:mt-6 shadow-xl"
-    >
-      <!-- Judul Selamat -->
-      <h2 class="text-green-600 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">🎉 Game Selesai! 🎉</h2>
+      :winner="winner"
+      :player1Name="player1Name"
+      :player2Name="player2Name"
+      :player1Score="player1Score"
+      :player2Score="player2Score"
+      :player1Attempts="player1Attempts"
+      :player2Attempts="player2Attempts"
+      :totalAttempts="attempts"
+      :timer="timer"
+      :formatTime="formatTime"
+      @reset-game="handleResetFromModal"
+    />
 
-      <!-- Pengumuman Pemenang -->
-      <div class="mb-3 sm:mb-4">
-        <div v-if="winner === 1" class="text-xl sm:text-2xl font-bold text-blue-600 mb-2">
-          🏆 {{ player1Name }} Menang! 🏆
-        </div>
-        <div v-else-if="winner === 2" class="text-xl sm:text-2xl font-bold text-green-600 mb-2">
-          🏆 {{ player2Name }} Menang! 🏆
-        </div>
-        <div
-          v-else-if="winner === 'tie'"
-          class="text-xl sm:text-2xl font-bold text-purple-600 mb-2"
-        >
-          🤝 Seri! 🤝
-        </div>
-      </div>
-
-      <!-- Skor Akhir Kedua Pemain -->
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-        <div class="bg-blue-50 p-2 sm:p-3 rounded-lg border border-blue-200">
-          <div class="font-bold text-blue-800 text-sm sm:text-base">{{ player1Name }}</div>
-          <div class="text-xs sm:text-sm text-blue-600">
-            <div>
-              Skor: <span class="font-bold">{{ player1Score }}</span>
-            </div>
-            <div>
-              Percobaan: <span class="font-bold">{{ player1Attempts }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="bg-green-50 p-2 sm:p-3 rounded-lg border border-green-200">
-          <div class="font-bold text-green-800 text-sm sm:text-base">{{ player2Name }}</div>
-          <div class="text-xs sm:text-sm text-green-600">
-            <div>
-              Skor: <span class="font-bold">{{ player2Score }}</span>
-            </div>
-            <div>
-              Percobaan: <span class="font-bold">{{ player2Attempts }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Statistik Akhir Game -->
-      <div class="space-y-1 sm:space-y-2 text-sm sm:text-base">
-        <!-- Skor Total removed -->
-
-        <!-- Total Percobaan yang Dilakukan -->
-        <p class="text-gray-800 font-semibold">
-          Total Percobaan: <span class="text-green-600">{{ attempts }}</span>
-        </p>
-
-        <!-- Waktu yang Dibutuhkan -->
-        <p class="text-gray-800 font-semibold">
-          Waktu: <span class="text-green-600">{{ formatTime(timer) }}</span>
-        </p>
-      </div>
-    </div>
+    <!-- === INPUT NAMA PEMAIN === -->
+    <PlayerNameInput 
+      v-if="!namesSet" 
+      @start-game="handlePlayerNames"
+    />
 
     <!-- === INSTRUKSI PERMAINAN === -->
-    <!-- Panel yang muncul sebelum game dimulai, berisi cara bermain -->
-    <div
-      v-if="!gameStarted"
-      class="bg-blue-50 bg-opacity-95 border-2 border-blue-500 rounded-xl p-3 sm:p-4 mt-4 sm:mt-6 text-left shadow-xl"
-    >
-      <!-- Judul Instruksi -->
-      <h3 class="text-blue-600 text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-center">
-        Cara Bermain (Mode 2 Pemain):
-      </h3>
-
-      <!-- Daftar Aturan Permainan -->
-      <ul class="list-disc pl-3 sm:pl-4 space-y-1 sm:space-y-2 text-gray-800 text-xs sm:text-sm">
-        <li class="leading-relaxed">Permainan dimainkan bergantian oleh 2 pemain</li>
-        <li class="leading-relaxed">Setiap pemain klik dua kartu untuk melihat angkanya</li>
-        <li class="leading-relaxed">Jika angka sama, pemain mendapat poin dan giliran lagi</li>
-        <li class="leading-relaxed">Jika berbeda, kartu tertutup dan berganti pemain</li>
-        <li class="leading-relaxed">Pemain dengan skor tertinggi menang!</li>
-        <li class="leading-relaxed">Temukan semua 7 pasang untuk mengakhiri permainan</li>
-      </ul>
-    </div>
+    <GameInstructions v-if="namesSet && !gameStarted" />
   </div>
 </template>
 
