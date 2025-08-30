@@ -36,7 +36,7 @@ const handleClick = () => {
 
 <template>
   <div
-    class="w-14 h-14 sm:w-20 sm:h-20 cursor-pointer transition-transform duration-200 hover:scale-105"
+    class="w-20 h-20 sm:w-24 sm:h-24 cursor-pointer transition-transform duration-200 hover:scale-105"
     :class="{
       'cursor-not-allowed': isDisabled,
       'hover:scale-100': isDisabled || isFlipped || isMatched,
@@ -51,21 +51,21 @@ const handleClick = () => {
       style="transform-style: preserve-3d"
     >
       <div
-        class="absolute w-full h-full flex items-center justify-center border-2 border-gray-800 rounded-lg shadow-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg sm:text-2xl font-bold"
+        class="absolute w-full h-full flex items-center justify-center border-2 border-gray-800 rounded-lg shadow-md bg-gradient-to-br from-lime-500 to-green-600 text-white text-xl sm:text-3xl font-bold"
         style="backface-visibility: hidden"
       >
         <span
-          class="absolute top-1 left-1 text-xs sm:text-sm font-bold text-white bg-black bg-opacity-50 rounded px-1"
+          class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white bg-black bg-opacity-50 rounded px-1"
           >{{ position }}</span
         >
         <span>?</span>
       </div>
       <div
-        class="absolute w-full h-full flex items-center justify-center border-2 border-gray-800 rounded-lg shadow-md bg-gradient-to-br from-pink-400 to-red-500 text-white text-base sm:text-xl font-bold transform rotate-y-180"
+        class="absolute w-full h-full flex items-center justify-center border-2 border-gray-800 rounded-lg shadow-md bg-gradient-to-br from-pink-400 to-red-500 text-white text-xl sm:text-3xl font-bold transform rotate-y-180"
         style="backface-visibility: hidden"
       >
         <span
-          class="absolute top-1 left-1 text-xs sm:text-sm font-bold text-white bg-black bg-opacity-50 rounded px-1"
+          class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white bg-black bg-opacity-50 rounded px-1"
           >{{ position }}</span
         >
         <span>{{ number }}</span>

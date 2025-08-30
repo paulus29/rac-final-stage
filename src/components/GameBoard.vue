@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onBeforeUnmount } from 'vue'
-import Card from './Card.vue'
+import Card from './GameCard.vue'
 
 // Reactive data
 const cards = ref([])
@@ -143,41 +143,50 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-4 sm:p-6 text-center">
-    <div class="mb-8 sm:mb-12">
+  <!-- Logo di pojok kiri atas dengan posisi fixed -->
+  <div class="fixed -top-9 left-12 z-50">
+    <img
+      src="/src/assets/images/rac-logo.png"
+      alt="RAC Logo"
+      class="w-90 sm:h-72 object-contain logo-pulse "
+    />
+  </div>
+
+  <div class="max-w-4xl mx-auto p-2 sm:p-4 text-center">
+    <div class="mb-4 sm:mb-6">
       <h1
-        class="text-2xl sm:text-4xl font-bold text-white mb-6 sm:mb-8 drop-shadow-lg mt-4 sm:mt-6"
+        class="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 drop-shadow-lg mt-2 sm:mt-3"
       >
-        Number Matching Game
+        Stage 2 Final
       </h1>
-      <div class="mt-3 sm:mt-4 flex justify-center gap-3 sm:gap-4 mb-6 sm:mb-8 flex-wrap">
+      <div class="mt-2 sm:mt-3 flex justify-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap">
         <div
-          class="bg-white bg-opacity-95 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-gray-800 shadow-lg text-sm sm:text-base min-w-[100px] sm:min-w-[120px]"
+          class="bg-white bg-opacity-95 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm min-w-[80px] sm:min-w-[100px]"
         >
           <span>Skor: {{ score }}</span>
         </div>
         <div
-          class="bg-white bg-opacity-95 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-gray-800 shadow-lg text-sm sm:text-base min-w-[120px] sm:min-w-[140px]"
+          class="bg-white bg-opacity-95 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm min-w-[90px] sm:min-w-[110px]"
         >
           <span>Percobaan: {{ attempts }}</span>
         </div>
         <div
-          class="bg-white bg-opacity-95 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-gray-800 shadow-lg text-sm sm:text-base min-w-[100px] sm:min-w-[120px]"
+          class="bg-white bg-opacity-95 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-gray-800 shadow-lg text-xs sm:text-sm min-w-[80px] sm:min-w-[100px]"
         >
           <span>Waktu: {{ formatTime(timer) }}</span>
         </div>
       </div>
-      <div class="flex justify-center gap-4 sm:gap-6 flex-wrap">
+      <div class="flex justify-center gap-2 sm:gap-3 flex-wrap">
         <button
           @click="startGame"
           :disabled="gameStarted && !gameCompleted"
-          class="px-4 sm:px-8 py-2 sm:py-3 border-none rounded-lg font-bold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-sm sm:text-base min-w-[120px] sm:min-w-[140px]"
+          class="px-3 sm:px-6 py-1.5 sm:py-2 border-none rounded-lg font-bold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-xs sm:text-sm min-w-[100px] sm:min-w-[120px]"
         >
           {{ gameStarted ? (gameCompleted ? 'Main Lagi' : 'Game Berjalan') : 'Mulai Game' }}
         </button>
         <button
           @click="resetGame"
-          class="px-4 sm:px-8 py-2 sm:py-3 border-none rounded-lg font-bold transition-all duration-300 bg-red-500 text-white hover:bg-red-600 shadow-lg text-sm sm:text-base min-w-[80px] sm:min-w-[100px]"
+          class="px-3 sm:px-6 py-1.5 sm:py-2 border-none rounded-lg font-bold transition-all duration-300 bg-red-500 text-white hover:bg-red-600 shadow-lg text-xs sm:text-sm min-w-[70px] sm:min-w-[80px]"
         >
           Reset
         </button>
@@ -185,7 +194,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div
-      class="grid grid-cols-4 gap-2 sm:gap-3 max-w-xs sm:max-w-lg mx-auto p-4 sm:p-6 game-grid rounded-xl shadow-xl"
+      class="grid grid-cols-4 gap-3 sm:gap-4 max-w-md sm:max-w-xl mx-auto p-5 sm:p-6 game-grid rounded-xl shadow-xl"
       v-if="gameStarted"
     >
       <Card
@@ -202,12 +211,12 @@ onBeforeUnmount(() => {
 
     <div
       v-if="gameCompleted"
-      class="bg-green-100 bg-opacity-95 border-2 border-green-500 rounded-xl p-4 sm:p-6 mt-8 sm:mt-12 shadow-xl"
+      class="bg-green-100 bg-opacity-95 border-2 border-green-500 rounded-xl p-3 sm:p-4 mt-4 sm:mt-6 shadow-xl"
     >
-      <h2 class="text-green-600 text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
+      <h2 class="text-green-600 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
         🎉 Selamat! Game Selesai! 🎉
       </h2>
-      <div class="space-y-2 sm:space-y-3 text-base sm:text-lg">
+      <div class="space-y-1 sm:space-y-2 text-sm sm:text-base">
         <p class="text-gray-800 font-semibold">
           Skor Akhir: <span class="text-green-600">{{ score }}</span>
         </p>
@@ -222,12 +231,12 @@ onBeforeUnmount(() => {
 
     <div
       v-if="!gameStarted"
-      class="bg-blue-50 bg-opacity-95 border-2 border-blue-500 rounded-xl p-4 sm:p-6 mt-8 sm:mt-12 text-left shadow-xl"
+      class="bg-blue-50 bg-opacity-95 border-2 border-blue-500 rounded-xl p-3 sm:p-4 mt-4 sm:mt-6 text-left shadow-xl"
     >
-      <h3 class="text-blue-600 text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">
+      <h3 class="text-blue-600 text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-center">
         Cara Bermain:
       </h3>
-      <ul class="list-disc pl-4 sm:pl-6 space-y-2 sm:space-y-3 text-gray-800 text-sm sm:text-base">
+      <ul class="list-disc pl-3 sm:pl-4 space-y-1 sm:space-y-2 text-gray-800 text-xs sm:text-sm">
         <li class="leading-relaxed">Klik dua kartu untuk melihat angkanya</li>
         <li class="leading-relaxed">Jika angka sama, kartu akan tetap terbuka</li>
         <li class="leading-relaxed">Jika berbeda, kartu akan tertutup kembali</li>
@@ -238,42 +247,49 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Optimized spacing and proportions */
+/* Optimized spacing and proportions - lebih rapat dan efisien */
 .game-grid {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 255, 240, 0.85) 100%);
   border: 2px solid rgba(76, 175, 80, 0.3);
   backdrop-filter: blur(10px);
   box-shadow:
-    0 8px 32px rgba(76, 175, 80, 0.15),
-    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 6px 24px rgba(76, 175, 80, 0.12),
+    0 3px 12px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive spacing adjustments */
+/* Responsive spacing adjustments - disesuaikan untuk kartu yang lebih besar lagi */
 @media (max-width: 480px) {
-  .grid {
-    max-width: 280px;
-    gap: 0.375rem; /* 6px - tighter spacing on mobile */
-  }
-
   .game-grid {
-    padding: 0.75rem; /* 12px */
+    padding: 1rem; /* 16px - disesuaikan untuk kartu yang lebih besar */
     border-width: 1px;
+    gap: 0.5rem; /* 8px - spacing yang lebih baik untuk mobile */
+    max-width: 380px; /* disesuaikan untuk kartu 20x20 */
     box-shadow:
-      0 4px 16px rgba(76, 175, 80, 0.12),
-      0 2px 8px rgba(0, 0, 0, 0.08);
+      0 3px 12px rgba(76, 175, 80, 0.1),
+      0 1px 6px rgba(0, 0, 0, 0.06);
   }
 
-  /* Tighter spacing for mobile status indicators */
+  /* Container utama disesuaikan */
   .max-w-4xl {
-    padding: 0.75rem;
+    padding: 1rem;
+  }
+
+  /* Margin vertikal yang proporsional */
+  .mb-4 {
+    margin-bottom: 1rem;
+  }
+
+  .mt-4 {
+    margin-top: 1rem;
   }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
-  .grid {
-    max-width: 320px;
-    gap: 0.5rem; /* 8px - medium spacing for tablets */
+  .game-grid {
+    max-width: 450px; /* disesuaikan untuk tablet dengan kartu lebih besar */
+    gap: 0.75rem; /* 12px - spacing yang lebih baik untuk tablet */
+    padding: 1.25rem;
   }
 }
 
@@ -281,29 +297,34 @@ onBeforeUnmount(() => {
   .game-grid {
     border-width: 2px;
     backdrop-filter: blur(12px);
+    max-width: 500px; /* disesuaikan untuk desktop dengan kartu 24x24 */
   }
 }
 
-/* Button spacing optimization */
-.flex.justify-center.gap-4 button {
-  margin: 0.25rem;
+/* Optimasi spacing untuk mencegah scroll horizontal */
+body {
+  overflow-x: hidden;
 }
 
-@media (max-width: 480px) {
-  .flex.justify-center.gap-4 button {
-    margin: 0.125rem;
-    min-width: 100px;
+/* Pastikan container tidak melebihi viewport */
+.max-w-4xl {
+  max-width: min(100vw - 1rem, 56rem);
+}
+
+/* Animasi zoom-in zoom-out untuk logo */
+@keyframes logoZoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
-/* Status indicators spacing */
-.flex.justify-center.gap-3 > div {
-  margin: 0.125rem;
-}
-
-@media (min-width: 640px) {
-  .flex.justify-center.gap-3 > div {
-    margin: 0.25rem;
-  }
+.logo-pulse {
+  animation: logoZoom 2s ease-in-out infinite;
 }
 </style>
