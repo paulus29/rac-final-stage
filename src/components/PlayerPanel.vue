@@ -15,6 +15,10 @@ defineProps({
   isActive: {
     type: Boolean,
     default: false
+  },
+  currentTurnAttempts: {
+    type: Number,
+    default: 0
   }
 })
 </script>
@@ -35,6 +39,9 @@ defineProps({
       </div>
       <div>
         Percobaan: <span class="font-semibold">{{ attempts }}</span>
+      </div>
+      <div v-if="isActive && currentTurnAttempts > 0" class="text-xs">
+        Giliran: <span class="font-semibold">{{ currentTurnAttempts }}/2</span>
       </div>
     </div>
   </div>

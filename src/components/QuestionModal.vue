@@ -9,21 +9,21 @@ const props = defineProps({
       question: '',
       optionA: '',
       optionB: '',
-      correctAnswer: 'a'
-    })
+      correctAnswer: 'a',
+    }),
   },
   cardPosition: {
     type: Number,
-    required: true
+    required: true,
   },
   currentPlayer: {
     type: Number,
-    required: true
+    required: true,
   },
   playerName: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const emit = defineEmits(['answer-correct', 'answer-wrong', 'close-modal'])
@@ -36,7 +36,7 @@ const feedbackMessage = ref('')
 const handleGameMasterAnswer = (correct) => {
   isCorrect.value = correct
   showFeedback.value = true
-  
+
   if (correct) {
     feedbackMessage.value = '✅ Jawaban Benar!'
     setTimeout(() => {
@@ -57,7 +57,7 @@ const handleClose = () => {
 
 <template>
   <!-- Modal Overlay Background - Transparent to show gameboard -->
-  <div class="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 p-4">
+  <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
     <!-- Modal Content -->
     <div
       class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xl w-full backdrop-blur-sm"
@@ -68,9 +68,7 @@ const handleClose = () => {
           <div class="bg-amber-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
             Kartu #{{ cardPosition }}
           </div>
-          <div class="text-amber-800 font-semibold">
-            Giliran: {{ playerName }}
-          </div>
+          <div class="text-amber-800 font-semibold">Giliran: {{ playerName }}</div>
         </div>
         <button
           @click="handleClose"
@@ -83,9 +81,7 @@ const handleClose = () => {
 
       <!-- Pertanyaan -->
       <div class="mb-6">
-        <h3 class="text-amber-900 text-lg sm:text-xl font-bold mb-4 text-center">
-          📝 Pertanyaan
-        </h3>
+        <h3 class="text-amber-900 text-lg sm:text-xl font-bold mb-4 text-center">📝 Pertanyaan</h3>
         <div class="bg-white p-6 rounded-lg border border-amber-300 shadow-sm">
           <p class="text-gray-800 text-lg sm:text-xl font-medium text-center leading-relaxed">
             {{ questionData.question }}
@@ -95,11 +91,11 @@ const handleClose = () => {
 
       <!-- Feedback Section (shows after game master decision) -->
       <div v-if="showFeedback" class="mb-6">
-        <div 
+        <div
           class="p-4 rounded-lg text-center font-bold text-lg"
           :class="{
             'bg-green-100 text-green-800 border border-green-300': isCorrect,
-            'bg-red-100 text-red-800 border border-red-300': !isCorrect
+            'bg-red-100 text-red-800 border border-red-300': !isCorrect,
           }"
         >
           {{ feedbackMessage }}
@@ -108,10 +104,7 @@ const handleClose = () => {
 
       <!-- Game Master Controls -->
       <div v-if="!showFeedback" class="border-t border-amber-200 pt-4">
-        <h4 class="text-amber-800 font-semibold mb-3 text-center">🎯 Game Master</h4>
-        <p class="text-sm text-gray-600 text-center mb-4">
-          Apakah jawaban pemain benar?
-        </p>
+        <p class="text-sm text-gray-600 text-center mb-4">Apakah jawaban pemain benar?</p>
         <div class="flex gap-4 justify-center">
           <button
             @click="handleGameMasterAnswer(true)"
@@ -127,21 +120,18 @@ const handleClose = () => {
           </button>
         </div>
       </div>
-
-      <!-- Instructions -->
-      <div class="mt-4 text-xs text-gray-600 text-center bg-amber-50 p-2 rounded border border-amber-200">
-        💡 Pemain membaca pertanyaan dan menjawab secara lisan. Game Master menentukan apakah jawaban benar atau salah.
-      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 /* Additional custom styles if needed */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

@@ -9,6 +9,7 @@ import GameInstructions from './GameInstructions.vue'
 import GameStats from './GameStats.vue'
 import PlayerNameInput from './PlayerNameInput.vue'
 import QuestionModal from './QuestionModal.vue'
+import TurnChoiceModal from './TurnChoiceModal.vue'
 import { useQuestions } from '../composables/useQuestions.js'
 
 // === VARIABEL REAKTIF UNTUK MENGELOLA STATE GAME ===
@@ -84,6 +85,17 @@ const player2Name = ref('Player 2')
 // Status pemenang (null jika belum ada pemenang)
 const winner = ref(null)
 
+// === VARIABEL UNTUK ATURAN TURN BARU ===
+
+// Jumlah kesempatan yang tersisa untuk pemain saat ini (maksimal 2)
+const currentTurnAttempts = ref(0)
+
+// Status apakah sedang menunggu pilihan setelah jawaban benar pertama
+const showContinueChoice = ref(false)
+
+// Flag untuk menandai apakah ini adalah attempt pertama dalam turn
+const isFirstAttemptInTurn = ref(true)
+
 // === FUNGSI-FUNGSI UTAMA UNTUK MENGELOLA PERMAINAN ===
 
 /**
@@ -124,6 +136,11 @@ const initializeGame = () => {
   player1Attempts.value = 0 // Reset percobaan Player 1
   player2Attempts.value = 0 // Reset percobaan Player 2
   winner.value = null // Reset pemenang
+
+  // Reset variabel turn baru
+  currentTurnAttempts.value = 0
+  showContinueChoice.value = false
+  isFirstAttemptInTurn.value = true
 }
 
 /**
@@ -256,10 +273,15 @@ const handleCardClick = (cardIndex) => {
     isCardDisabled.value || // Kartu sedang dinonaktifkan (saat mengecek match)
     cards.value[cardIndex].isFlipped || // Kartu sudah terbuka
     cards.value[cardIndex].isMatched || // Kartu sudah dicocokkan
-    showQuestionModal.value // Modal pertanyaan sedang ditampilkan
+    showQuestionModal.value || // Modal pertanyaan sedang ditampilkan
+    showContinueChoice.value || // Sedang menunggu pilihan continue
+    currentTurnAttempts.value >= 2 // Sudah menggunakan 2 kesempatan
   ) {
     return // Keluar dari fungsi jika tidak valid
   }
+
+  // Increment attempt counter
+  currentTurnAttempts.value++
 
   // Simpan indeks kartu yang akan dibuka
   pendingCardIndex.value = cardIndex
@@ -270,6 +292,8 @@ const handleCardClick = (cardIndex) => {
 
   // Tampilkan modal pertanyaan
   showQuestionModal.value = true
+
+  console.log(`🎯 Player ${currentPlayer.value} attempt ${currentTurnAttempts.value}/2`)
 }
 
 /**
@@ -339,6 +363,7 @@ const handleCorrectAnswer = (cardPosition) => {
     if (matchedPairs.value === 7) {
       gameCompleted.value = true
       stopTimer()
+      resetTurnState()
 
       // Tentukan pemenang berdasarkan skor
       if (player1Score.value > player2Score.value) {
@@ -349,16 +374,36 @@ const handleCorrectAnswer = (cardPosition) => {
         winner.value = 'tie'
       }
       console.log('🏁 Game completed!')
+      return
     }
 
-    // Pemain yang berhasil match mendapat giliran lagi
-    console.log('🎉 Player gets another turn!')
+    // Cek apakah sudah menggunakan 2 kesempatan
+    if (currentTurnAttempts.value >= 2) {
+      console.log('🎯 Match found but 2 attempts used, switching player')
+      switchPlayer()
+    } else {
+      // Masih ada kesempatan, berikan pilihan setelah delay
+      console.log('🤔 Match found, showing choice after delay...')
+      setTimeout(() => {
+        showContinueChoice.value = true
+        isFirstAttemptInTurn.value = false
+      }, 1000)
+    }
   } else {
-    console.log('🔍 No match found, switching player')
+    console.log('🔍 No match found')
 
-    // Berganti pemain karena tidak match
-    currentPlayer.value = currentPlayerBeforeMatch === 1 ? 2 : 1
-    console.log('🔄 Switched to player:', currentPlayer.value)
+    // Cek apakah sudah menggunakan 2 kesempatan
+    if (currentTurnAttempts.value >= 2) {
+      console.log('🔄 Second attempt used, switching player')
+      switchPlayer()
+    } else {
+      // Masih ada kesempatan, berikan pilihan setelah delay
+      console.log('🤔 First attempt successful, showing choice after delay...')
+      setTimeout(() => {
+        showContinueChoice.value = true
+        isFirstAttemptInTurn.value = false
+      }, 1000)
+    }
   }
 }
 
@@ -372,8 +417,18 @@ const handleWrongAnswer = () => {
   currentQuestion.value = null
   pendingCardIndex.value = null
 
-  // Berganti pemain karena jawaban salah
-  currentPlayer.value = currentPlayer.value === 1 ? 2 : 1
+  // Kurangi attempt counter karena gagal
+  currentTurnAttempts.value--
+
+  // Jika ini attempt pertama dan salah, langsung switch player
+  if (isFirstAttemptInTurn.value) {
+    console.log('❌ First attempt failed, switching player immediately')
+    switchPlayer()
+  } else {
+    // Ini attempt kedua dan salah, juga switch player
+    console.log('❌ Second attempt failed, switching player')
+    switchPlayer()
+  }
 }
 
 /**
@@ -383,6 +438,45 @@ const handleCloseModal = () => {
   showQuestionModal.value = false
   currentQuestion.value = null
   pendingCardIndex.value = null
+
+  // Kurangi attempt counter karena modal ditutup
+  currentTurnAttempts.value--
+}
+
+/**
+ * Fungsi untuk mereset state turn ke kondisi awal
+ */
+const resetTurnState = () => {
+  currentTurnAttempts.value = 0
+  showContinueChoice.value = false
+  isFirstAttemptInTurn.value = true
+  console.log('🔄 Turn state reset')
+}
+
+/**
+ * Fungsi untuk beralih ke pemain berikutnya
+ */
+const switchPlayer = () => {
+  currentPlayer.value = currentPlayer.value === 1 ? 2 : 1
+  resetTurnState()
+  console.log(`🔄 Switched to Player ${currentPlayer.value}`)
+}
+
+/**
+ * Fungsi yang dipanggil ketika pemain memilih untuk melanjutkan turn
+ */
+const handleContinueTurn = () => {
+  showContinueChoice.value = false
+  console.log('✅ Player chose to continue turn')
+}
+
+/**
+ * Fungsi yang dipanggil ketika pemain memilih untuk mengakhiri turn
+ */
+const handleEndTurn = () => {
+  showContinueChoice.value = false
+  switchPlayer()
+  console.log('🏁 Player chose to end turn')
 }
 
 // === LIFECYCLE HOOKS ===
@@ -466,6 +560,7 @@ onBeforeUnmount(() => {
           :score="player1Score"
           :attempts="player1Attempts"
           :isActive="currentPlayer === 1"
+          :currentTurnAttempts="currentPlayer === 1 ? currentTurnAttempts : 0"
         />
       </div>
 
@@ -504,6 +599,7 @@ onBeforeUnmount(() => {
           :score="player2Score"
           :attempts="player2Attempts"
           :isActive="currentPlayer === 2"
+          :currentTurnAttempts="currentPlayer === 2 ? currentTurnAttempts : 0"
         />
       </div>
     </div>
@@ -537,16 +633,25 @@ onBeforeUnmount(() => {
       :cardPosition="pendingCardIndex + 1"
       :currentPlayer="currentPlayer"
       :playerName="currentPlayer === 1 ? player1Name : player2Name"
+      :currentAttempt="currentTurnAttempts"
       @answer-correct="handleCorrectAnswer"
       @answer-wrong="handleWrongAnswer"
       @close-modal="handleCloseModal"
+    />
+
+    <!-- === MODAL PILIHAN LANJUT TURN === -->
+    <TurnChoiceModal
+      v-if="showContinueChoice"
+      :playerName="currentPlayer === 1 ? player1Name : player2Name"
+      :currentTurnAttempts="currentTurnAttempts"
+      @continue-turn="handleContinueTurn"
+      @end-turn="handleEndTurn"
     />
   </div>
 </template>
 
 <style scoped>
 /* === STYLING CSS UNTUK KOMPONEN GAMEBOARD === */
-
 /* 
  * Styling untuk grid kartu permainan
  * Memberikan efek visual yang menarik dengan gradient dan shadow
