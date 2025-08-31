@@ -349,9 +349,19 @@ onBeforeUnmount(() => {
     -->
   </div>
 
+  <!-- === MENU KONTROL POJOK KANAN ATAS === -->
+  <div class="fixed top-4 right-4 z-40">
+    <GameControls 
+      :gameStarted="gameStarted" 
+      :gameCompleted="gameCompleted"
+      @start-game="startGame"
+      @reset-game="resetToNameInput"
+    />
+  </div>
+
   <!-- === CONTAINER UTAMA GAME === -->
   <!-- Container responsif dengan padding dan alignment tengah -->
-  <div class="max-w-4xl mx-auto p-2 sm:p-4 text-center">
+  <div class="max-w-6xl mx-auto p-2 sm:p-4 text-center">
     <!-- === HEADER GAME === -->
     <!-- Bagian judul dan statistik game -->
     <div class="mb-4 sm:mb-6">
@@ -364,14 +374,6 @@ onBeforeUnmount(() => {
 
       <!-- === PANEL STATISTIK GLOBAL === -->
       <GameStats :timer="timer" :formatTime="formatTime" />
-
-      <!-- === PANEL KONTROL GAME === -->
-      <GameControls 
-        :gameStarted="gameStarted" 
-        :gameCompleted="gameCompleted"
-        @start-game="startGame"
-        @reset-game="resetToNameInput"
-      />
     </div>
 
     <!-- === LAYOUT GAME DENGAN PANEL PEMAIN === -->
@@ -393,7 +395,7 @@ onBeforeUnmount(() => {
       <!-- Grid Kartu Permainan - Tengah -->
       <div class="order-3 lg:order-2">
         <div
-          class="grid grid-cols-4 gap-3 sm:gap-4 max-w-md sm:max-w-xl p-5 sm:p-6 game-grid rounded-xl shadow-xl"
+          class="grid grid-cols-4 gap-4 sm:gap-6 max-w-lg sm:max-w-2xl lg:max-w-3xl p-6 sm:p-8 game-grid rounded-xl shadow-xl"
         >
           <!-- 
             Loop untuk menampilkan setiap kartu
