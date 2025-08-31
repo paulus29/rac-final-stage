@@ -10,7 +10,6 @@ export function useQuestions() {
     error.value = null
 
     try {
-      // Import the questions file as text using Vite's ?raw suffix
       const questionsModule = await import('../assets/data/pertanyaan.txt?raw')
       const text = questionsModule.default
       const lines = text.trim().split('\n').filter(line => line.trim() !== '')
@@ -32,7 +31,7 @@ export function useQuestions() {
           question,
           optionA,
           optionB,
-          correctAnswer: 'a' // First option is always correct based on file format
+          correctAnswer: 'a'
         }
       }).filter(q => q !== null)
 
@@ -41,7 +40,6 @@ export function useQuestions() {
       error.value = err.message
       console.error('Error loading questions:', err)
       
-      // Fallback questions if file loading fails
       questions.value = [
         {
           id: 1,

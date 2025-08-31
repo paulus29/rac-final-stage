@@ -4,7 +4,6 @@ import { ref, computed } from 'vue'
 const player1Name = ref('')
 const player2Name = ref('')
 
-// Validation computed properties
 const isPlayer1Valid = computed(() => player1Name.value.trim().length > 0)
 const isPlayer2Valid = computed(() => player2Name.value.trim().length > 0)
 const areNamesUnique = computed(
@@ -27,16 +26,12 @@ const startGame = () => {
 </script>
 
 <template>
-  <!-- Modal Overlay Background -->
   <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
-    <!-- Modal Content -->
     <div
       class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg"
     >
-      <!-- Title -->
       <h2 class="text-amber-800 text-2xl font-bold mb-6 text-center">Stage 2 Final</h2>
 
-      <!-- Player 1 Input -->
       <div class="mb-4">
         <label class="block text-amber-900 font-semibold mb-2"> Nama Player 1: </label>
         <input
@@ -55,7 +50,6 @@ const startGame = () => {
         </p>
       </div>
 
-      <!-- Player 2 Input -->
       <div class="mb-4">
         <label class="block text-amber-900 font-semibold mb-2"> Nama Player 2: </label>
         <input
@@ -74,14 +68,12 @@ const startGame = () => {
         </p>
       </div>
 
-      <!-- Name Uniqueness Validation -->
       <div v-if="isPlayer1Valid && isPlayer2Valid && !areNamesUnique" class="mb-4">
         <p class="text-red-600 text-sm text-center bg-red-100 p-2 rounded border border-red-200">
           ⚠️ Nama kedua pemain tidak boleh sama!
         </p>
       </div>
 
-      <!-- Success Message -->
       <div v-if="isFormValid" class="mb-4">
         <p
           class="text-green-700 text-sm text-center bg-green-100 p-2 rounded border border-green-200"
@@ -90,7 +82,6 @@ const startGame = () => {
         </p>
       </div>
 
-      <!-- Start Button -->
       <div class="flex justify-center">
         <button
           @click="startGame"
