@@ -1,6 +1,6 @@
 <script setup>
 // Import fungsi Vue dan komponen yang diperlukan
-import { ref, onBeforeUnmount } from 'vue'
+import { ref, onBeforeUnmount, onMounted } from 'vue'
 import Card from './GameCard.vue'
 import PlayerPanel from './PlayerPanel.vue'
 import GameCompleteModal from './GameCompleteModal.vue'
@@ -8,14 +8,16 @@ import GameControls from './GameControls.vue'
 import GameInstructions from './GameInstructions.vue'
 import GameStats from './GameStats.vue'
 import PlayerNameInput from './PlayerNameInput.vue'
+import QuestionModal from './QuestionModal.vue'
+import { useQuestions } from '../composables/useQuestions.js'
 
 // === VARIABEL REAKTIF UNTUK MENGELOLA STATE GAME ===
 
 // Array berisi semua kartu dalam permainan (14 kartu total: 7 pasang)
 const cards = ref([])
 
-// Array berisi indeks kartu yang sedang dibuka (maksimal 2 kartu)
-const flippedCards = ref([])
+// Array berisi indeks kartu yang sudah dibuka (tetap terbuka)
+const openedCards = ref([])
 
 // Jumlah pasangan kartu yang sudah berhasil dicocokkan (target: 7 pasang)
 const matchedPairs = ref(0)
@@ -43,6 +45,20 @@ const timerInterval = ref(null)
 
 // Flag untuk menonaktifkan klik kartu sementara (saat mengecek kecocokan)
 const isCardDisabled = ref(false)
+
+// === VARIABEL UNTUK QUESTION MODAL ===
+
+// Status apakah modal pertanyaan sedang ditampilkan
+const showQuestionModal = ref(false)
+
+// Data pertanyaan yang sedang ditampilkan
+const currentQuestion = ref(null)
+
+// Posisi kartu yang sedang akan dibuka (menunggu jawaban benar)
+const pendingCardIndex = ref(null)
+
+// Composable untuk mengelola pertanyaan
+const { questions, loadQuestions, getQuestionById } = useQuestions()
 
 // === VARIABEL MULTIPLAYER ===
 
@@ -92,8 +108,8 @@ const initializeGame = () => {
     isMatched: false, // Status apakah kartu sudah dicocokkan
   }))
 
-  // Reset semua variabel game ke kondisi awal
-  flippedCards.value = [] // Kosongkan kartu yang sedang dibuka
+  // Reset variabel game utama
+  openedCards.value = [] // Kosongkan array kartu terbuka yang sedang dibuka
   matchedPairs.value = 0 // Reset jumlah pasangan yang ditemukan
   score.value = 0 // Reset skor ke 0
   attempts.value = 0 // Reset jumlah percobaan
@@ -108,6 +124,20 @@ const initializeGame = () => {
   player1Attempts.value = 0 // Reset percobaan Player 1
   player2Attempts.value = 0 // Reset percobaan Player 2
   winner.value = null // Reset pemenang
+}
+
+/**
+ * Fungsi untuk mengecek apakah kartu baru cocok dengan kartu yang sudah terbuka
+ * @param {number} newCardIndex - Indeks kartu yang baru dibuka
+ * @returns {number|null} - Indeks kartu yang cocok atau null jika tidak ada
+ */
+const findMatchingCard = (newCardIndex) => {
+  const newCardNumber = cards.value[newCardIndex].number
+
+  return openedCards.value.find((openIndex) => {
+    const openCard = cards.value[openIndex]
+    return openCard.number === newCardNumber && !openCard.isMatched
+  })
 }
 
 /**
@@ -217,7 +247,7 @@ const formatTime = (seconds) => {
 
 /**
  * Fungsi yang dipanggil ketika pemain mengklik sebuah kartu
- * Mengelola logika pembukaan kartu dan validasi klik
+ * Menampilkan modal pertanyaan sebelum membuka kartu
  * @param {number} cardIndex - Indeks kartu yang diklik (0-13)
  */
 const handleCardClick = (cardIndex) => {
@@ -225,70 +255,90 @@ const handleCardClick = (cardIndex) => {
   if (
     isCardDisabled.value || // Kartu sedang dinonaktifkan (saat mengecek match)
     cards.value[cardIndex].isFlipped || // Kartu sudah terbuka
-    cards.value[cardIndex].isMatched // Kartu sudah dicocokkan
+    cards.value[cardIndex].isMatched || // Kartu sudah dicocokkan
+    showQuestionModal.value // Modal pertanyaan sedang ditampilkan
   ) {
     return // Keluar dari fungsi jika tidak valid
   }
 
-  // Buka kartu yang diklik
-  cards.value[cardIndex].isFlipped = true
+  // Simpan indeks kartu yang akan dibuka
+  pendingCardIndex.value = cardIndex
 
-  // Tambahkan indeks kartu ke array kartu yang sedang terbuka
-  flippedCards.value.push(cardIndex)
+  // Ambil pertanyaan berdasarkan nomor kartu (1-14)
+  const cardPosition = cardIndex + 1
+  currentQuestion.value = getQuestionById(cardPosition)
 
-  // Jika sudah ada 2 kartu terbuka, saatnya mengecek kecocokan
-  if (flippedCards.value.length === 2) {
-    attempts.value++ // Tambah jumlah percobaan total
-
-    // Tambah percobaan untuk pemain yang sedang bermain
-    if (currentPlayer.value === 1) {
-      player1Attempts.value++
-    } else {
-      player2Attempts.value++
-    }
-
-    isCardDisabled.value = true // Nonaktifkan klik kartu sementara
-
-    // Beri delay 1 detik agar pemain bisa melihat kedua kartu
-    setTimeout(() => {
-      checkMatch() // Cek apakah kedua kartu cocok
-    }, 1000)
-  }
+  // Tampilkan modal pertanyaan
+  showQuestionModal.value = true
 }
 
 /**
- * Fungsi untuk mengecek apakah dua kartu yang terbuka cocok
- * Mengelola logika scoring, pencocokan, dan penyelesaian game
+ * Fungsi yang dipanggil ketika jawaban benar dari game master
+ * Membuka kartu dan cek apakah cocok dengan kartu yang sudah terbuka
+ * @param {number} cardPosition - Posisi kartu (1-14)
  */
-const checkMatch = () => {
-  // Ambil indeks kedua kartu yang sedang terbuka
-  const [firstIndex, secondIndex] = flippedCards.value
+const handleCorrectAnswer = (cardPosition) => {
+  const cardIndex = pendingCardIndex.value
+  const currentPlayerBeforeMatch = currentPlayer.value
 
-  // Ambil objek kartu berdasarkan indeks
-  const firstCard = cards.value[firstIndex]
-  const secondCard = cards.value[secondIndex]
+  // Tambah percobaan untuk pemain yang menjawab benar
+  attempts.value++
+  if (currentPlayerBeforeMatch === 1) {
+    player1Attempts.value++
+  } else {
+    player2Attempts.value++
+  }
 
-  // Cek apakah angka pada kedua kartu sama
-  if (firstCard.number === secondCard.number) {
+  // Tutup modal
+  showQuestionModal.value = false
+  currentQuestion.value = null
+  pendingCardIndex.value = null
+
+  // Buka kartu yang diklik
+  cards.value[cardIndex].isFlipped = true
+
+  console.log('🎯 Card opened:', cardIndex + 1, 'Number:', cards.value[cardIndex].number)
+  console.log(
+    '🗃️ Previously opened cards:',
+    openedCards.value.map((idx) => ({ pos: idx + 1, num: cards.value[idx].number })),
+  )
+
+  // Cek apakah kartu ini cocok dengan kartu yang sudah terbuka sebelumnya
+  const matchingCardIndex = openedCards.value.find(
+    (openIndex) =>
+      cards.value[openIndex].number === cards.value[cardIndex].number &&
+      !cards.value[openIndex].isMatched,
+  )
+
+  // Tambahkan kartu baru ke opened cards terlebih dahulu
+  openedCards.value.push(cardIndex)
+
+  if (matchingCardIndex !== undefined) {
+    console.log('✅ MATCH FOUND! Card', cardIndex + 1, 'matches with card', matchingCardIndex + 1)
+
     // COCOK! Tandai kedua kartu sebagai matched
-    firstCard.isMatched = true
-    secondCard.isMatched = true
+    cards.value[cardIndex].isMatched = true
+    cards.value[matchingCardIndex].isMatched = true
 
     // Update statistik game
-    matchedPairs.value++ // Tambah jumlah pasangan yang ditemukan
-    score.value += 1 // Tambah skor total
+    matchedPairs.value++
+    score.value += 1
 
-    // Berikan poin ke pemain yang sedang bermain
-    if (currentPlayer.value === 1) {
+    // Berikan poin ke pemain yang menemukan pasangan
+    if (currentPlayerBeforeMatch === 1) {
       player1Score.value += 1
+      console.log('👤 Player 1 score increased to:', player1Score.value)
     } else {
       player2Score.value += 1
+      console.log('👤 Player 2 score increased to:', player2Score.value)
     }
+
+    console.log('📊 Updated scores:', { p1: player1Score.value, p2: player2Score.value })
 
     // Cek apakah semua pasangan sudah ditemukan (7 pasang)
     if (matchedPairs.value === 7) {
-      gameCompleted.value = true // Tandai game selesai
-      stopTimer() // Hentikan timer
+      gameCompleted.value = true
+      stopTimer()
 
       // Tentukan pemenang berdasarkan skor
       if (player1Score.value > player2Score.value) {
@@ -296,29 +346,56 @@ const checkMatch = () => {
       } else if (player2Score.value > player1Score.value) {
         winner.value = 2
       } else {
-        winner.value = 'tie' // Seri
+        winner.value = 'tie'
       }
-
-      // Berikan bonus skor berdasarkan efisiensi (semakin sedikit percobaan, semakin tinggi bonus)
-      score.value += Math.max(0, 100 - attempts.value)
+      console.log('🏁 Game completed!')
     }
 
-    // Jika cocok, pemain mendapat giliran lagi (tidak berganti pemain)
+    // Pemain yang berhasil match mendapat giliran lagi
+    console.log('🎉 Player gets another turn!')
   } else {
-    // TIDAK COCOK! Tutup kembali kedua kartu
-    firstCard.isFlipped = false
-    secondCard.isFlipped = false
+    console.log('🔍 No match found, switching player')
 
-    // Berganti pemain karena tidak cocok
-    currentPlayer.value = currentPlayer.value === 1 ? 2 : 1
+    // Berganti pemain karena tidak match
+    currentPlayer.value = currentPlayerBeforeMatch === 1 ? 2 : 1
+    console.log('🔄 Switched to player:', currentPlayer.value)
   }
+}
 
-  // Reset untuk giliran berikutnya
-  flippedCards.value = [] // Kosongkan array kartu yang terbuka
-  isCardDisabled.value = false // Aktifkan kembali klik kartu
+/**
+ * Fungsi yang dipanggil ketika jawaban salah dari game master
+ * Berganti pemain dan tutup modal
+ */
+const handleWrongAnswer = () => {
+  // Tutup modal
+  showQuestionModal.value = false
+  currentQuestion.value = null
+  pendingCardIndex.value = null
+
+  // Berganti pemain karena jawaban salah
+  currentPlayer.value = currentPlayer.value === 1 ? 2 : 1
+}
+
+/**
+ * Fungsi yang dipanggil ketika modal ditutup tanpa jawaban
+ */
+const handleCloseModal = () => {
+  showQuestionModal.value = false
+  currentQuestion.value = null
+  pendingCardIndex.value = null
 }
 
 // === LIFECYCLE HOOKS ===
+
+// === LIFECYCLE HOOKS ===
+
+/**
+ * Hook yang dipanggil setelah komponen di-mount
+ * Memuat pertanyaan dari file
+ */
+onMounted(() => {
+  loadQuestions()
+})
 
 /**
  * Hook yang dipanggil sebelum komponen di-unmount/dihancurkan
@@ -351,8 +428,8 @@ onBeforeUnmount(() => {
 
   <!-- === MENU KONTROL POJOK KANAN ATAS === -->
   <div class="fixed top-4 right-4 z-40">
-    <GameControls 
-      :gameStarted="gameStarted" 
+    <GameControls
+      :gameStarted="gameStarted"
       :gameCompleted="gameCompleted"
       @start-game="startGame"
       @reset-game="resetToNameInput"
@@ -448,13 +525,22 @@ onBeforeUnmount(() => {
     />
 
     <!-- === INPUT NAMA PEMAIN === -->
-    <PlayerNameInput 
-      v-if="!namesSet" 
-      @start-game="handlePlayerNames"
-    />
+    <PlayerNameInput v-if="!namesSet" @start-game="handlePlayerNames" />
 
     <!-- === INSTRUKSI PERMAINAN === -->
     <GameInstructions v-if="namesSet && !gameStarted" />
+
+    <!-- === MODAL PERTANYAAN === -->
+    <QuestionModal
+      v-if="showQuestionModal && currentQuestion"
+      :questionData="currentQuestion"
+      :cardPosition="pendingCardIndex + 1"
+      :currentPlayer="currentPlayer"
+      :playerName="currentPlayer === 1 ? player1Name : player2Name"
+      @answer-correct="handleCorrectAnswer"
+      @answer-wrong="handleWrongAnswer"
+      @close-modal="handleCloseModal"
+    />
   </div>
 </template>
 

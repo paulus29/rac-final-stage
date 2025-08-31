@@ -1,20 +1,14 @@
-Siapa presiden pertama Indonesia?
-Apa ibu kota negara Australia?
-Planet apa yang paling dekat dengan Matahari?
-Siapa penemu bola lampu?
-Berapa jumlah benua di dunia?
-Apa nama laut yang memisahkan Eropa dan Afrika?
-Siapa penulis novel "Laskar Pelangi"?
-Dalam sistem tata surya, planet apa yang terbesar?
-Apa nama mata uang negara Jepang?
-Siapa pelukis terkenal yang melukis "Mona Lisa"?
-Berapa jumlah pemain dalam satu tim sepak bola?
-Apa nama gunung tertinggi di dunia?
-Siapa penemu teori relativitas?
-Apa nama samudra terluas di dunia?
-Dalam matematika, berapa hasil dari 12 x 12?
-Siapa komposer musik klasik yang menciptakan "Für Elise"?
-Apa nama hewan nasional Indonesia?
-Berapa jumlah provinsi di Indonesia saat ini?
-Siapa presiden Amerika Serikat yang pertama?
-Apa nama vitamin yang diproduksi tubuh saat terkena sinar matahari?
+Siapa presiden pertama Indonesia?, a. Soekarno, b. Soeharto
+Apa ibu kota negara Australia?, a. Canberra, b. Sydney
+Planet apa yang paling dekat dengan Matahari?, a. Merkurius, b. Venus
+Siapa penemu bola lampu?, a. Thomas Alva Edison, b. Alexander Graham Bell
+Berapa jumlah benua di dunia?, a. 7, b. 5
+Apa nama laut yang memisahkan Eropa dan Afrika?, a. Laut Mediterania, b. Laut Merah
+Siapa penulis novel "Laskar Pelangi"?, a. Andrea Hirata, b. Tere Liye
+Dalam sistem tata surya, planet apa yang terbesar?, a. Jupiter, b. Saturnus
+Apa nama mata uang negara Jepang?, a. Yen, b. Won
+Siapa pelukis terkenal yang melukis "Mona Lisa"?, a. Leonardo da Vinci, b. Vincent van Gogh
+Berapa jumlah pemain dalam satu tim sepak bola?, a. 11, b. 10
+Apa nama gunung tertinggi di dunia?, a. Gunung Everest, b. Gunung Kilimanjaro
+Siapa penemu teori relativitas?, a. Albert Einstein, b. Isaac Newton
+Apa nama samudra terluas di dunia?, a. Samudra Pasifik, b. Samudra Atlantik
