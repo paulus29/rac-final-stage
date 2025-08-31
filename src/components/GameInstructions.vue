@@ -9,12 +9,32 @@
 
     <!-- Daftar Aturan Permainan -->
     <ul class="list-disc pl-3 sm:pl-4 space-y-1 sm:space-y-2 text-amber-900 text-xs sm:text-sm">
-      <li class="leading-relaxed">Permainan dimainkan bergantian oleh 2 pemain</li>
-      <li class="leading-relaxed">Terdapat 14 kartu dimana ada 7 pasang angka</li>
-      <li class="leading-relaxed">Jika angka sama, pemain mendapat poin dan giliran lagi</li>
-      <li class="leading-relaxed">Jika berbeda, kartu tertutup dan berganti pemain</li>
-      <li class="leading-relaxed">Pemain dengan skor tertinggi menang!</li>
-      <li class="leading-relaxed">Temukan semua 7 pasang untuk mengakhiri permainan</li>
+      <li class="leading-relaxed">Permainan dimainkan bergantian oleh 2 pemain.</li>
+      <li class="leading-relaxed">Terdapat 14 kartu (7 pasang angka yang sama).</li>
+      <li class="leading-relaxed">
+        Setiap pemain HANYA memiliki <strong>2 kesempatan</strong> (attempt) per giliran.
+      </li>
+      <li class="leading-relaxed">
+        Setelah <strong>2 kesempatan</strong> digunakan, giliran
+        <strong>otomatis berpindah</strong> ke pemain lain,
+        <strong>meskipun menemukan pasangan</strong>.
+      </li>
+      <li class="leading-relaxed">
+        Jika jawaban benar pada kesempatan pertama, Pemain diberikan pilihan untuk menggunakan
+        kesempatan kedua atau melempar ke pemain lain.
+      </li>
+      <li class="leading-relaxed">
+        Jika jawaban <strong>salah pada kesempatan pertama</strong>, giliran langsung berpindah ke
+        pemain lain.
+      </li>
+      <li class="leading-relaxed">
+        Setiap pasangan yang ditemukan menambah skor <strong>+1</strong> untuk pemain yang
+        menemukan.
+      </li>
+      <li class="leading-relaxed">
+        Permainan berakhir saat <strong>7 pasang</strong> telah ditemukan. Pemain dengan skor
+        tertinggi menang.
+      </li>
     </ul>
   </div>
 </template>
