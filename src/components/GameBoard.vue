@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeUnmount, onMounted } from 'vue'
+import { ref, onBeforeUnmount, onMounted, computed } from 'vue'
 import Card from './GameCard.vue'
 import PlayerPanel from './PlayerPanel.vue'
 import GameCompleteModal from './GameCompleteModal.vue'
@@ -38,6 +38,26 @@ const currentTurnAttempts = ref(0)
 const showContinueChoice = ref(false)
 const isFirstAttemptInTurn = ref(true)
 const isProcessingClick = ref(false) // Tambahkan flag untuk mencegah race condition
+
+// Susun kartu dalam pola baris 3-4-4-3 agar tampilan grid lebih seimbang
+const cardRows = computed(() => {
+  const pattern = [3, 4, 4, 3]
+  const rows = []
+  let startIndex = 0
+  let pi = 0
+
+  while (startIndex < cards.value.length) {
+    const size = pattern[pi] ?? pattern[pattern.length - 1]
+    rows.push({
+      startIndex,
+      items: cards.value.slice(startIndex, startIndex + size),
+    })
+    startIndex += size
+    pi = (pi + 1) % pattern.length
+  }
+
+  return rows
+})
 
 const initializeGame = () => {
   const numbers = []
@@ -366,18 +386,30 @@ onBeforeUnmount(() => {
         <div
           class="p-6 sm:p-8 rounded-xl shadow-xl space-y-4 max-w-lg sm:max-w-2xl lg:max-w-3xl bg-gradient-to-br from-white/90 to-lime-50/80 border-2 border-emerald-600/30 backdrop-blur-md"
         >
-          <!-- Grid 4 kolom untuk kartu -->
-          <div class="grid grid-cols-4 gap-4 sm:gap-6 justify-items-center max-w-[650px]">
-            <Card
-              v-for="(card, index) in cards"
-              :key="index"
-              :number="card.number"
-              :position="index + 1"
-              :isFlipped="card.isFlipped"
-              :isMatched="card.isMatched"
-              :isDisabled="isCardDisabled"
-              @card-click="handleCardClick(index)"
-            />
+          <!-- Grid pola 3-4-4-3 untuk kartu dengan spacing yang konsisten -->
+          <div class="space-y-4 sm:space-y-6 max-w-[650px] mx-auto">
+            <div
+              v-for="(row, rowIndex) in cardRows"
+              :key="'row-' + rowIndex"
+              :class="[
+                'flex',
+                'justify-center',
+                'items-center',
+                'gap-4',
+                'sm:gap-6',
+              ]"
+            >
+              <Card
+                v-for="(card, idx) in row.items"
+                :key="`r${rowIndex}-c${idx}`"
+                :number="card.number"
+                :position="row.startIndex + idx + 1"
+                :isFlipped="card.isFlipped"
+                :isMatched="card.isMatched"
+                :isDisabled="isCardDisabled"
+                @card-click="handleCardClick(row.startIndex + idx)"
+              />
+            </div>
           </div>
         </div>
       </div>
