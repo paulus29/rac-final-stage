@@ -19,24 +19,22 @@ export function useQuestions() {
 
       const parsedQuestions = lines
         .map((line, index) => {
-          // Format baru: "Pertanyaan | Opsi A | Opsi B"
-          const parts = line.split('|').map((s) => s.trim())
-          if (parts.length !== 3 || parts.some((p) => p.length === 0)) {
+          // Format: "Pertanyaan | Clue 1 | Clue 2 | ... (opsional lebih banyak)"
+          const parts = line.split('|').map((s) => s.trim()).filter((p) => p.length > 0)
+          if (parts.length < 2) {
             console.warn(
-              `Question ${index + 1} has invalid format (expected 3 fields separated by |):`,
+              `Question ${index + 1} has invalid format (expected at least 2 fields separated by |):`,
               line,
             )
             return null
           }
 
-          const [question, optionA, optionB] = parts
+          const [question, ...clues] = parts
 
           return {
             id: index + 1,
             question,
-            optionA,
-            optionB,
-            correctAnswer: 'a',
+            clues,
           }
         })
         .filter((q) => q !== null)
@@ -50,16 +48,12 @@ export function useQuestions() {
         {
           id: 1,
           question: 'Siapa presiden pertama Indonesia?',
-          optionA: 'Soekarno',
-          optionB: 'Soeharto',
-          correctAnswer: 'a',
+          clues: ['Soekarno', 'Proklamator RI'],
         },
         {
           id: 2,
           question: 'Apa ibu kota negara Australia?',
-          optionA: 'Canberra',
-          optionB: 'Sydney',
-          correctAnswer: 'a',
+          clues: ['Bukan Sydney', 'Canberra'],
         },
       ]
     } finally {
