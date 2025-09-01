@@ -84,69 +84,106 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
-    <div
-      class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
-    >
-      <h2 class="text-amber-800 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">🎉 Game Selesai! 🎉</h2>
+  <!-- Modal Overlay Background dengan animasi -->
+  <Transition name="modal" appear>
+    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <!-- Modal Content dengan animasi scale -->
+      <div
+        class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300"
+      >
+        <h2 class="text-amber-800 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
+          🎉 Game Selesai! 🎉
+        </h2>
 
-      <div class="mb-3 sm:mb-4">
-        <div v-if="winner === 1" class="text-xl sm:text-2xl font-bold text-amber-700 mb-2">
-          🏆 {{ player1Name }} Menang! 🏆
+        <div class="mb-3 sm:mb-4">
+          <div v-if="winner === 1" class="text-xl sm:text-2xl font-bold text-amber-700 mb-2">
+            🏆 {{ player1Name }} Menang! 🏆
+          </div>
+          <div v-else-if="winner === 2" class="text-xl sm:text-2xl font-bold text-green-700 mb-2">
+            🏆 {{ player2Name }} Menang! 🏆
+          </div>
         </div>
-        <div v-else-if="winner === 2" class="text-xl sm:text-2xl font-bold text-green-700 mb-2">
-          🏆 {{ player2Name }} Menang! 🏆
-        </div>
-      </div>
 
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-        <div class="bg-amber-50 p-2 sm:p-3 rounded-lg border border-amber-300">
-          <div class="font-bold text-amber-800 text-sm sm:text-base">{{ player1Name }}</div>
-          <div class="text-xs sm:text-sm text-amber-700">
-            <div>
-              Skor: <span class="font-bold">{{ player1Score }}</span>
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <div class="bg-amber-50 p-2 sm:p-3 rounded-lg border border-amber-300">
+            <div class="font-bold text-amber-800 text-sm sm:text-base">{{ player1Name }}</div>
+            <div class="text-xs sm:text-sm text-amber-700">
+              <div>
+                Skor: <span class="font-bold">{{ player1Score }}</span>
+              </div>
+              <div>
+                Percobaan: <span class="font-bold">{{ player1Attempts }}</span>
+              </div>
             </div>
-            <div>
-              Percobaan: <span class="font-bold">{{ player1Attempts }}</span>
+          </div>
+          <div class="bg-green-50 p-2 sm:p-3 rounded-lg border border-green-300">
+            <div class="font-bold text-green-800 text-sm sm:text-base">{{ player2Name }}</div>
+            <div class="text-xs sm:text-sm text-green-700">
+              <div>
+                Skor: <span class="font-bold">{{ player2Score }}</span>
+              </div>
+              <div>
+                Percobaan: <span class="font-bold">{{ player2Attempts }}</span>
+              </div>
             </div>
           </div>
         </div>
-        <div class="bg-green-50 p-2 sm:p-3 rounded-lg border border-green-300">
-          <div class="font-bold text-green-800 text-sm sm:text-base">{{ player2Name }}</div>
-          <div class="text-xs sm:text-sm text-green-700">
-            <div>
-              Skor: <span class="font-bold">{{ player2Score }}</span>
-            </div>
-            <div>
-              Percobaan: <span class="font-bold">{{ player2Attempts }}</span>
-            </div>
-          </div>
+
+        <div class="space-y-1 sm:space-y-2 text-sm sm:text-base">
+          <p class="text-amber-900 font-semibold">
+            Total Percobaan:
+            <span class="text-green-700">{{ player1Attempts + player2Attempts }}</span>
+          </p>
+
+          <p class="text-amber-900 font-semibold">
+            Waktu: <span class="text-green-700">{{ formatTime(timer) }}</span>
+          </p>
         </div>
-      </div>
 
-      <div class="space-y-1 sm:space-y-2 text-sm sm:text-base">
-        <p class="text-amber-900 font-semibold">
-          Total Percobaan: <span class="text-green-700">{{ totalAttempts }}</span>
-        </p>
-
-        <p class="text-amber-900 font-semibold">
-          Waktu: <span class="text-green-700">{{ formatTime(timer) }}</span>
-        </p>
-      </div>
-
-      <div class="flex justify-center mt-4">
-        <button
-          @click="$emit('reset-game')"
-          class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg"
-        >
-          🔄 Main Lagi
-        </button>
+        <div class="flex justify-center mt-4">
+          <button
+            @click="$emit('reset-game')"
+            class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg"
+          >
+            🔄 Main Lagi
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style>
+/* Animasi modal dengan efek fade dan scale */
+.modal-enter-active {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.modal-enter-from {
+  opacity: 0;
+  transform: scale(0.7) translateY(-30px);
+}
+
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(10px);
+}
+
+/* Animasi background overlay */
+.modal-enter-from .fixed {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.modal-enter-active .fixed {
+  transition: background-color 0.4s ease;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Animasi confetti */
 @keyframes confetti-fall {
   0% {
     transform: translateY(-20px) rotate(0deg) scale(1);

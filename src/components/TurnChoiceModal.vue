@@ -1,13 +1,13 @@
 <script setup>
-const props = defineProps({
+defineProps({
   playerName: {
     type: String,
-    required: true
+    required: true,
   },
   currentTurnAttempts: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const emit = defineEmits(['continue-turn', 'end-turn'])
@@ -22,69 +22,95 @@ const handleEndTurn = () => {
 </script>
 
 <template>
-  <!-- Modal Overlay Background - Transparent to show gameboard -->
-  <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
-    <!-- Modal Content -->
-    <div
-      class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xl w-full backdrop-blur-sm"
-    >
-      <!-- Header dengan pemain dan status -->
-      <div class="flex justify-between items-center mb-4">
-        <div class="flex items-center gap-3">
-          <div class="bg-amber-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
-            Strategi
+  <!-- Modal Overlay Background dengan animasi -->
+  <Transition name="modal" appear>
+    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <!-- Modal Content dengan animasi scale -->
+      <div
+        class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xl w-full backdrop-blur-sm transform transition-all duration-300"
+      >
+        <!-- Header dengan pemain dan status -->
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-3">
+            <div class="bg-amber-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
+              Strategi
+            </div>
+            <div class="text-amber-800 font-semibold">Giliran: {{ playerName }}</div>
           </div>
-          <div class="text-amber-800 font-semibold">Giliran: {{ playerName }}</div>
         </div>
-      </div>
 
-      <!-- Pesan Utama -->
-      <div class="mb-6">
-        <h3 class="text-amber-900 text-lg sm:text-xl font-bold mb-4 text-center">🎯 Pilihan Strategi</h3>
-        <div class="bg-white p-6 rounded-lg border border-amber-300 shadow-sm">
-          <p class="text-gray-800 text-lg font-medium text-center leading-relaxed mb-3">
-            Anda berhasil menjawab pertanyaan dengan benar!
-          </p>
-          <p class="text-amber-700 text-sm text-center font-semibold">
-            Kesempatan: {{ currentTurnAttempts }}/2
-          </p>
+        <!-- Pesan Utama -->
+        <div class="mb-6">
+          <h3 class="text-amber-900 text-lg sm:text-xl font-bold mb-4 text-center">
+            🎯 Pilihan Strategi
+          </h3>
+          <div class="bg-white p-6 rounded-lg border border-amber-300 shadow-sm">
+            <p class="text-gray-800 text-lg font-medium text-center leading-relaxed mb-3">
+              Anda berhasil menjawab pertanyaan dengan benar!
+            </p>
+            <p class="text-amber-700 text-sm text-center font-semibold">
+              Kesempatan: {{ currentTurnAttempts }}/2
+            </p>
+          </div>
         </div>
-      </div>
 
-      <!-- Pilihan Aksi -->
-      <div class="border-t border-amber-200 pt-4">
-        <p class="text-sm text-gray-600 text-center mb-4">
-          {{ currentTurnAttempts >= 2 ? 'Kesempatan habis! Giliran harus diakhiri.' : 'Pilih strategi Anda:' }}
-        </p>
-        <div class="flex gap-4 justify-center">
-          <button
-            v-if="currentTurnAttempts < 2"
-            @click="handleContinueTurn"
-            class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg flex items-center gap-2"
-          >
-            🎮 Pilih Kotak Lain
-          </button>
-          <button
-            @click="handleEndTurn"
-            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg flex items-center gap-2"
-          >
-            🏁 Akhiri Giliran
-          </button>
+        <!-- Pilihan Aksi -->
+        <div class="border-t border-amber-200 pt-4">
+          <p class="text-sm text-gray-600 text-center mb-4">
+            {{
+              currentTurnAttempts >= 2
+                ? 'Kesempatan habis! Giliran harus diakhiri.'
+                : 'Pilih strategi Anda:'
+            }}
+          </p>
+          <div class="flex gap-4 justify-center">
+            <button
+              v-if="currentTurnAttempts < 2"
+              @click="handleContinueTurn"
+              class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg flex items-center gap-2"
+            >
+              🎮 Pilih Kotak Lain
+            </button>
+            <button
+              @click="handleEndTurn"
+              class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg flex items-center gap-2"
+            >
+              🏁 Akhiri Giliran
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>
-/* Fade animations */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+/* Animasi modal dengan efek fade dan scale */
+.modal-enter-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.modal-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.modal-enter-from {
   opacity: 0;
+  transform: scale(0.8) translateY(-20px);
+}
+
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(10px);
+}
+
+/* Animasi background overlay */
+.modal-enter-from .fixed {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.modal-enter-active .fixed {
+  transition: background-color 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 </style>

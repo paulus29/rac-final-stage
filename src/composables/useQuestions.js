@@ -12,49 +12,55 @@ export function useQuestions() {
     try {
       const questionsModule = await import('../assets/data/pertanyaan.txt?raw')
       const text = questionsModule.default
-      const lines = text.trim().split('\n').filter(line => line.trim() !== '')
+      const lines = text
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim() !== '')
 
-      const parsedQuestions = lines.map((line, index) => {
-        const parts = line.split(', ')
-        
-        if (parts.length !== 3) {
-          console.warn(`Question ${index + 1} has invalid format:`, line)
-          return null
-        }
+      const parsedQuestions = lines
+        .map((line, index) => {
+          // Format baru: "Pertanyaan | Opsi A | Opsi B"
+          const parts = line.split('|').map((s) => s.trim())
+          if (parts.length !== 3 || parts.some((p) => p.length === 0)) {
+            console.warn(
+              `Question ${index + 1} has invalid format (expected 3 fields separated by |):`,
+              line,
+            )
+            return null
+          }
 
-        const question = parts[0].trim()
-        const optionA = parts[1].trim().replace(/^a\.\s*/, '')
-        const optionB = parts[2].trim().replace(/^b\.\s*/, '')
+          const [question, optionA, optionB] = parts
 
-        return {
-          id: index + 1,
-          question,
-          optionA,
-          optionB,
-          correctAnswer: 'a'
-        }
-      }).filter(q => q !== null)
+          return {
+            id: index + 1,
+            question,
+            optionA,
+            optionB,
+            correctAnswer: 'a',
+          }
+        })
+        .filter((q) => q !== null)
 
       questions.value = parsedQuestions
     } catch (err) {
       error.value = err.message
       console.error('Error loading questions:', err)
-      
+
       questions.value = [
         {
           id: 1,
           question: 'Siapa presiden pertama Indonesia?',
           optionA: 'Soekarno',
           optionB: 'Soeharto',
-          correctAnswer: 'a'
+          correctAnswer: 'a',
         },
         {
           id: 2,
           question: 'Apa ibu kota negara Australia?',
           optionA: 'Canberra',
           optionB: 'Sydney',
-          correctAnswer: 'a'
-        }
+          correctAnswer: 'a',
+        },
       ]
     } finally {
       isLoading.value = false
@@ -62,7 +68,11 @@ export function useQuestions() {
   }
 
   const getQuestionById = (id) => {
-    return questions.value.find(q => q.id === id) || questions.value[0]
+    const q = questions.value.find((q) => q.id === id)
+    if (!q) {
+      console.warn(`Question with id ${id} not found; falling back to first question`)
+    }
+    return q || questions.value[0]
   }
 
   const getRandomQuestion = () => {
@@ -77,6 +87,7 @@ export function useQuestions() {
     error,
     loadQuestions,
     getQuestionById,
-    getRandomQuestion
+    getRandomQuestion,
   }
 }
+

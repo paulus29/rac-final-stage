@@ -26,10 +26,13 @@ const startGame = () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
-    <div
-      class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg"
-    >
+  <!-- Modal Overlay Background dengan animasi -->
+  <Transition name="modal" appear>
+    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <!-- Modal Content dengan animasi scale -->
+      <div
+        class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg transform transition-all duration-300"
+      >
       <h2 class="text-amber-800 text-2xl font-bold mb-6 text-center">Stage 2 Final</h2>
 
       <div class="mb-4">
@@ -96,6 +99,38 @@ const startGame = () => {
           🚀 Mulai Permainan
         </button>
       </div>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>
+
+<style>
+/* Animasi modal dengan efek fade dan scale */
+.modal-enter-active {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.modal-enter-from {
+  opacity: 0;
+  transform: scale(0.7) translateY(-30px);
+}
+
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(10px);
+}
+
+/* Animasi background overlay */
+.modal-enter-from .fixed {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.modal-enter-active .fixed {
+  transition: background-color 0.4s ease;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+</style>

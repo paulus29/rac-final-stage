@@ -48,7 +48,7 @@ const handleClick = () => {
       style="transform-style: preserve-3d"
     >
       <div
-        class="absolute w-full h-full flex items-center justify-center border-2 border-gray-800 rounded-lg shadow-md bg-gradient-to-br from-lime-500 to-green-600 text-white text-xl sm:text-3xl font-bold"
+        class="absolute w-full h-full flex items-center justify-center border-2 border-amber-700 rounded-lg shadow-lg shadow-black/50 bg-gradient-to-br from-lime-500 to-green-600 text-white text-xl sm:text-3xl font-bold"
         style="backface-visibility: hidden"
       >
         <span
@@ -59,7 +59,7 @@ const handleClick = () => {
       </div>
 
       <div
-        class="absolute w-full h-full flex items-center justify-center border-2 border-gray-800 rounded-lg shadow-md bg-gradient-to-br from-pink-400 to-red-500 text-white text-xl sm:text-3xl font-bold transform rotate-y-180"
+        class="absolute w-full h-full flex items-center justify-center border-2 border-amber-700 rounded-lg shadow-lg shadow-black/50 bg-gradient-to-br from-pink-400 to-red-500 text-white text-xl sm:text-3xl font-bold transform rotate-y-180"
         style="backface-visibility: hidden"
       >
         <span

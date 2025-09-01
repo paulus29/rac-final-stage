@@ -1,14 +1,14 @@
-Siapa presiden pertama Indonesia?, a. Soekarno, b. Soeharto
-Apa ibu kota negara Australia?, a. Canberra, b. Sydney
-Planet apa yang paling dekat dengan Matahari?, a. Merkurius, b. Venus
-Siapa penemu bola lampu?, a. Thomas Alva Edison, b. Alexander Graham Bell
-Berapa jumlah benua di dunia?, a. 7, b. 5
-Apa nama laut yang memisahkan Eropa dan Afrika?, a. Laut Mediterania, b. Laut Merah
-Siapa penulis novel "Laskar Pelangi"?, a. Andrea Hirata, b. Tere Liye
-Dalam sistem tata surya, planet apa yang terbesar?, a. Jupiter, b. Saturnus
-Apa nama mata uang negara Jepang?, a. Yen, b. Won
-Siapa pelukis terkenal yang melukis "Mona Lisa"?, a. Leonardo da Vinci, b. Vincent van Gogh
-Berapa jumlah pemain dalam satu tim sepak bola?, a. 11, b. 10
-Apa nama gunung tertinggi di dunia?, a. Gunung Everest, b. Gunung Kilimanjaro
-Siapa penemu teori relativitas?, a. Albert Einstein, b. Isaac Newton
-Apa nama samudra terluas di dunia?, a. Samudra Pasifik, b. Samudra Atlantik
+Apa yang dimaksud dengan risiko operasional? | a. Risiko kerugian akibat kegagalan proses internal | b. Risiko fluktuasi harga pasar
+Manakah yang termasuk komponen utama dalam manajemen risiko siber? | a. Identifikasi, Penilaian, Mitigasi | b. Analisis, Prediksi, Eksekusi
+Apa kepanjangan dari CIA dalam konteks keamanan informasi? | a. Confidentiality, Integrity, Availability | b. Control, Implementation, Assessment
+Manakah yang merupakan jenis serangan siber yang paling umum? | a. Phishing | b. Physical theft
+Apa yang dimaksud dengan Business Continuity Plan (BCP)? | a. Rencana untuk mempertahankan operasi saat terjadi gangguan | b. Rencana untuk meningkatkan profit perusahaan
+Manakah yang termasuk dalam kategori risiko operasional? | a. Kegagalan sistem IT | b. Perubahan suku bunga
+Apa yang dimaksud dengan penetration testing? | a. Simulasi serangan untuk menguji keamanan sistem | b. Testing performa aplikasi
+Manakah yang merupakan prinsip dasar dalam manajemen risiko? | a. Risk identification, assessment, mitigation, monitoring | b. Planning, organizing, leading, controlling
+Apa kepanjangan dari GDPR? | a. General Data Protection Regulation | b. Global Data Privacy Rules
+Manakah yang termasuk dalam incident response plan? | a. Detection, Analysis, Containment, Recovery | b. Planning, Development, Testing, Deployment
+Apa yang dimaksud dengan risk appetite? | a. Tingkat risiko yang bersedia diterima organisasi | b. Jumlah kerugian maksimum yang dapat ditanggung
+Manakah yang merupakan contoh kontrol preventif dalam keamanan siber? | a. Firewall dan antivirus | b. Log monitoring dan audit trail
+Apa yang dimaksud dengan operational resilience? | a. Kemampuan organisasi untuk terus beroperasi saat menghadapi gangguan | b. Kemampuan untuk meningkatkan efisiensi operasional
+Manakah yang termasuk dalam three lines of defense model? | a. Business units, Risk management, Internal audit | b. Prevention, Detection, Response

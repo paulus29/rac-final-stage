@@ -37,6 +37,7 @@ const winner = ref(null)
 const currentTurnAttempts = ref(0)
 const showContinueChoice = ref(false)
 const isFirstAttemptInTurn = ref(true)
+const isProcessingClick = ref(false) // Tambahkan flag untuk mencegah race condition
 
 const initializeGame = () => {
   const numbers = []
@@ -68,6 +69,7 @@ const initializeGame = () => {
   currentTurnAttempts.value = 0
   showContinueChoice.value = false
   isFirstAttemptInTurn.value = true
+  isProcessingClick.value = false
 }
 
 const shuffleArray = (array) => {
@@ -129,7 +131,9 @@ const formatTime = (seconds) => {
 }
 
 const handleCardClick = (cardIndex) => {
+  // Cegah multiple clicks dengan debounce dan validasi state yang ketat
   if (
+    isProcessingClick.value ||
     isCardDisabled.value ||
     cards.value[cardIndex].isFlipped ||
     cards.value[cardIndex].isMatched ||
@@ -140,14 +144,28 @@ const handleCardClick = (cardIndex) => {
     return
   }
 
+  // Set flag untuk mencegah clicks berikutnya
+  isProcessingClick.value = true
+
   currentTurnAttempts.value++
   pendingCardIndex.value = cardIndex
   const cardPosition = cardIndex + 1
   currentQuestion.value = getQuestionById(cardPosition)
   showQuestionModal.value = true
+
+  // Reset flag setelah modal muncul
+  setTimeout(() => {
+    isProcessingClick.value = false
+  }, 500)
 }
 
 const handleCorrectAnswer = () => {
+  // Validasi state sebelum memproses jawaban benar
+  if (pendingCardIndex.value === null || !showQuestionModal.value) {
+    console.warn('Invalid state: handleCorrectAnswer called without pending card')
+    return
+  }
+
   const cardIndex = pendingCardIndex.value
   const currentPlayerBeforeMatch = currentPlayer.value
 
@@ -198,50 +216,84 @@ const handleCorrectAnswer = () => {
       return
     }
 
+    // Validasi dan kelola giliran setelah jawaban benar
     if (currentTurnAttempts.value >= 2) {
       switchPlayer()
     } else {
       setTimeout(() => {
-        showContinueChoice.value = true
-        isFirstAttemptInTurn.value = false
+        // Pastikan state masih valid sebelum menampilkan pilihan
+        if (!gameCompleted.value && !showQuestionModal.value) {
+          showContinueChoice.value = true
+          isFirstAttemptInTurn.value = false
+        }
       }, 1000)
     }
   } else {
+    // Validasi dan kelola giliran untuk kartu yang tidak cocok
     if (currentTurnAttempts.value >= 2) {
       switchPlayer()
     } else {
       setTimeout(() => {
-        showContinueChoice.value = true
-        isFirstAttemptInTurn.value = false
+        // Pastikan state masih valid sebelum menampilkan pilihan
+        if (!gameCompleted.value && !showQuestionModal.value) {
+          showContinueChoice.value = true
+          isFirstAttemptInTurn.value = false
+        }
       }, 1000)
     }
   }
 }
 
 const handleWrongAnswer = () => {
+  // Validasi state sebelum memproses jawaban salah
+  if (!showQuestionModal.value) {
+    console.warn('Invalid state: handleWrongAnswer called without active modal')
+    return
+  }
+
+  // Tambahkan penghitungan percobaan untuk jawaban salah
+  attempts.value++
+  if (currentPlayer.value === 1) {
+    player1Attempts.value++
+  } else {
+    player2Attempts.value++
+  }
+
   showQuestionModal.value = false
   currentQuestion.value = null
   pendingCardIndex.value = null
-  currentTurnAttempts.value--
+  // Hapus pengurangan currentTurnAttempts yang menyebabkan bug
 
-  if (isFirstAttemptInTurn.value) {
-    switchPlayer()
-  } else {
-    switchPlayer()
-  }
+  // Langsung switch player karena jawaban salah
+  switchPlayer()
 }
 
 const handleCloseModal = () => {
+  // Validasi state sebelum menutup modal
+  if (!showQuestionModal.value) {
+    console.warn('Invalid state: handleCloseModal called without active modal')
+    return
+  }
+
   showQuestionModal.value = false
   currentQuestion.value = null
   pendingCardIndex.value = null
-  currentTurnAttempts.value--
+
+  // Reset turn attempts agar pemain bisa melanjutkan memilih kartu
+  currentTurnAttempts.value = Math.max(0, currentTurnAttempts.value - 1)
+
+  // Reset processing flag untuk mencegah card disabled
+  isProcessingClick.value = false
+
+  // Jangan switch player ketika modal ditutup dengan tombol X
+  // Biarkan pemain tetap melanjutkan gilirannya
 }
 
 const resetTurnState = () => {
   currentTurnAttempts.value = 0
   showContinueChoice.value = false
   isFirstAttemptInTurn.value = true
+  isProcessingClick.value = false // Reset debounce flag untuk state yang bersih
 }
 
 const switchPlayer = () => {
@@ -268,7 +320,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="fixed -top-9 left-12 z-50">
+  <div class="fixed -top-12 left-12 z-50">
     <img
       src="/src/assets/images/rac-logo.png"
       alt="RAC Logo"
@@ -293,14 +345,14 @@ onBeforeUnmount(() => {
         Stage 2 Final
       </h1>
 
-      <GameStats :timer="timer" :formatTime="formatTime" />
+      <GameStats v-if="gameStarted" :timer="timer" :formatTime="formatTime" />
     </div>
 
     <div
       v-if="gameStarted"
-      class="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-4 lg:gap-6 xl:gap-8"
+      class="flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 lg:gap-6 xl:gap-8"
     >
-      <div class="order-1 lg:order-1">
+      <div class="order-1 lg:order-1 flex items-center">
         <PlayerPanel
           :playerName="player1Name"
           :score="player1Score"
@@ -310,24 +362,28 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <div class="order-3 lg:order-2">
+      <div class="order-3 lg:order-2 flex items-center">
+
         <div
-          class="grid grid-cols-4 gap-4 sm:gap-6 max-w-lg sm:max-w-2xl lg:max-w-3xl p-6 sm:p-8 game-grid rounded-xl shadow-xl"
+          class="game-grid p-6 sm:p-8 rounded-xl shadow-xl space-y-4 max-w-lg sm:max-w-2xl lg:max-w-3xl"
         >
-          <Card
-            v-for="(card, index) in cards"
-            :key="index"
-            :number="card.number"
-            :position="index + 1"
-            :isFlipped="card.isFlipped"
-            :isMatched="card.isMatched"
-            :isDisabled="isCardDisabled"
-            @card-click="handleCardClick(index)"
-          />
+          <!-- Grid 4 kolom untuk kartu -->
+          <div class="grid grid-cols-4 gap-4 sm:gap-6 justify-items-center max-w-[650px]">
+            <Card
+              v-for="(card, index) in cards"
+              :key="index"
+              :number="card.number"
+              :position="index + 1"
+              :isFlipped="card.isFlipped"
+              :isMatched="card.isMatched"
+              :isDisabled="isCardDisabled"
+              @card-click="handleCardClick(index)"
+            />
+          </div>
         </div>
       </div>
 
-      <div class="order-2 lg:order-3">
+      <div class="order-2 lg:order-3 flex items-center">
         <PlayerPanel
           :playerName="player2Name"
           :score="player2Score"
@@ -395,11 +451,16 @@ onBeforeUnmount(() => {
     padding: 1rem;
     border-width: 1px;
     gap: 0.5rem;
-    max-width: 380px;
+    max-width: 350px;
 
     box-shadow:
       0 3px 12px rgba(76, 175, 80, 0.1),
       0 1px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Grid 4 kolom untuk mobile */
+  .grid-cols-4 {
+    gap: 0.75rem;
   }
 
   .max-w-4xl {

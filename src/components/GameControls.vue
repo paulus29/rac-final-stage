@@ -2,12 +2,12 @@
 defineProps({
   gameStarted: {
     type: Boolean,
-    required: true
+    required: true,
   },
   gameCompleted: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 })
 
 defineEmits(['start-game', 'reset-game'])
