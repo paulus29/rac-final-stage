@@ -30,10 +30,6 @@ defineProps({
     type: Number,
     required: true,
   },
-  totalAttempts: {
-    type: Number,
-    required: true,
-  },
   timer: {
     type: Number,
     required: true,

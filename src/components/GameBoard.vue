@@ -320,11 +320,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="fixed -top-12 left-12 z-50">
+  <div class="fixed -top-8 left-8 z-50">
     <img
       src="/src/assets/images/rac-logo.png"
       alt="RAC Logo"
-      class="w-90 sm:h-72 object-contain logo-pulse"
+      class="sm:h-52 h-20 w-auto object-contain"
     />
   </div>
 
@@ -337,7 +337,7 @@ onBeforeUnmount(() => {
     />
   </div>
 
-  <div class="max-w-6xl mx-auto p-2 sm:p-4 text-center">
+  <div class="max-w-6xl mx-auto p-2 sm:p-4 text-center overflow-x-hidden">
     <div class="mb-4 sm:mb-6">
       <h1
         class="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 drop-shadow-lg mt-2 sm:mt-3"
@@ -363,9 +363,8 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="order-3 lg:order-2 flex items-center">
-
         <div
-          class="game-grid p-6 sm:p-8 rounded-xl shadow-xl space-y-4 max-w-lg sm:max-w-2xl lg:max-w-3xl"
+          class="p-6 sm:p-8 rounded-xl shadow-xl space-y-4 max-w-lg sm:max-w-2xl lg:max-w-3xl bg-gradient-to-br from-white/90 to-lime-50/80 border-2 border-emerald-600/30 backdrop-blur-md"
         >
           <!-- Grid 4 kolom untuk kartu -->
           <div class="grid grid-cols-4 gap-4 sm:gap-6 justify-items-center max-w-[650px]">
@@ -434,85 +433,3 @@ onBeforeUnmount(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.game-grid {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 255, 240, 0.85) 100%);
-  border: 2px solid rgba(76, 175, 80, 0.3);
-  backdrop-filter: blur(10px);
-  box-shadow:
-    0 6px 24px rgba(76, 175, 80, 0.12),
-    0 3px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2); /* Inner shadow untuk highlight */
-}
-
-@media (max-width: 480px) {
-  .game-grid {
-    padding: 1rem;
-    border-width: 1px;
-    gap: 0.5rem;
-    max-width: 350px;
-
-    box-shadow:
-      0 3px 12px rgba(76, 175, 80, 0.1),
-      0 1px 6px rgba(0, 0, 0, 0.06);
-  }
-
-  /* Grid 4 kolom untuk mobile */
-  .grid-cols-4 {
-    gap: 0.75rem;
-  }
-
-  .max-w-4xl {
-    padding: 1rem;
-  }
-
-  .mb-4 {
-    margin-bottom: 1rem;
-  }
-
-  .mt-4 {
-    margin-top: 1rem;
-  }
-}
-
-@media (min-width: 481px) and (max-width: 768px) {
-  .game-grid {
-    max-width: 450px;
-    gap: 0.75rem;
-    padding: 1.25rem;
-  }
-}
-
-@media (min-width: 769px) {
-  .game-grid {
-    border-width: 2px;
-    backdrop-filter: blur(12px);
-    max-width: 500px;
-  }
-}
-
-body {
-  overflow-x: hidden;
-}
-
-.max-w-4xl {
-  max-width: min(100vw - 1rem, 56rem);
-}
-
-@keyframes logoZoom {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.logo-pulse {
-  animation: logoZoom 2s ease-in-out infinite;
-}
-</style>

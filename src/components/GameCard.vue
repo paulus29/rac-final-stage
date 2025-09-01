@@ -51,10 +51,9 @@ const handleClick = () => {
         class="absolute w-full h-full flex items-center justify-center border-2 border-amber-700 rounded-lg shadow-lg shadow-black/50 bg-gradient-to-br from-lime-500 to-green-600 text-white text-xl sm:text-3xl font-bold"
         style="backface-visibility: hidden"
       >
-        <span
-          class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white bg-black bg-opacity-50 rounded px-1"
-          >{{ position }}</span
-        >
+        <span class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white px-1">{{
+          position
+        }}</span>
         <span>?</span>
       </div>
 
@@ -63,7 +62,7 @@ const handleClick = () => {
         style="backface-visibility: hidden"
       >
         <span
-          class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white bg-black bg-opacity-50 rounded px-1"
+          class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white rounded px-1"
           >{{ position }}</span
         >
         <span>{{ number }}</span>
