@@ -9,7 +9,7 @@ import GameStats from './GameStats.vue'
 import PlayerNameInput from './PlayerNameInput.vue'
 import QuestionModal from './QuestionModal.vue'
 import TurnChoiceModal from './TurnChoiceModal.vue'
-import { useQuestions } from '../composables/useQuestions.js'
+import { useQuestions } from '../../composables/useQuestions.js'
 
 const cards = ref([])
 const openedCards = ref([])
@@ -340,14 +340,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="fixed -top-8 left-8 z-50">
-    <img
-      src="/src/assets/images/rac-logo.png"
-      alt="RAC Logo"
-      class="sm:h-52 h-20 w-auto object-contain"
-    />
-  </div>
-
   <div class="fixed top-4 right-4 z-40">
     <GameControls
       :gameStarted="gameStarted"
@@ -391,13 +383,7 @@ onBeforeUnmount(() => {
             <div
               v-for="(row, rowIndex) in cardRows"
               :key="'row-' + rowIndex"
-              :class="[
-                'flex',
-                'justify-center',
-                'items-center',
-                'gap-4',
-                'sm:gap-6',
-              ]"
+              :class="['flex', 'justify-center', 'items-center', 'gap-4', 'sm:gap-6']"
             >
               <Card
                 v-for="(card, idx) in row.items"
@@ -442,7 +428,7 @@ onBeforeUnmount(() => {
 
     <PlayerNameInput v-if="!namesSet" @start-game="handlePlayerNames" />
 
-    <GameInstructions v-if="namesSet && !gameStarted" />
+    <GameInstructions v-if="namesSet && !gameStarted" @start-game="startGame" />
 
     <QuestionModal
       v-if="showQuestionModal && currentQuestion"
