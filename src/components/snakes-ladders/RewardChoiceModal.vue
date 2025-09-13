@@ -16,7 +16,6 @@
               class="text-gray-600 hover:text-gray-800 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-200"
               title="Minimize"
             >▁</button>
-            <button @click="$emit('close')" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
           </div>
         </div>
 
@@ -35,7 +34,7 @@
             <button
               @click="toggleShoot"
               class="min-w-[160px] px-4 py-3 rounded-lg font-bold text-white shadow-md bg-gradient-to-r from-fuchsia-600 to-fuchsia-700 hover:from-fuchsia-700 hover:to-fuchsia-800"
-            >🎯 Serang Pemain</button>
+            >🎯 Serang Kelompok</button>
 
             <button
               @click="chooseAdvance"
@@ -128,16 +127,15 @@ const confirmShoot = () => {
   emit('choose', { action: 'shoot', targetId: targetId.value })
 }
 
-// Reset minimized state when modal opens/closes
+// Reset state when modal opens/closes to ensure shoot selector is hidden by default
 watch(
   () => props.isVisible,
-  (v) => {
-    if (!v) {
-      isMinimized.value = false
-      // optional: reset local selections if needed
-      // showShoot.value = false
-      // targetId.value = null
-    }
+  () => {
+    // Pastikan setiap kali visibility berubah (terutama saat dibuka),
+    // modal tidak dalam keadaan minimized dan selector tembak tersembunyi.
+    isMinimized.value = false
+    showShoot.value = false
+    targetId.value = null
   },
 )
 </script>

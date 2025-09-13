@@ -1,35 +1,98 @@
 <script setup>
-defineProps({
-  gameStarted: {
-    type: Boolean,
-    required: true,
-  },
-  gameCompleted: {
-    type: Boolean,
-    required: true,
-  },
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+
+const showMenu = ref(false)
+const menuRef = ref(null)
+const emit = defineEmits(['reset-game'])
+
+const router = useRouter()
+
+const goHome = () => {
+  showMenu.value = false
+  router.push('/')
+}
+
+const openReset = () => {
+  showMenu.value = false
+  emit('reset-game')
+}
+
+onMounted(() => {
+  const onDocClick = (e) => {
+    if (!menuRef.value) return
+    if (!menuRef.value.contains(e.target)) {
+      showMenu.value = false
+    }
+  }
+  document.addEventListener('click', onDocClick)
+  if (menuRef.value) menuRef.value.__onDocClick = onDocClick
 })
 
-defineEmits(['start-game', 'reset-game'])
+onBeforeUnmount(() => {
+  if (menuRef.value && menuRef.value.__onDocClick) {
+    document.removeEventListener('click', menuRef.value.__onDocClick)
+  }
+})
 </script>
 
 <template>
-  <div class="flex justify-center gap-2 sm:gap-3 flex-wrap">
-    <!-- Tombol Mulai Game / Main Lagi -->
+  <div class="relative" ref="menuRef">
     <button
-      @click="$emit('start-game')"
-      :disabled="gameStarted && !gameCompleted"
-      class="px-3 sm:px-6 py-1.5 sm:py-2 border-none rounded-lg font-bold transition-all duration-300 bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-xs sm:text-sm min-w-[100px] sm:min-w-[120px]"
+      @click="showMenu = !showMenu"
+      :class="[
+        'w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white/90 text-gray-800 shadow-md ring-1 ring-white/50 transition-colors transform transition-transform duration-200 ease-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400',
+        showMenu ? 'rotate-90 scale-110' : '',
+      ]"
+      aria-label="Menu"
+      :aria-expanded="showMenu.toString()"
+      aria-haspopup="true"
     >
-      {{ gameStarted ? (gameCompleted ? 'Main Lagi' : 'Game Berjalan') : 'Mulai Game' }}
+      <span class="relative inline-block w-5 h-5">
+        <span
+          :class="[
+            'absolute inset-0 flex items-center justify-center transition-all duration-200',
+            showMenu ? 'opacity-0 scale-75' : 'opacity-100 scale-100',
+          ]"
+          >☰</span
+        >
+        <span
+          :class="[
+            'absolute inset-0 flex items-center justify-center transition-all duration-200',
+            showMenu ? 'opacity-100 scale-100 rotate-90' : 'opacity-0 scale-75',
+          ]"
+          >✕</span
+        >
+      </span>
     </button>
-
-    <!-- Tombol Reset -->
-    <button
-      @click="$emit('reset-game')"
-      class="px-3 sm:px-6 py-1.5 sm:py-2 border-none rounded-lg font-bold transition-all duration-300 bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-700 hover:to-amber-800 shadow-lg text-xs sm:text-sm min-w-[70px] sm:min-w-[80px]"
+    <Transition
+      enter-active-class="transition ease-out duration-150"
+      enter-from-class="opacity-0 translate-y-1 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+      leave-active-class="transition ease-in duration-100"
+      leave-from-class="opacity-100 translate-y-0 scale-100"
+      leave-to-class="opacity-0 translate-y-1 scale-95"
     >
-      Reset
-    </button>
+      <div
+        v-if="showMenu"
+        class="absolute right-0 mt-2 w-64 bg-white/90 backdrop-blur rounded-xl shadow-lg ring-1 ring-black/10 overflow-hidden origin-top-right"
+      >
+        <button
+          @click="goHome"
+          class="w-full text-left px-4 py-3 hover:bg-white text-gray-800 font-medium flex items-center gap-2 transition-colors"
+        >
+          <span>🏠</span>
+          <span>Kembali ke Menu Utama</span>
+        </button>
+        <div class="h-px bg-black/10"></div>
+        <button
+          @click="openReset"
+          class="w-full text-left px-4 py-3 hover:bg-white text-gray-800 font-medium flex items-center gap-2 transition-colors"
+        >
+          <span>🔄</span>
+          <span>Reset Game</span>
+        </button>
+      </div>
+    </Transition>
   </div>
 </template>

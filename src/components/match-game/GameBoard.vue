@@ -4,7 +4,6 @@ import Card from './GameCard.vue'
 import PlayerPanel from './PlayerPanel.vue'
 import GameCompleteModal from './GameCompleteModal.vue'
 import GameControls from './GameControls.vue'
-import GameInstructions from './GameInstructions.vue'
 import GameStats from './GameStats.vue'
 import PlayerNameInput from './PlayerNameInput.vue'
 import QuestionModal from './QuestionModal.vue'
@@ -31,8 +30,8 @@ const player1Score = ref(0)
 const player2Score = ref(0)
 const player1Attempts = ref(0)
 const player2Attempts = ref(0)
-const player1Name = ref('Player 1')
-const player2Name = ref('Player 2')
+const player1Name = ref('Kelompok 1')
+const player2Name = ref('Kelompok 2')
 const winner = ref(null)
 const currentTurnAttempts = ref(0)
 const showContinueChoice = ref(false)
@@ -125,6 +124,8 @@ const handlePlayerNames = (playerData) => {
   player1Name.value = playerData.player1Name
   player2Name.value = playerData.player2Name
   namesSet.value = true
+  // Otomatis mulai game setelah nama dimasukkan
+  startGame()
 }
 
 const handleResetFromModal = () => {
@@ -340,13 +341,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-40">
-    <GameControls
-      :gameStarted="gameStarted"
-      :gameCompleted="gameCompleted"
-      @start-game="startGame"
-      @reset-game="resetToNameInput"
-    />
+  <div class="fixed top-4 right-4 z-[100]">
+    <GameControls @reset-game="resetToNameInput" />
   </div>
 
   <div class="max-w-6xl mx-auto p-2 sm:p-4 text-center overflow-x-hidden">
@@ -427,8 +423,6 @@ onBeforeUnmount(() => {
     />
 
     <PlayerNameInput v-if="!namesSet" @start-game="handlePlayerNames" />
-
-    <GameInstructions v-if="namesSet && !gameStarted" @start-game="startGame" />
 
     <QuestionModal
       v-if="showQuestionModal && currentQuestion"

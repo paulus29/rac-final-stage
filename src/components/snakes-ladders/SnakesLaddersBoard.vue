@@ -64,6 +64,9 @@
         </Transition>
       </div>
     </div>
+    <!-- Player Name Input Modal -->
+    <PlayerNameInput v-if="showNameInput" @start-game="onStartGame" />
+
     <div class="flex flex-col xl:flex-row gap-6 max-w-7xl mx-auto">
       <!-- Game Master Controls -->
 
@@ -79,11 +82,18 @@
       </div>
       <div class="xl:w-80 w-full">
         <GameMasterControls
+          ref="controlsRef"
           :players="players"
           :selectedPlayerId="selectedPlayerId"
           :selectedPlayerName="selectedPlayerName"
           :steps="steps"
-          :disabled="isAnimating || showChallengeModal || showRewardModal || showFinishModal || showFinalModal"
+          :disabled="
+            isAnimating ||
+            showChallengeModal ||
+            showRewardModal ||
+            showFinishModal ||
+            showFinalModal
+          "
           @select-player="selectPlayer"
           @increment-steps="incrementSteps"
           @decrement-steps="decrementSteps"
@@ -154,16 +164,18 @@ import { useQuestionDeck } from '@/composables/useQuestionDeck'
 import RewardChoiceModal from './RewardChoiceModal.vue'
 import FinishModal from './FinishModal.vue'
 import FinalLeaderboardModal from './FinalLeaderboardModal.vue'
+import PlayerNameInput from './PlayerNameInput.vue'
 
 // Refs
 const gameBoardRef = ref(null)
 const menuRef = ref(null)
+const controlsRef = ref(null)
 
 // Game state
 const players = ref([
   {
     id: 1,
-    name: 'Pemain 1',
+    name: 'Kelompok 1',
     icon: '🔴',
     color: 'red',
     position: 1,
@@ -173,7 +185,7 @@ const players = ref([
   },
   {
     id: 2,
-    name: 'Pemain 2',
+    name: 'Kelompok 2',
     icon: '🟢',
     color: 'green',
     position: 1,
@@ -183,7 +195,7 @@ const players = ref([
   },
   {
     id: 3,
-    name: 'Pemain 3',
+    name: 'Kelompok 3',
     icon: '🔵',
     color: 'blue',
     position: 1,
@@ -195,10 +207,11 @@ const players = ref([
 
 const selectedPlayerId = ref(null)
 const steps = ref(1)
-const boardSize = ref(8)
+const boardSize = ref(7)
 const isAnimating = ref(false)
 const showResetModal = ref(false)
 const showMenu = ref(false)
+const showNameInput = ref(true)
 
 // Ranking state: pemain yang mencapai sel terakhir diberi peringkat berurutan
 const nextRank = ref(1)
@@ -287,7 +300,7 @@ const movePlayerForward = async () => {
       finishPlayerRank.value = players.value[playerIndex].rank
       showFinishModal.value = true
       // Cek finalisasi (dua pemain sudah finish)
-      const finishedCount = players.value.filter(p => p.finished).length
+      const finishedCount = players.value.filter((p) => p.finished).length
       if (finishedCount >= 2) {
         showFinalModal.value = true
       }
@@ -360,6 +373,25 @@ const confirmReset = () => {
 }
 
 // Menu actions
+const onStartGame = ({ player1Name, player2Name, player3Name }) => {
+  if (import.meta.env.DEV) {
+    console.log('[SL Board] onStartGame payload', {
+      player1Name,
+      player2Name,
+      player3Name,
+    })
+  }
+  players.value[0].name = player1Name
+  players.value[1].name = player2Name
+  players.value[2].name = player3Name
+  showNameInput.value = false
+  // Pastikan pemain pertama terpilih saat mulai
+  selectedPlayerId.value = players.value[0].id
+  // Auto-start timer pada panel kontrol
+  if (controlsRef.value && controlsRef.value.resetTimer) controlsRef.value.resetTimer()
+  if (controlsRef.value && controlsRef.value.startTimer) controlsRef.value.startTimer()
+}
+
 const goHome = () => {
   showMenu.value = false
   router.push('/')
@@ -500,7 +532,7 @@ const onRewardChoose = async ({ action, targetId }) => {
       finishPlayerRank.value = p.rank
       showFinishModal.value = true
       // Finalize if two players finished
-      const finishedCount = players.value.filter(pl => pl.finished).length
+      const finishedCount = players.value.filter((pl) => pl.finished).length
       if (finishedCount >= 2) {
         showFinalModal.value = true
       }
@@ -550,7 +582,8 @@ const onRewardChoose = async ({ action, targetId }) => {
     isAnimating.value = true
     try {
       if (gameBoardRef.value && gameBoardRef.value.animateShoot) {
-        await gameBoardRef.value.animateShoot(actor, target, 500)
+        // Percepat/diperlambat: durasi proyektil ditingkatkan agar visual lebih dramatis
+        await gameBoardRef.value.animateShoot(actor, target, 900)
       }
 
       if ((target.shield || 0) > 0) {

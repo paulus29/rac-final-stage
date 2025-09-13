@@ -55,6 +55,8 @@ const timerInterval = ref(null)
 const isWarning = ref(false)
 const isTimerActive = ref(true)
 const isTimeOut = ref(false) // Status untuk menampilkan notifikasi waktu habis
+// Minimize state
+const isMinimized = ref(false)
 
 // Fungsi untuk memulai timer countdown
 const startTimer = () => {
@@ -137,7 +139,7 @@ onUnmounted(() => {
 <template>
   <!-- Modal Overlay Background dengan animasi -->
   <Transition name="modal" appear>
-    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div v-if="!isMinimized" class="fixed inset-0 flex items-center justify-center z-50 p-4">
       <!-- Modal Content dengan animasi scale -->
       <div
         class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xl w-full backdrop-blur-sm transform transition-all duration-300"
@@ -150,13 +152,13 @@ onUnmounted(() => {
             </div>
             <div class="text-amber-800 font-semibold">Giliran: {{ playerName }}</div>
           </div>
-          <button
-            @click="handleClose"
-            class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-            title="Tutup"
-          >
-            ×
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              @click="isMinimized = true"
+              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              title="Minimize"
+            >▁</button>
+          </div>
         </div>
 
         <!-- Timer Display -->
@@ -262,7 +264,7 @@ onUnmounted(() => {
 
         <!-- Game Master Controls -->
         <div v-if="!showFeedback || isTimeOut" class="border-t border-amber-200 pt-4">
-          <p class="text-sm text-gray-600 text-center mb-4">Apakah jawaban pemain benar?</p>
+          <p class="text-sm text-gray-600 text-center mb-4">Apakah jawaban kelompok benar?</p>
           <div class="flex gap-4 justify-center">
             <button
               @click="handleGameMasterAnswer(true)"
@@ -281,6 +283,17 @@ onUnmounted(() => {
       </div>
     </div>
   </Transition>
+  <!-- Minimized pill (no overlay) -->
+  <div v-if="isMinimized" class="fixed bottom-4 left-4 z-[60]">
+    <button
+      @click="isMinimized = false"
+      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-amber-400 shadow-md text-amber-900 font-semibold flex items-center gap-2 hover:bg-white"
+      title="Tampilkan kembali"
+    >
+      <span>📝 Pertanyaan</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500 text-white">Buka</span>
+    </button>
+  </div>
 </template>
 
 <style scoped>

@@ -8,30 +8,30 @@
       <h3 class="text-amber-800 text-xl sm:text-2xl font-bold mb-4 text-center">Aturan Bermain</h3>
 
       <ul class="list-disc pl-4 sm:pl-6 space-y-2 sm:space-y-3 text-amber-900 text-sm sm:text-base">
-        <li class="leading-relaxed">Permainan dimainkan bergantian oleh 2 pemain.</li>
+        <li class="leading-relaxed">Permainan dimainkan bergantian oleh 2 kelompok.</li>
         <li class="leading-relaxed">Terdapat 14 kartu (7 pasang angka yang sama).</li>
         <li class="leading-relaxed">
-          Setiap pemain HANYA memiliki <strong>2 kesempatan</strong> (attempt) per giliran.
+          Setiap kelompok HANYA memiliki <strong>2 kesempatan</strong> (attempt) per giliran.
         </li>
         <li class="leading-relaxed">
           Setelah <strong>2 kesempatan</strong> digunakan, giliran
-          <strong>otomatis berpindah</strong> ke pemain lain,
+          <strong>otomatis berpindah</strong> ke kelompok lain,
           <strong>meskipun menemukan pasangan</strong>.
         </li>
         <li class="leading-relaxed">
-          Jika jawaban benar pada kesempatan pertama, Pemain diberikan pilihan untuk menggunakan
-          kesempatan kedua atau melempar ke pemain lain.
+          Jika jawaban benar pada kesempatan pertama, Kelompok diberikan pilihan untuk menggunakan
+          kesempatan kedua atau melempar ke kelompok lain.
         </li>
         <li class="leading-relaxed">
           Jika jawaban <strong>salah pada kesempatan pertama</strong>, giliran langsung berpindah ke
-          pemain lain.
+          kelompok lain.
         </li>
         <li class="leading-relaxed">
-          Setiap pasangan yang ditemukan menambah skor <strong>+1</strong> untuk pemain yang
+          Setiap pasangan yang ditemukan menambah skor <strong>+1</strong> untuk kelompok yang
           menemukan.
         </li>
         <li class="leading-relaxed">
-          Permainan berakhir saat <strong>7 pasang</strong> telah ditemukan. Pemain dengan skor
+          Permainan berakhir saat <strong>7 pasang</strong> telah ditemukan. Kelompok dengan skor
           tertinggi menang.
         </li>
       </ul>

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 defineProps({
   winner: {
@@ -77,16 +77,26 @@ const createConfetti = () => {
 onMounted(() => {
   createConfetti()
 })
+
+const isMinimized = ref(false)
 </script>
 
 <template>
   <!-- Modal Overlay Background dengan animasi -->
   <Transition name="modal" appear>
-    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div v-if="!isMinimized" class="fixed inset-0 flex items-center justify-center z-50 p-4">
       <!-- Modal Content dengan animasi scale -->
       <div
         class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300"
       >
+        <!-- Header actions -->
+        <div class="flex justify-end mb-2">
+          <button
+            @click="isMinimized = true"
+            class="text-emerald-800 hover:text-emerald-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-emerald-300"
+            title="Minimize"
+          >▁</button>
+        </div>
         <h2 class="text-amber-800 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
           🎉 Game Selesai! 🎉
         </h2>
@@ -147,6 +157,17 @@ onMounted(() => {
       </div>
     </div>
   </Transition>
+  <!-- Minimized pill (no overlay) -->
+  <div v-if="isMinimized" class="fixed bottom-4 left-4 z-[60]">
+    <button
+      @click="isMinimized = false"
+      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-emerald-400 shadow-md text-emerald-900 font-semibold flex items-center gap-2 hover:bg-white"
+      title="Tampilkan kembali"
+    >
+      <span>🎉 Game Selesai</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500 text-white">Buka</span>
+    </button>
+  </div>
 </template>
 
 <style>

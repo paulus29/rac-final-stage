@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal" appear>
-    <div v-if="isVisible" class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <div v-if="isVisible && !isMinimized" class="fixed inset-0 z-[90] flex items-center justify-center p-4">
       <!-- Overlay tanpa blur (konsisten dengan QuestionChallengeModal) -->
       <div class="absolute inset-0" @click="$emit('close')"></div>
 
@@ -13,7 +13,13 @@
           <div class="bg-emerald-600 text-white px-3 py-1 rounded-lg font-bold text-sm flex items-center gap-2">
             🏁 Finish
           </div>
-          <button @click="$emit('close')" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
+          <div class="flex items-center gap-2">
+            <button
+              @click="isMinimized = true"
+              class="text-gray-600 hover:text-gray-800 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-emerald-200"
+              title="Minimize"
+            >▁</button>
+          </div>
         </div>
 
         <div class="text-center space-y-3">
@@ -35,6 +41,18 @@
       </div>
     </div>
   </Transition>
+  <!-- Minimized pill (no overlay) -->
+  <div v-if="isVisible && isMinimized" class="fixed bottom-4 left-4 z-[91]">
+    <button
+      @click="isMinimized = false"
+      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-emerald-400 shadow-md text-emerald-900 font-semibold flex items-center gap-2 hover:bg-white"
+      title="Tampilkan kembali"
+    >
+      <span>🏁 Finish:</span>
+      <span class="font-bold">{{ playerName }}</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500 text-white">Buka</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
@@ -49,6 +67,7 @@ const props = defineProps({
 const canvasRef = ref(null)
 let rafId = null
 let startTime = 0
+const isMinimized = ref(false)
 
 const random = (min, max) => Math.random() * (max - min) + min
 
@@ -139,6 +158,8 @@ const cleanup = () => {
 watch(
   () => props.isVisible,
   (v) => {
+    // reset minimized setiap kali visibilitas berubah
+    isMinimized.value = false
     cleanup()
     if (v && props.rank === 1) {
       // fire confetti a moment after mount for smoother paint

@@ -4,7 +4,7 @@
 
     <!-- Player Selection -->
     <div class="mb-6">
-      <label class="block text-white/90 font-semibold mb-2">Pilih Pemain:</label>
+      <label class="block text-white/90 font-semibold mb-2">Pilih Kelompok:</label>
       <div class="grid grid-cols-1 gap-2">
         <button
           v-for="player in players"
@@ -74,10 +74,57 @@
         ⬇️ Mundur
       </button>
     </div>
+    <!-- Timer -->
+    <div class="mb-6">
+      <div class="bg-white/15 backdrop-blur rounded-xl border border-white/25 shadow-inner p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2 text-white/90 font-semibold">
+            <span>⏱️</span>
+            <span>Timer</span>
+            <span
+              class="ml-2 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+              :class="isRunning ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'"
+            >
+              {{ isRunning ? 'Running' : elapsed > 0 ? 'Paused' : 'Ready' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center mb-3">
+          <div
+            class="text-4xl sm:text-5xl font-extrabold text-white drop-shadow font-mono tracking-widest"
+          >
+            {{ formattedTime }}
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-center">
+          <button
+            @click="isRunning ? pauseTimer() : startTimer()"
+            :class="[
+              'px-4 py-2 rounded-lg font-bold text-white shadow-md transition-colors',
+              isRunning
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+                : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700',
+            ]"
+          >
+            {{ isRunning ? 'Jeda' : elapsed > 0 ? 'Lanjut' : 'Mulai' }}
+          </button>
+          <button
+            @click="resetTimer"
+            :disabled="elapsed === 0 && !isRunning"
+            class="px-4 py-2 rounded-lg font-bold text-white shadow-md bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onBeforeUnmount } from 'vue'
 import shieldLogo from '@/assets/images/shield-logo.png'
 const props = defineProps({
   players: { type: Array, required: true },
@@ -111,6 +158,45 @@ const getPlayerBtnClass = (player) => {
   // Not selected: mirip tombol langkah default
   return `${base} bg-white/60 hover:bg-white/80 text-gray-800`
 }
+
+// Timer state (stopwatch sederhana)
+const elapsed = ref(0) // detik
+const isRunning = ref(false)
+let timerId = null
+
+const formattedTime = computed(() => {
+  const m = Math.floor(elapsed.value / 60)
+  const s = elapsed.value % 60
+  const mm = String(m).padStart(2, '0')
+  const ss = String(s).padStart(2, '0')
+  return `${mm}:${ss}`
+})
+
+const startTimer = () => {
+  if (timerId) return
+  isRunning.value = true
+  timerId = setInterval(() => {
+    elapsed.value += 1
+  }, 1000)
+}
+
+const pauseTimer = () => {
+  if (timerId) {
+    clearInterval(timerId)
+    timerId = null
+  }
+  isRunning.value = false
+}
+
+const resetTimer = () => {
+  pauseTimer()
+  elapsed.value = 0
+}
+
+onBeforeUnmount(() => pauseTimer())
+
+// Expose ke parent agar bisa mengontrol timer dari luar
+defineExpose({ startTimer, pauseTimer, resetTimer })
 </script>
 
 <style scoped>

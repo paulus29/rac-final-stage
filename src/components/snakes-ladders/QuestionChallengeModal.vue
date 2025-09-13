@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal" appear>
-    <div v-if="isVisible" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+    <div v-if="isVisible && !isMinimized" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
       <!-- Overlay tanpa blur -->
       <div class="absolute inset-0" @click="$emit('close')"></div>
 
@@ -21,15 +21,19 @@
             </div>
             <div class="text-amber-800 font-semibold">Giliran: {{ currentPlayerName }}</div>
           </div>
-          <button @click="handleClose" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
-            ×
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              @click="isMinimized = true"
+              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              title="Minimize"
+            >▁</button>
+          </div>
         </div>
 
         <!-- Step 1 (optional only): pilih penjawab -->
         <div v-if="type === 'optional' && !decided" class="space-y-4">
           <p class="text-gray-700">
-            Pemain yang mendarat dapat memilih menjawab sendiri atau melempar pertanyaan ke lawan.
+            Kelompok yang mendarat dapat memilih menjawab sendiri atau melempar pertanyaan ke lawan.
           </p>
 
           <!-- Pilih lawan (opsional untuk lempar) -->
@@ -118,7 +122,7 @@
 
           <!-- Penilaian Game Master -->
           <div class="border-t border-amber-200 pt-3">
-            <p class="text-sm text-gray-600 text-center mb-3">Apakah jawaban pemain benar?</p>
+            <p class="text-sm text-gray-600 text-center mb-3">Apakah jawaban kelompok benar?</p>
             <div class="flex gap-4 justify-center">
               <button
                 @click="handleJudge(true)"
@@ -141,6 +145,17 @@
       </div>
     </div>
   </Transition>
+  <!-- Minimized pill (no overlay) -->
+  <div v-if="isVisible && isMinimized" class="fixed bottom-4 left-4 z-[81]">
+    <button
+      @click="isMinimized = false"
+      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-amber-400 shadow-md text-amber-900 font-semibold flex items-center gap-2 hover:bg-white"
+      title="Tampilkan kembali"
+    >
+      <span>❓ Tantangan</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500 text-white">Buka</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
@@ -159,6 +174,7 @@ const emit = defineEmits(['close', 'decide', 'judge'])
 // State pemilihan penjawab
 const decided = ref(false)
 const selectedAnswererId = ref(null)
+const isMinimized = ref(false)
 
 // Timer state (mengadopsi pola match-game)
 const timeLeft = ref(30)
@@ -223,6 +239,8 @@ const handleTimeout = () => {
 watch(
   () => props.isVisible,
   (v) => {
+    // reset minimized saat modal dibuka/ditutup
+    isMinimized.value = false
     if (!v) {
       // Close/reset
       stopTimer()

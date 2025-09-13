@@ -12,6 +12,7 @@
           'relative aspect-square border-2 border-white/30 rounded-lg flex items-center justify-center min-w-0 min-h-0 overflow-hidden transform-gpu transition-transform duration-200 ease-out hover:scale-[1.04] hover:shadow-md',
           getCellBackground(cell.number),
           getMarkerRingClass(cell.number),
+          getStartFinishRingClass(cell.number),
         ]"
       >
         <!-- Cell Number -->
@@ -26,7 +27,7 @@
           v-if="markers && markers[cell.number]"
           class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
           :title="
-            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'
+            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)' 
           "
         >
           <span
@@ -39,6 +40,22 @@
           >
             {{ markers[cell.number] === 'optional' ? '?' : '!' }}
           </span>
+        </div>
+
+        <!-- Start Cell Design -->
+        <div v-if="cell.number === 1" class="absolute inset-0 z-10 pointer-events-none">
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.35)_0%,transparent_60%)]"></div>
+          <div class="absolute bottom-1 left-1/2 -translate-x-1/2">
+            <span class="text-[10px] sm:text-xs font-bold text-emerald-900 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow">START</span>
+          </div>
+        </div>
+
+        <!-- Finish Cell Design -->
+        <div v-if="cell.number === maxCell" class="absolute inset-0 z-10 pointer-events-none">
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(244,63,94,0.4)_0%,transparent_60%)]"></div>
+          <div class="absolute bottom-1 left-1/2 -translate-x-1/2">
+            <span class="text-[10px] sm:text-xs font-bold text-white bg-rose-500/90 px-1.5 py-0.5 rounded shadow">FINISH</span>
+          </div>
         </div>
 
         <!-- Players on this cell -->
@@ -177,7 +194,7 @@ const shieldGain = ref({
   },
 })
 
-// Computed board cells (8x8, zigzag numbering)
+// Computed board cells (zigzag numbering sesuai urutan DOM)
 const boardCells = computed(() => {
   const cells = []
   for (let row = 0; row < props.boardSize; row++) {
@@ -193,8 +210,12 @@ const boardCells = computed(() => {
       })
     }
   }
-  return cells.sort((a, b) => a.number - b.number)
+  // jangan sort; biarkan dalam urutan DOM zigzag
+  return cells
 })
+
+// Max cell number
+const maxCell = computed(() => props.boardSize * props.boardSize)
 
 // Helpers
 const getCellBackground = (cellNumber) => {
@@ -211,6 +232,13 @@ const getMarkerRingClass = (cellNumber) => {
   return type === 'optional'
     ? 'ring-2 ring-amber-400/40 ring-offset-0'
     : 'ring-2 ring-rose-400/40 ring-offset-0'
+}
+
+// Special ring highlight for Start (1) and Finish (max)
+const getStartFinishRingClass = (cellNumber) => {
+  if (cellNumber === 1) return 'ring-4 ring-emerald-400/70 ring-offset-0'
+  if (cellNumber === maxCell.value) return 'ring-4 ring-rose-400/70 ring-offset-0'
+  return ''
 }
 
 const getPlayersOnCell = (cellNumber) => {
@@ -250,12 +278,21 @@ const getPlayerOffsetStyle = (cellNumber, idx) => {
 const getPlayerShadow = (_color) => 'drop-shadow-lg'
 
 // Animation helpers
+// Map posisi logis (1..N) ke index elemen DOM pada pola zigzag
+const positionToDomIndex = (position) => {
+  const row = Math.floor((position - 1) / props.boardSize)
+  const colInRow = (position - 1) % props.boardSize
+  const isEvenRow = row % 2 === 0
+  const col = isEvenRow ? colInRow : props.boardSize - 1 - colInRow
+  return row * props.boardSize + col
+}
+
 const getPositionCoordinates = (position) => {
   if (!boardContainer.value) return { x: 0, y: 0 }
 
   // Find the cell element for this position in the DOM
   const cellElements = boardContainer.value.children
-  const targetCellIndex = position - 1 // Convert to 0-based index
+  const targetCellIndex = positionToDomIndex(position) // index DOM sesuai zigzag
 
   if (targetCellIndex >= 0 && targetCellIndex < cellElements.length) {
     const cellElement = cellElements[targetCellIndex]

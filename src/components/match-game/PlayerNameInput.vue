@@ -15,6 +15,8 @@ const isFormValid = computed(
 
 const emit = defineEmits(['start-game'])
 
+// Minimize removed
+
 const startGame = () => {
   if (isFormValid.value) {
     emit('start-game', {
@@ -31,34 +33,36 @@ const startGame = () => {
     <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
       <!-- Modal Content dengan animasi scale -->
       <div
-        class="bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg transform transition-all duration-300"
+        class="relative bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg transform transition-all duration-300"
       >
-      <h2 class="text-amber-800 text-2xl font-bold mb-6 text-center">Stage 2 Final</h2>
+        
+        <h2 class="text-amber-800 text-2xl font-bold mb-6 text-center">Stage 2 Final</h2>
+
+        <div class="mb-4">
+          <label class="block text-amber-900 font-semibold mb-2"> Nama Kelompok 1: </label>
+          <input
+            v-model="player1Name"
+            type="text"
+            placeholder="Masukkan nama Kelompok 1"
+            class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
+            :class="{
+              'border-red-400 bg-red-50': player1Name.length > 0 && !isPlayer1Valid,
+              'border-green-500 bg-green-50': isPlayer1Valid,
+            }"
+            maxlength="20"
+          />
+          <p v-if="player1Name.length > 0 && !isPlayer1Valid" class="text-red-600 text-sm mt-1">
+            Nama Kelompok 1 tidak boleh kosong
+          </p>
+        </div>
+      
 
       <div class="mb-4">
-        <label class="block text-amber-900 font-semibold mb-2"> Nama Player 1: </label>
-        <input
-          v-model="player1Name"
-          type="text"
-          placeholder="Masukkan nama Player 1"
-          class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
-          :class="{
-            'border-red-400 bg-red-50': player1Name.length > 0 && !isPlayer1Valid,
-            'border-green-500 bg-green-50': isPlayer1Valid,
-          }"
-          maxlength="20"
-        />
-        <p v-if="player1Name.length > 0 && !isPlayer1Valid" class="text-red-600 text-sm mt-1">
-          Nama Player 1 tidak boleh kosong
-        </p>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-amber-900 font-semibold mb-2"> Nama Player 2: </label>
+        <label class="block text-amber-900 font-semibold mb-2"> Nama Kelompok 2: </label>
         <input
           v-model="player2Name"
           type="text"
-          placeholder="Masukkan nama Player 2"
+          placeholder="Masukkan nama Kelompok 2"
           class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
           :class="{
             'border-red-400 bg-red-50': player2Name.length > 0 && !isPlayer2Valid,
@@ -67,13 +71,13 @@ const startGame = () => {
           maxlength="20"
         />
         <p v-if="player2Name.length > 0 && !isPlayer2Valid" class="text-red-600 text-sm mt-1">
-          Nama Player 2 tidak boleh kosong
+          Nama Kelompok 2 tidak boleh kosong
         </p>
       </div>
 
       <div v-if="isPlayer1Valid && isPlayer2Valid && !areNamesUnique" class="mb-4">
         <p class="text-red-600 text-sm text-center bg-red-100 p-2 rounded border border-red-200">
-          ⚠️ Nama kedua pemain tidak boleh sama!
+          ⚠️ Nama kedua kelompok tidak boleh sama!
         </p>
       </div>
 
@@ -102,6 +106,7 @@ const startGame = () => {
       </div>
     </div>
   </Transition>
+  
 </template>
 
 <style>

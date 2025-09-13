@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal" appear>
-    <div v-if="isVisible" class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <div v-if="isVisible && !isMinimized" class="fixed inset-0 z-[90] flex items-center justify-center p-4">
       <!-- Overlay -->
       <div class="absolute inset-0 bg-black/30" @click="$emit('close')"></div>
 
@@ -14,12 +14,13 @@
             <div class="px-3 py-1 rounded-lg text-white font-bold text-sm bg-amber-600">Final</div>
             <h3 class="text-xl sm:text-2xl font-extrabold text-amber-900">Leaderboard Juara</h3>
           </div>
-          <button
-            @click="$emit('close')"
-            class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-          >
-            ×
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              @click="isMinimized = true"
+              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              title="Minimize"
+            >▁</button>
+          </div>
         </div>
 
         <!-- Leaderboard - Podium -->
@@ -127,25 +128,32 @@
           >
             🔄 Main Lagi
           </button>
-          <button
-            @click="$emit('close')"
-            class="px-5 py-3 rounded-lg font-bold text-amber-900 bg-white border border-amber-300 hover:bg-amber-50 shadow"
-          >
-            Tutup
-          </button>
         </div>
       </div>
     </div>
   </Transition>
+  <!-- Minimized pill (no overlay) -->
+  <div v-if="isVisible && isMinimized" class="fixed bottom-4 left-4 z-[91]">
+    <button
+      @click="isMinimized = false"
+      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-amber-400 shadow-md text-amber-900 font-semibold flex items-center gap-2 hover:bg-white"
+      title="Tampilkan kembali"
+    >
+      <span>🏆 Leaderboard Final</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500 text-white">Buka</span>
+    </button>
+  </div>
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
   players: { type: Array, required: true },
 })
+
+const isMinimized = ref(false)
 
 const rankBadgeClass = (rank) => {
   if (rank === 1) return 'bg-yellow-500'
@@ -203,6 +211,8 @@ const createConfetti = () => {
 watch(
   () => props.isVisible,
   (v) => {
+    // reset minimize setiap kali dibuka/ditutup
+    isMinimized.value = false
     if (v) createConfetti()
   },
 )

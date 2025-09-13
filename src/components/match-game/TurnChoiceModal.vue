@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 defineProps({
   playerName: {
     type: String,
@@ -19,12 +20,14 @@ const handleContinueTurn = () => {
 const handleEndTurn = () => {
   emit('end-turn')
 }
+
+const isMinimized = ref(false)
 </script>
 
 <template>
   <!-- Modal Overlay Background dengan animasi -->
   <Transition name="modal" appear>
-    <div class="fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div v-if="!isMinimized" class="fixed inset-0 flex items-center justify-center z-50 p-4">
       <!-- Modal Content dengan animasi scale -->
       <div
         class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xl w-full backdrop-blur-sm transform transition-all duration-300"
@@ -37,6 +40,11 @@ const handleEndTurn = () => {
             </div>
             <div class="text-amber-800 font-semibold">Giliran: {{ playerName }}</div>
           </div>
+          <button
+            @click="isMinimized = true"
+            class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+            title="Minimize"
+          >▁</button>
         </div>
 
         <!-- Pesan Utama -->
@@ -82,6 +90,17 @@ const handleEndTurn = () => {
       </div>
     </div>
   </Transition>
+  <!-- Minimized pill (no overlay) -->
+  <div v-if="isMinimized" class="fixed bottom-4 left-4 z-[60]">
+    <button
+      @click="isMinimized = false"
+      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-amber-400 shadow-md text-amber-900 font-semibold flex items-center gap-2 hover:bg-white"
+      title="Tampilkan kembali"
+    >
+      <span>🎯 Strategi</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500 text-white">Buka</span>
+    </button>
+  </div>
 </template>
 
 <style scoped>
