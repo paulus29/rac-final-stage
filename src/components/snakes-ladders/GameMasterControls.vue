@@ -12,16 +12,25 @@
           @click="$emit('select-player', player.id)"
           :disabled="disabled || player.finished"
           :class="getPlayerBtnClass(player)"
+          class="relative pr-16"
         >
-          <div class="flex items-center justify-between">
-            <div class="font-semibold">
-              {{ player.icon }} {{ player.name }}
-            </div>
-            <span v-if="player.finished" class="ml-2 text-[11px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold">
-              🏁 #{{ player.rank }}
-            </span>
-          </div>
-          <span v-if="player.finished" class="text-sm block opacity-80">🏁 Selesai #{{ player.rank }}</span>
+          <div class="font-semibold">{{ player.icon }} {{ player.name }}</div>
+          <span
+            v-if="player.finished"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] px-2 py-0.5 rounded-full bg-emerald-600/90 text-white font-bold"
+          >
+            🏁 #{{ player.rank }}
+          </span>
+          <span
+            v-else-if="player.shield > 0"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-sm px-3 py-1.5 rounded-md bg-emerald-500/90 text-white font-extrabold flex items-center gap-1"
+          >
+            <img :src="shieldLogo" alt="shield" class="w-5 h-5" />
+            <span>x{{ player.shield }}</span>
+          </span>
+          <span v-if="player.finished" class="text-sm block opacity-80"
+            >🏁 Selesai #{{ player.rank }}</span
+          >
           <span v-else class="text-sm block opacity-80">Posisi: {{ player.position }}</span>
         </button>
       </div>
@@ -69,6 +78,7 @@
 </template>
 
 <script setup>
+import shieldLogo from '@/assets/images/shield-logo.png'
 const props = defineProps({
   players: { type: Array, required: true },
   selectedPlayerId: { type: Number, required: false, default: null },
@@ -90,15 +100,29 @@ defineEmits([
 // Style konsisten untuk semua pemain; not-selected mirip tombol langkah
 const getPlayerBtnClass = (player) => {
   const base =
-    'w-full px-3 py-2 rounded font-semibold transition-all duration-200 text-left focus:outline-none disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed'
+    'w-full px-3 py-2 rounded font-semibold text-left focus:outline-none disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-transform duration-300'
   if (player.finished) {
     return `${base} bg-gray-200 text-gray-600 border border-gray-300`
   }
   if (props.selectedPlayerId === player.id) {
-    // Selected: tema seragam (amber) seperti langkah terpilih
-    return `${base} bg-amber-500 text-white shadow-lg ring-1 ring-white/40`
+    // Selected: lebih halus agar tidak terlalu kontras (putih lembut dengan aksen amber)
+    return `${base} bg-white/80 text-amber-900 shadow-md ring-1 ring-amber-300 border border-amber-200 selected-zoom`
   }
   // Not selected: mirip tombol langkah default
-  return `${base} bg-white/70 hover:bg-white/90 text-gray-800`
+  return `${base} bg-white/60 hover:bg-white/80 text-gray-800`
 }
 </script>
+
+<style scoped>
+/* Animasi zoom untuk tombol pemain yang terpilih */
+.selected-zoom {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selected-zoom {
+    transform: scale(1.03);
+    transition: none;
+  }
+}
+</style>

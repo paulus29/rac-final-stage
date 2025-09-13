@@ -83,7 +83,7 @@
           :selectedPlayerId="selectedPlayerId"
           :selectedPlayerName="selectedPlayerName"
           :steps="steps"
-          :disabled="isAnimating || showChallengeModal || showFinishModal"
+          :disabled="isAnimating || showChallengeModal || showRewardModal || showFinishModal || showFinalModal"
           @select-player="selectPlayer"
           @increment-steps="incrementSteps"
           @decrement-steps="decrementSteps"
@@ -115,12 +115,30 @@
       @judge="onChallengeJudge"
     />
 
+    <!-- Reward Choice Modal (after correct answer) -->
+    <RewardChoiceModal
+      :isVisible="showRewardModal"
+      :players="players"
+      :currentPlayerId="rewardPlayerId"
+      @close="showRewardModal = false"
+      @choose="onRewardChoose"
+    />
+
     <!-- Finish Modal with Confetti -->
     <FinishModal
       :isVisible="showFinishModal"
       :playerName="finishPlayerName"
       :rank="finishPlayerRank"
       @close="showFinishModal = false"
+    />
+
+    <!-- Final Leaderboard Modal (stop game when 2 players finished) -->
+    <FinalLeaderboardModal
+      :isVisible="showFinalModal"
+      :players="players"
+      @reset="confirmReset"
+      @home="goHome"
+      @close="showFinalModal = false"
     />
   </div>
 </template>
@@ -133,7 +151,9 @@ import GameBoardGrid from './GameBoardGrid.vue'
 import ResetConfirmModal from './ResetConfirmModal.vue'
 import QuestionChallengeModal from './QuestionChallengeModal.vue'
 import { useQuestionDeck } from '@/composables/useQuestionDeck'
+import RewardChoiceModal from './RewardChoiceModal.vue'
 import FinishModal from './FinishModal.vue'
+import FinalLeaderboardModal from './FinalLeaderboardModal.vue'
 
 // Refs
 const gameBoardRef = ref(null)
@@ -141,9 +161,36 @@ const menuRef = ref(null)
 
 // Game state
 const players = ref([
-  { id: 1, name: 'Pemain 1', icon: '🔴', color: 'red', position: 1, finished: false, rank: null },
-  { id: 2, name: 'Pemain 2', icon: '🟢', color: 'green', position: 1, finished: false, rank: null },
-  { id: 3, name: 'Pemain 3', icon: '🔵', color: 'blue', position: 1, finished: false, rank: null },
+  {
+    id: 1,
+    name: 'Pemain 1',
+    icon: '🔴',
+    color: 'red',
+    position: 1,
+    finished: false,
+    rank: null,
+    shield: 0,
+  },
+  {
+    id: 2,
+    name: 'Pemain 2',
+    icon: '🟢',
+    color: 'green',
+    position: 1,
+    finished: false,
+    rank: null,
+    shield: 0,
+  },
+  {
+    id: 3,
+    name: 'Pemain 3',
+    icon: '🔵',
+    color: 'blue',
+    position: 1,
+    finished: false,
+    rank: null,
+    shield: 0,
+  },
 ])
 
 const selectedPlayerId = ref(null)
@@ -160,6 +207,8 @@ const nextRank = ref(1)
 const showFinishModal = ref(false)
 const finishPlayerName = ref('')
 const finishPlayerRank = ref(1)
+// Finalization state (game stops when 2 players finish)
+const showFinalModal = ref(false)
 
 // Challenge system state
 const markers = ref({}) // { [cellNumber]: 'optional' | 'forced' }
@@ -168,6 +217,10 @@ const challengeType = ref('optional')
 const challengeQuestion = ref('')
 const landedPlayerId = ref(null)
 const selectedAnswererId = ref(null)
+
+// Reward choice state
+const showRewardModal = ref(false)
+const rewardPlayerId = ref(null)
 
 // Question deck
 const deck = useQuestionDeck()
@@ -227,14 +280,24 @@ const movePlayerForward = async () => {
       players.value[playerIndex].finished = true
       players.value[playerIndex].rank = nextRank.value++
       // Kosongkan pilihan pemain agar tidak mencoba menggerakkan yang sudah selesai
-      selectedPlayerId.value = null
+      // Pilih pemain berikutnya yang belum finish
+      selectedPlayerId.value = getNextActivePlayerId(player.id)
       // Tampilkan finish modal
       finishPlayerName.value = player.name
       finishPlayerRank.value = players.value[playerIndex].rank
       showFinishModal.value = true
+      // Cek finalisasi (dua pemain sudah finish)
+      const finishedCount = players.value.filter(p => p.finished).length
+      if (finishedCount >= 2) {
+        showFinalModal.value = true
+      }
     } else {
       // Check challenge marker setelah mendarat (hanya jika belum finish)
       await maybeTriggerChallenge(playerIndex)
+      // Jika tidak ada tantangan di sel ini, langsung ganti giliran
+      if (!markers.value[newPosition]) {
+        selectedPlayerId.value = getNextActivePlayerId(player.id)
+      }
     }
   } finally {
     isAnimating.value = false
@@ -270,6 +333,10 @@ const movePlayerBackward = async () => {
 
   // Check challenge marker after landing (hanya jika belum finish)
   await maybeTriggerChallenge(playerIndex)
+  const newPos = players.value[playerIndex].position
+  if (!markers.value[newPos]) {
+    selectedPlayerId.value = getNextActivePlayerId(player.id)
+  }
 }
 
 const resetGame = () => {
@@ -281,12 +348,14 @@ const confirmReset = () => {
     player.position = 1
     player.finished = false
     player.rank = null
+    player.shield = 0
   })
   selectedPlayerId.value = null
   steps.value = 1
   showResetModal.value = false
   nextRank.value = 1
   showFinishModal.value = false
+  showFinalModal.value = false
   generateMarkers()
 }
 
@@ -385,22 +454,10 @@ const onChallengeJudge = async ({ answererId, isCorrect }) => {
   isAnimating.value = true
   try {
     if (isCorrect) {
-      const steps = 4
-      if (gameBoardRef.value && gameBoardRef.value.animateMove) {
-        await gameBoardRef.value.animateMove(player, steps, 250)
-      }
-      players.value[idx].position = Math.min(player.position + steps, maxCell)
-
-      if (players.value[idx].position === maxCell && !players.value[idx].finished) {
-        players.value[idx].finished = true
-        players.value[idx].rank = nextRank.value++
-        // Jika yang finish adalah pemain terpilih, kosongkan selection
-        if (selectedPlayerId.value === player.id) selectedPlayerId.value = null
-        // Tampilkan finish modal
-        finishPlayerName.value = player.name
-        finishPlayerRank.value = players.value[idx].rank
-        showFinishModal.value = true
-      }
+      // Buka modal pilihan reward untuk pemain penjawab
+      showRewardModal.value = true
+      rewardPlayerId.value = answererId
+      // Tidak ada animasi di sini; animasi akan terjadi pada handler pilihan
     } else {
       const steps = 4
       if (gameBoardRef.value && gameBoardRef.value.animateBackward) {
@@ -412,8 +469,134 @@ const onChallengeJudge = async ({ answererId, isCorrect }) => {
     isAnimating.value = false
   }
 
-  // cleanup
+  // Atur giliran berikutnya (selalu round-robin dari pendarat) dan cleanup
+  if (!isCorrect) {
+    if (landedPlayerId.value != null) {
+      selectedPlayerId.value = getNextActivePlayerId(landedPlayerId.value)
+    }
+    // cleanup setelah selesai tanpa reward modal
+    landedPlayerId.value = null
+    selectedAnswererId.value = null
+  }
+}
+
+// Handler untuk pilihan reward setelah jawaban benar
+const onRewardChoose = async ({ action, targetId }) => {
+  showRewardModal.value = false
+  if (!rewardPlayerId.value) return
+  const idx = players.value.findIndex((p) => p.id === rewardPlayerId.value)
+  if (idx === -1) return
+  const actor = players.value[idx]
+  const maxCell = boardSize.value * boardSize.value
+
+  // Helper: check finish for a specific player index
+  const checkFinish = async (playerIndex) => {
+    const p = players.value[playerIndex]
+    if (p.position === maxCell && !p.finished) {
+      p.finished = true
+      p.rank = nextRank.value++
+      if (selectedPlayerId.value === p.id) selectedPlayerId.value = null
+      finishPlayerName.value = p.name
+      finishPlayerRank.value = p.rank
+      showFinishModal.value = true
+      // Finalize if two players finished
+      const finishedCount = players.value.filter(pl => pl.finished).length
+      if (finishedCount >= 2) {
+        showFinalModal.value = true
+      }
+    }
+  }
+
+  if (action === 'shield') {
+    // Tambah shield ke pemain dan maju 2 langkah
+    players.value[idx].shield = Math.min((players.value[idx].shield || 0) + 1, 2)
+    const steps = 2
+    isAnimating.value = true
+    try {
+      if (gameBoardRef.value && gameBoardRef.value.animateMove) {
+        await gameBoardRef.value.animateMove(actor, steps, 250)
+      }
+      players.value[idx].position = Math.min(actor.position + steps, maxCell)
+      await checkFinish(idx)
+      // Animasi saat mendapatkan perisai (pop + pulse) SETELAH bergerak
+      if (gameBoardRef.value && gameBoardRef.value.animateShieldGain) {
+        await gameBoardRef.value.animateShieldGain(actor)
+      }
+    } finally {
+      isAnimating.value = false
+    }
+  } else if (action === 'advance') {
+    // Maju 4 langkah seperti sebelumnya
+    const steps = 4
+    isAnimating.value = true
+    try {
+      if (gameBoardRef.value && gameBoardRef.value.animateMove) {
+        await gameBoardRef.value.animateMove(actor, steps, 250)
+      }
+      players.value[idx].position = Math.min(actor.position + steps, maxCell)
+      await checkFinish(idx)
+    } finally {
+      isAnimating.value = false
+    }
+  } else if (action === 'shoot') {
+    // Tembak lawan: jika lawan punya shield, kurangi shield; jika tidak, mundurkan 4 langkah
+    if (!targetId) return
+    const tIdx = players.value.findIndex((p) => p.id === targetId)
+    if (tIdx === -1) return
+    const target = players.value[tIdx]
+    if (target.finished) return // abaikan jika target sudah finish
+
+    // Animasi serang imersif: proyektil melesat ke target, efek shield/burst, lalu efek mundur jika tanpa shield
+    isAnimating.value = true
+    try {
+      if (gameBoardRef.value && gameBoardRef.value.animateShoot) {
+        await gameBoardRef.value.animateShoot(actor, target, 500)
+      }
+
+      if ((target.shield || 0) > 0) {
+        // Tahan serangan dengan shield → efek pulse + kurangi shield
+        if (gameBoardRef.value && gameBoardRef.value.animateShieldPulse) {
+          await gameBoardRef.value.animateShieldPulse(target, 600)
+        }
+        players.value[tIdx].shield = Math.max(target.shield - 1, 0)
+      } else {
+        const steps = 4
+        if (gameBoardRef.value && gameBoardRef.value.animateBackward) {
+          await gameBoardRef.value.animateBackward(target, steps, 250)
+        }
+        players.value[tIdx].position = Math.max(target.position - steps, 1)
+      }
+    } finally {
+      isAnimating.value = false
+    }
+  }
+  // Selesai memproses reward: next turn SELALU pemain setelah pendarat (round-robin)
+  if (landedPlayerId.value != null) {
+    selectedPlayerId.value = getNextActivePlayerId(landedPlayerId.value)
+  }
+
+  // cleanup state tantangan
+  rewardPlayerId.value = null
   landedPlayerId.value = null
   selectedAnswererId.value = null
+}
+
+// Helper: cari pemain berikutnya (berdasarkan urutan array) yang belum finish
+const getNextActivePlayerId = (fromId) => {
+  if (!players.value || players.value.length === 0) return null
+  // Jika semua sudah finish, return null
+  const unfinished = players.value.filter((p) => !p.finished)
+  if (unfinished.length === 0) return null
+  // Mulai dari posisi pemain 'fromId' di array players
+  let startIndex = players.value.findIndex((p) => p.id === fromId)
+  if (startIndex === -1) startIndex = 0
+  const total = players.value.length
+  for (let step = 1; step <= total; step++) {
+    const nextIndex = (startIndex + step) % total
+    const cand = players.value[nextIndex]
+    if (!cand.finished) return cand.id
+  }
+  // fallback: kembalikan id pemain unfinished pertama
+  return unfinished[0].id
 }
 </script>

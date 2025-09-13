@@ -2,7 +2,7 @@
   <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/30 w-full">
     <div
       ref="boardContainer"
-      class="grid gap-1 w-full max-w-2xl mx-auto min-w-0 relative"
+      :class="['grid gap-1 w-full max-w-2xl mx-auto min-w-0 relative', { shake: isShaking }]"
       :style="{ gridTemplateColumns: `repeat(${boardSize}, minmax(0, 1fr))` }"
     >
       <div
@@ -68,12 +68,51 @@
           {{ ghostToken.icon }}
         </span>
       </div>
+
+      <!-- Projectile for Attack Animation -->
+      <div
+        v-if="projectile.visible"
+        class="absolute z-50 pointer-events-none"
+        :style="projectile.style"
+      >
+        <div
+          class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)]"
+        ></div>
+      </div>
+
+      <!-- Hit Effect (burst) -->
+      <div
+        v-if="hitEffect.visible"
+        class="absolute z-50 pointer-events-none"
+        :style="hitEffect.style"
+      >
+        <div class="hit-burst"></div>
+      </div>
+
+      <!-- Shield Pulse Effect -->
+      <div
+        v-if="shieldEffect.visible"
+        class="absolute z-50 pointer-events-none"
+        :style="shieldEffect.style"
+      >
+        <div class="shield-pulse"></div>
+      </div>
+
+      <!-- Shield Gain Pop Effect -->
+      <div
+        v-if="shieldGain.visible"
+        class="absolute z-50 pointer-events-none"
+        :style="shieldGain.style"
+      >
+        <img :src="shieldLogo" alt="shield" class="gain-shield w-6 h-6" />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, ref, nextTick } from 'vue'
+import shieldLogo from '@/assets/images/shield-logo.png'
 
 // Props
 const props = defineProps({
@@ -90,6 +129,47 @@ const boardContainer = ref(null)
 const ghostToken = ref({
   visible: false,
   icon: '',
+  style: {
+    left: '0px',
+    top: '0px',
+    transform: 'translate(-50%, -50%)',
+  },
+})
+
+// Projectile and effects state
+const projectile = ref({
+  visible: false,
+  style: {
+    left: '0px',
+    top: '0px',
+    transition: 'none',
+    transform: 'translate(-50%, -50%)',
+  },
+})
+
+const hitEffect = ref({
+  visible: false,
+  style: {
+    left: '0px',
+    top: '0px',
+    transform: 'translate(-50%, -50%)',
+  },
+})
+
+const shieldEffect = ref({
+  visible: false,
+  style: {
+    left: '0px',
+    top: '0px',
+    transform: 'translate(-50%, -50%)',
+  },
+})
+
+const isShaking = ref(false)
+
+// Shield gain pop effect
+const shieldGain = ref({
+  visible: false,
   style: {
     left: '0px',
     top: '0px',
@@ -268,9 +348,191 @@ const animateBackward = async (player, steps, speed = 300) => {
   ghostToken.value.visible = false
 }
 
+// Attack animation: projectile travels from attacker to target, shake board and burst on hit
+const animateShoot = async (attacker, target, duration = 500) => {
+  if (!boardContainer.value) return
+
+  const start = getPositionCoordinates(attacker.position)
+  const end = getPositionCoordinates(target.position)
+
+  // Setup projectile at start
+  projectile.value.visible = true
+  projectile.value.style = {
+    left: `${start.x}px`,
+    top: `${start.y}px`,
+    transform: 'translate(-50%, -50%)',
+    transition: 'none',
+  }
+
+  await nextTick()
+  // Trigger travel
+  requestAnimationFrame(() => {
+    projectile.value.style = {
+      left: `${end.x}px`,
+      top: `${end.y}px`,
+      transform: 'translate(-50%, -50%)',
+      transition: `left ${duration}ms linear, top ${duration}ms linear`,
+    }
+  })
+
+  // wait for travel to finish
+  await new Promise((res) => setTimeout(res, duration))
+  projectile.value.visible = false
+
+  // Show hit burst at target
+  hitEffect.value.visible = true
+  hitEffect.value.style = {
+    left: `${end.x}px`,
+    top: `${end.y}px`,
+    transform: 'translate(-50%, -50%)',
+  }
+
+  // Shake the board slightly
+  isShaking.value = true
+  setTimeout(() => (isShaking.value = false), 250)
+
+  await new Promise((res) => setTimeout(res, 350))
+  hitEffect.value.visible = false
+}
+
+// Shield pulse effect when an attack is blocked
+const animateShieldPulse = async (target, duration = 600) => {
+  if (!boardContainer.value) return
+  const pos = getPositionCoordinates(target.position)
+  shieldEffect.value.visible = true
+  shieldEffect.value.style = {
+    left: `${pos.x}px`,
+    top: `${pos.y}px`,
+    transform: 'translate(-50%, -50%)',
+  }
+  await new Promise((res) => setTimeout(res, duration))
+  shieldEffect.value.visible = false
+}
+
+// When gaining shield: show a popping shield icon and a protective pulse
+const animateShieldGain = async (target, duration = 1200) => {
+  if (!boardContainer.value) return
+  const pos = getPositionCoordinates(target.position)
+  // Start both effects
+  shieldGain.value.visible = true
+  shieldGain.value.style = {
+    left: `${pos.x}px`,
+    top: `${pos.y}px`,
+    transform: 'translate(-50%, -50%)',
+  }
+  // Also pulse a protective ring
+  shieldEffect.value.visible = true
+  shieldEffect.value.style = {
+    left: `${pos.x}px`,
+    top: `${pos.y}px`,
+    transform: 'translate(-50%, -50%)',
+  }
+  await new Promise((res) => setTimeout(res, duration))
+  shieldGain.value.visible = false
+  shieldEffect.value.visible = false
+}
+
 // Expose methods to parent
 defineExpose({
   animateMove,
   animateBackward,
+  animateShoot,
+  animateShieldPulse,
+  animateShieldGain,
 })
 </script>
+
+<style scoped>
+/* Shake effect for the board container */
+.shake {
+  animation: board-shake 250ms ease-in-out;
+}
+@keyframes board-shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Hit burst: expanding ring */
+.hit-burst {
+  width: 12px;
+  height: 12px;
+  border: 3px solid rgba(251, 191, 36, 0.9); /* amber-400 */
+  border-radius: 9999px;
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.7);
+  animation: burst 380ms ease-out forwards;
+}
+@keyframes burst {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* Shield pulse: glowing protective ring */
+.shield-pulse {
+  width: 14px;
+  height: 14px;
+  border: 3px solid rgba(16, 185, 129, 0.95); /* emerald-500 */
+  border-radius: 9999px;
+  box-shadow:
+    0 0 16px rgba(16, 185, 129, 0.9),
+    inset 0 0 10px rgba(16, 185, 129, 0.6);
+  animation: shieldPulse 600ms ease-out forwards;
+}
+@keyframes shieldPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+
+/* Shield gain pop (emoji) */
+.gain-shield {
+  font-size: 20px;
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.8));
+  animation: gainPop 1200ms ease-out forwards;
+}
+@keyframes gainPop {
+  0% {
+    transform: scale(0.6) translateY(0);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.15) translateY(-4px);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1) translateY(-6px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(-12px);
+    opacity: 0;
+  }
+}
+</style>

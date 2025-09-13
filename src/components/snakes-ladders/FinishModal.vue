@@ -4,8 +4,8 @@
       <!-- Overlay tanpa blur (konsisten dengan QuestionChallengeModal) -->
       <div class="absolute inset-0" @click="$emit('close')"></div>
 
-      <!-- Canvas confetti -->
-      <canvas ref="canvasRef" class="absolute inset-0 pointer-events-none"></canvas>
+      <!-- Canvas confetti (hanya untuk juara 1) -->
+      <canvas v-if="rank === 1" ref="canvasRef" class="absolute inset-0 pointer-events-none"></canvas>
 
       <!-- Card -->
       <div class="relative w-full max-w-md bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-600 rounded-xl p-6 shadow-2xl">
@@ -140,7 +140,7 @@ watch(
   () => props.isVisible,
   (v) => {
     cleanup()
-    if (v) {
+    if (v && props.rank === 1) {
       // fire confetti a moment after mount for smoother paint
       setTimeout(() => fireConfetti(2400), 50)
     }
@@ -148,7 +148,7 @@ watch(
 )
 
 onMounted(() => {
-  if (props.isVisible) setTimeout(() => fireConfetti(2400), 50)
+  if (props.isVisible && props.rank === 1) setTimeout(() => fireConfetti(2400), 50)
 })
 
 onUnmounted(() => cleanup())
