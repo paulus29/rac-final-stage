@@ -9,7 +9,7 @@
         v-for="(cell, index) in boardCells"
         :key="index"
         :class="[
-          'relative aspect-square border-2 border-white/30 rounded-lg flex items-center justify-center min-w-0 min-h-0 overflow-hidden',
+          'relative aspect-square border-2 border-white/30 rounded-lg flex items-center justify-center min-w-0 min-h-0 overflow-hidden transform-gpu transition-transform duration-200 ease-out hover:scale-[1.04] hover:shadow-md',
           getCellBackground(cell.number),
         ]"
       >
@@ -43,9 +43,7 @@
         class="absolute z-40 pointer-events-none transition-all duration-300 ease-in-out"
         :style="ghostToken.style"
       >
-        <span
-          class="text-3xl drop-shadow-lg block leading-none select-none"
-        >
+        <span class="text-3xl drop-shadow-lg block leading-none select-none">
           {{ ghostToken.icon }}
         </span>
       </div>
@@ -72,8 +70,8 @@ const ghostToken = ref({
   style: {
     left: '0px',
     top: '0px',
-    transform: 'translate(-50%, -50%)'
-  }
+    transform: 'translate(-50%, -50%)',
+  },
 })
 
 // Computed board cells (8x8, zigzag numbering)
@@ -142,33 +140,33 @@ const getPlayerShadow = (_color) => 'drop-shadow-lg'
 // Animation helpers
 const getPositionCoordinates = (position) => {
   if (!boardContainer.value) return { x: 0, y: 0 }
-  
+
   // Find the cell element for this position in the DOM
   const cellElements = boardContainer.value.children
   const targetCellIndex = position - 1 // Convert to 0-based index
-  
+
   if (targetCellIndex >= 0 && targetCellIndex < cellElements.length) {
     const cellElement = cellElements[targetCellIndex]
     const cellRect = cellElement.getBoundingClientRect()
     const containerRect = boardContainer.value.getBoundingClientRect()
-    
+
     // Calculate relative position from container
     const x = cellRect.left - containerRect.left + cellRect.width / 2
     const y = cellRect.top - containerRect.top + cellRect.height / 2
-    
+
     return { x, y }
   }
-  
+
   return { x: 0, y: 0 }
 }
 
 // Exposed animation method for forward movement
 const animateMove = async (player, steps, speed = 300) => {
   if (!boardContainer.value) return
-  
+
   const startPosition = player.position
   const endPosition = Math.min(startPosition + steps, props.boardSize * props.boardSize)
-  
+
   // Setup ghost token at starting position
   const startCoords = getPositionCoordinates(startPosition)
   ghostToken.value.visible = true
@@ -176,26 +174,26 @@ const animateMove = async (player, steps, speed = 300) => {
   ghostToken.value.style = {
     left: `${startCoords.x}px`,
     top: `${startCoords.y}px`,
-    transform: 'translate(-50%, -50%)'
+    transform: 'translate(-50%, -50%)',
   }
-  
+
   // Wait a moment to ensure ghost token is visible at start position
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   // Animate step by step forward
   for (let currentPos = startPosition + 1; currentPos <= endPosition; currentPos++) {
     const coords = getPositionCoordinates(currentPos)
-    
+
     ghostToken.value.style = {
       left: `${coords.x}px`,
       top: `${coords.y}px`,
-      transform: 'translate(-50%, -50%)'
+      transform: 'translate(-50%, -50%)',
     }
-    
+
     // Wait for animation to complete
-    await new Promise(resolve => setTimeout(resolve, speed))
+    await new Promise((resolve) => setTimeout(resolve, speed))
   }
-  
+
   // Hide ghost token after animation
   ghostToken.value.visible = false
 }
@@ -203,10 +201,10 @@ const animateMove = async (player, steps, speed = 300) => {
 // Exposed animation method for backward movement
 const animateBackward = async (player, steps, speed = 300) => {
   if (!boardContainer.value) return
-  
+
   const startPosition = player.position
   const endPosition = Math.max(startPosition - steps, 1)
-  
+
   // Setup ghost token at starting position
   const startCoords = getPositionCoordinates(startPosition)
   ghostToken.value.visible = true
@@ -214,26 +212,26 @@ const animateBackward = async (player, steps, speed = 300) => {
   ghostToken.value.style = {
     left: `${startCoords.x}px`,
     top: `${startCoords.y}px`,
-    transform: 'translate(-50%, -50%)'
+    transform: 'translate(-50%, -50%)',
   }
-  
+
   // Wait a moment to ensure ghost token is visible at start position
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   // Animate step by step backward
   for (let currentPos = startPosition - 1; currentPos >= endPosition; currentPos--) {
     const coords = getPositionCoordinates(currentPos)
-    
+
     ghostToken.value.style = {
       left: `${coords.x}px`,
       top: `${coords.y}px`,
-      transform: 'translate(-50%, -50%)'
+      transform: 'translate(-50%, -50%)',
     }
-    
+
     // Wait for animation to complete
-    await new Promise(resolve => setTimeout(resolve, speed))
+    await new Promise((resolve) => setTimeout(resolve, speed))
   }
-  
+
   // Hide ghost token after animation
   ghostToken.value.visible = false
 }
@@ -241,6 +239,6 @@ const animateBackward = async (player, steps, speed = 300) => {
 // Expose methods to parent
 defineExpose({
   animateMove,
-  animateBackward
+  animateBackward,
 })
 </script>
