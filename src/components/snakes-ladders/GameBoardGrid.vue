@@ -11,6 +11,7 @@
         :class="[
           'relative aspect-square border-2 border-white/30 rounded-lg flex items-center justify-center min-w-0 min-h-0 overflow-hidden transform-gpu transition-transform duration-200 ease-out hover:scale-[1.04] hover:shadow-md',
           getCellBackground(cell.number),
+          getMarkerRingClass(cell.number),
         ]"
       >
         <!-- Cell Number -->
@@ -18,6 +19,26 @@
           class="absolute top-1 left-1 z-30 text-xs font-bold text-gray-700 bg-white/80 rounded px-1"
         >
           {{ cell.number }}
+        </div>
+
+        <!-- Challenge Marker Watermark (centered, subtle) -->
+        <div
+          v-if="markers && markers[cell.number]"
+          class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
+          :title="
+            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'
+          "
+        >
+          <span
+            :class="[
+              'select-none leading-none',
+              // size responsif agar tetap proporsional di berbagai viewport (sedikit lebih kecil)
+              'text-5xl sm:text-6xl lg:text-7xl',
+              markers[cell.number] === 'optional' ? 'text-amber-500/50' : 'text-rose-500/50',
+            ]"
+          >
+            {{ markers[cell.number] === 'optional' ? '?' : '!' }}
+          </span>
         </div>
 
         <!-- Players on this cell -->
@@ -58,6 +79,8 @@ import { computed, ref, nextTick } from 'vue'
 const props = defineProps({
   players: { type: Array, required: true },
   boardSize: { type: Number, default: 8 },
+  // markers: mapping nomor sel -> 'optional' ("?") atau 'forced' ("!")
+  markers: { type: Object, default: () => ({}) },
 })
 
 // Refs
@@ -99,6 +122,15 @@ const getCellBackground = (cellNumber) => {
   const col = (cellNumber - 1) % props.boardSize
   const isLight = (row + col) % 2 === 0
   return isLight ? 'bg-white/40' : 'bg-white/20'
+}
+
+// Subtle ring highlight for cells with markers
+const getMarkerRingClass = (cellNumber) => {
+  const type = props.markers && props.markers[cellNumber]
+  if (!type) return ''
+  return type === 'optional'
+    ? 'ring-2 ring-amber-400/40 ring-offset-0'
+    : 'ring-2 ring-rose-400/40 ring-offset-0'
 }
 
 const getPlayersOnCell = (cellNumber) => {

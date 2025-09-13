@@ -10,7 +10,7 @@
           @click="showMenu = !showMenu"
           :class="[
             'w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white/90 text-gray-800 shadow-md ring-1 ring-white/50 transition-colors transform transition-transform duration-200 ease-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-400',
-            showMenu ? 'rotate-90 scale-110' : ''
+            showMenu ? 'rotate-90 scale-110' : '',
           ]"
           aria-label="Menu"
           :aria-expanded="showMenu.toString()"
@@ -20,15 +20,17 @@
             <span
               :class="[
                 'absolute inset-0 flex items-center justify-center transition-all duration-200',
-                showMenu ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                showMenu ? 'opacity-0 scale-75' : 'opacity-100 scale-100',
               ]"
-            >☰</span>
+              >☰</span
+            >
             <span
               :class="[
                 'absolute inset-0 flex items-center justify-center transition-all duration-200',
-                showMenu ? 'opacity-100 scale-100 rotate-90' : 'opacity-0 scale-75'
+                showMenu ? 'opacity-100 scale-100 rotate-90' : 'opacity-0 scale-75',
               ]"
-            >✕</span>
+              >✕</span
+            >
           </span>
         </button>
         <Transition
@@ -71,6 +73,7 @@
           ref="gameBoardRef"
           :players="players"
           :board-size="boardSize"
+          :markers="markers"
           class="w-full"
         />
       </div>
@@ -80,6 +83,7 @@
           :selectedPlayerId="selectedPlayerId"
           :selectedPlayerName="selectedPlayerName"
           :steps="steps"
+          :disabled="isAnimating || showChallengeModal || showFinishModal"
           @select-player="selectPlayer"
           @increment-steps="incrementSteps"
           @decrement-steps="decrementSteps"
@@ -98,6 +102,26 @@
       @cancel="showResetModal = false"
       @confirm="confirmReset"
     />
+
+    <!-- Question Challenge Modal -->
+    <QuestionChallengeModal
+      :isVisible="showChallengeModal"
+      :type="challengeType"
+      :players="players"
+      :currentPlayerId="landedPlayerId"
+      :question="challengeQuestion"
+      @close="closeChallenge"
+      @decide="onChallengeDecide"
+      @judge="onChallengeJudge"
+    />
+
+    <!-- Finish Modal with Confetti -->
+    <FinishModal
+      :isVisible="showFinishModal"
+      :playerName="finishPlayerName"
+      :rank="finishPlayerRank"
+      @close="showFinishModal = false"
+    />
   </div>
 </template>
 
@@ -107,6 +131,9 @@ import { useRouter } from 'vue-router'
 import GameMasterControls from './GameMasterControls.vue'
 import GameBoardGrid from './GameBoardGrid.vue'
 import ResetConfirmModal from './ResetConfirmModal.vue'
+import QuestionChallengeModal from './QuestionChallengeModal.vue'
+import { useQuestionDeck } from '@/composables/useQuestionDeck'
+import FinishModal from './FinishModal.vue'
 
 // Refs
 const gameBoardRef = ref(null)
@@ -114,9 +141,9 @@ const menuRef = ref(null)
 
 // Game state
 const players = ref([
-  { id: 1, name: 'Pemain 1', icon: '🔴', color: 'red', position: 1 },
-  { id: 2, name: 'Pemain 2', icon: '🟢', color: 'green', position: 1 },
-  { id: 3, name: 'Pemain 3', icon: '🔵', color: 'blue', position: 1 },
+  { id: 1, name: 'Pemain 1', icon: '🔴', color: 'red', position: 1, finished: false, rank: null },
+  { id: 2, name: 'Pemain 2', icon: '🟢', color: 'green', position: 1, finished: false, rank: null },
+  { id: 3, name: 'Pemain 3', icon: '🔵', color: 'blue', position: 1, finished: false, rank: null },
 ])
 
 const selectedPlayerId = ref(null)
@@ -125,6 +152,25 @@ const boardSize = ref(8)
 const isAnimating = ref(false)
 const showResetModal = ref(false)
 const showMenu = ref(false)
+
+// Ranking state: pemain yang mencapai sel terakhir diberi peringkat berurutan
+const nextRank = ref(1)
+
+// Finish modal state
+const showFinishModal = ref(false)
+const finishPlayerName = ref('')
+const finishPlayerRank = ref(1)
+
+// Challenge system state
+const markers = ref({}) // { [cellNumber]: 'optional' | 'forced' }
+const showChallengeModal = ref(false)
+const challengeType = ref('optional')
+const challengeQuestion = ref('')
+const landedPlayerId = ref(null)
+const selectedAnswererId = ref(null)
+
+// Question deck
+const deck = useQuestionDeck()
 
 // Router
 const router = useRouter()
@@ -159,6 +205,8 @@ const movePlayerForward = async () => {
   if (playerIndex === -1) return
 
   const player = players.value[playerIndex]
+  // Cegah pergerakan pemain yang sudah selesai
+  if (player.finished) return
   const maxCell = boardSize.value * boardSize.value
   const newPosition = Math.min(player.position + steps.value, maxCell)
 
@@ -174,11 +222,19 @@ const movePlayerForward = async () => {
     // Then update the actual position
     players.value[playerIndex].position = newPosition
 
-    // Check if player wins
-    if (newPosition === maxCell) {
-      setTimeout(() => {
-        alert(`🎉 ${player.name} menang! 🎉`)
-      }, 200)
+    // Check finish & assign rank
+    if (newPosition === maxCell && !players.value[playerIndex].finished) {
+      players.value[playerIndex].finished = true
+      players.value[playerIndex].rank = nextRank.value++
+      // Kosongkan pilihan pemain agar tidak mencoba menggerakkan yang sudah selesai
+      selectedPlayerId.value = null
+      // Tampilkan finish modal
+      finishPlayerName.value = player.name
+      finishPlayerRank.value = players.value[playerIndex].rank
+      showFinishModal.value = true
+    } else {
+      // Check challenge marker setelah mendarat (hanya jika belum finish)
+      await maybeTriggerChallenge(playerIndex)
     }
   } finally {
     isAnimating.value = false
@@ -192,6 +248,8 @@ const movePlayerBackward = async () => {
   if (playerIndex === -1) return
 
   const player = players.value[playerIndex]
+  // Cegah pergerakan pemain yang sudah selesai
+  if (player.finished) return
   const minCell = 1
   const newPosition = Math.max(player.position - steps.value, minCell)
 
@@ -209,6 +267,9 @@ const movePlayerBackward = async () => {
   } finally {
     isAnimating.value = false
   }
+
+  // Check challenge marker after landing (hanya jika belum finish)
+  await maybeTriggerChallenge(playerIndex)
 }
 
 const resetGame = () => {
@@ -218,10 +279,15 @@ const resetGame = () => {
 const confirmReset = () => {
   players.value.forEach((player) => {
     player.position = 1
+    player.finished = false
+    player.rank = null
   })
   selectedPlayerId.value = null
   steps.value = 1
   showResetModal.value = false
+  nextRank.value = 1
+  showFinishModal.value = false
+  generateMarkers()
 }
 
 // Menu actions
@@ -238,6 +304,8 @@ const openReset = () => {
 // Initialize
 onMounted(() => {
   selectedPlayerId.value = players.value[0].id
+  generateMarkers()
+  deck.load()
   // click outside to close menu
   const onDocClick = (e) => {
     if (!menuRef.value) return
@@ -255,4 +323,97 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', menuRef.value.__onDocClick)
   }
 })
+
+// Utilities & Challenge Logic
+const shuffle = (arr) => {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+const generateMarkers = () => {
+  const total = boardSize.value * boardSize.value
+  const eligible = []
+  for (let n = 2; n <= total - 1; n++) eligible.push(n)
+  const count = Math.floor(total / 3)
+  const chosen = shuffle(eligible).slice(0, count)
+  const map = {}
+  // Bagi 50:50: setengah '?' (optional), setengah '!' (forced)
+  const half = Math.floor(chosen.length / 2)
+  const optionalCells = chosen.slice(0, half)
+  const forcedCells = chosen.slice(half)
+  optionalCells.forEach((cell) => (map[cell] = 'optional'))
+  forcedCells.forEach((cell) => (map[cell] = 'forced'))
+  markers.value = map
+}
+
+const maybeTriggerChallenge = async (playerIndex) => {
+  // Jika pemain sudah finish, tidak ada tantangan
+  if (players.value[playerIndex].finished) return
+  const cell = players.value[playerIndex].position
+  const type = markers.value[cell]
+  if (!type) return
+
+  landedPlayerId.value = players.value[playerIndex].id
+  challengeType.value = type
+  selectedAnswererId.value = type === 'forced' ? landedPlayerId.value : null
+
+  // get question
+  const q = deck.getNext ? deck.getNext() : null
+  challengeQuestion.value = q || 'Pertanyaan tidak tersedia. Coba lagi.'
+  showChallengeModal.value = true
+}
+
+const closeChallenge = () => {
+  showChallengeModal.value = false
+}
+
+const onChallengeDecide = (answererId) => {
+  selectedAnswererId.value = answererId
+}
+
+const onChallengeJudge = async ({ answererId, isCorrect }) => {
+  showChallengeModal.value = false
+  const idx = players.value.findIndex((p) => p.id === answererId)
+  if (idx === -1) return
+  const player = players.value[idx]
+  const maxCell = boardSize.value * boardSize.value
+
+  isAnimating.value = true
+  try {
+    if (isCorrect) {
+      const steps = 4
+      if (gameBoardRef.value && gameBoardRef.value.animateMove) {
+        await gameBoardRef.value.animateMove(player, steps, 250)
+      }
+      players.value[idx].position = Math.min(player.position + steps, maxCell)
+
+      if (players.value[idx].position === maxCell && !players.value[idx].finished) {
+        players.value[idx].finished = true
+        players.value[idx].rank = nextRank.value++
+        // Jika yang finish adalah pemain terpilih, kosongkan selection
+        if (selectedPlayerId.value === player.id) selectedPlayerId.value = null
+        // Tampilkan finish modal
+        finishPlayerName.value = player.name
+        finishPlayerRank.value = players.value[idx].rank
+        showFinishModal.value = true
+      }
+    } else {
+      const steps = 4
+      if (gameBoardRef.value && gameBoardRef.value.animateBackward) {
+        await gameBoardRef.value.animateBackward(player, steps, 250)
+      }
+      players.value[idx].position = Math.max(player.position - steps, 1)
+    }
+  } finally {
+    isAnimating.value = false
+  }
+
+  // cleanup
+  landedPlayerId.value = null
+  selectedAnswererId.value = null
+}
 </script>

@@ -10,10 +10,19 @@
           v-for="player in players"
           :key="player.id"
           @click="$emit('select-player', player.id)"
+          :disabled="disabled || player.finished"
           :class="getPlayerBtnClass(player)"
         >
-          {{ player.icon }} {{ player.name }}
-          <span class="text-sm block opacity-80">Posisi: {{ player.position }}</span>
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">
+              {{ player.icon }} {{ player.name }}
+            </div>
+            <span v-if="player.finished" class="ml-2 text-[11px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold">
+              🏁 #{{ player.rank }}
+            </span>
+          </div>
+          <span v-if="player.finished" class="text-sm block opacity-80">🏁 Selesai #{{ player.rank }}</span>
+          <span v-else class="text-sm block opacity-80">Posisi: {{ player.position }}</span>
         </button>
       </div>
     </div>
@@ -26,9 +35,12 @@
           v-for="n in 6"
           :key="n"
           @click="$emit('set-steps', n)"
+          :disabled="disabled"
           :class="[
             'py-2 rounded font-semibold transition-all',
-            steps === n ? 'bg-amber-500 text-white' : 'bg-white/70 hover:bg-white/90 text-gray-800',
+            steps === n
+              ? 'bg-amber-500 text-white'
+              : 'bg-white/70 hover:bg-white/90 text-gray-800 disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed',
           ]"
         >
           {{ n }}
@@ -40,14 +52,14 @@
     <div class="grid grid-cols-2 gap-3 mb-3">
       <button
         @click="$emit('move-player-forward')"
-        :disabled="!selectedPlayerId"
+        :disabled="!selectedPlayerId || disabled"
         class="bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-lg font-bold transition-colors"
       >
         ⬆️ Maju
       </button>
       <button
         @click="$emit('move-player-backward')"
-        :disabled="!selectedPlayerId"
+        :disabled="!selectedPlayerId || disabled"
         class="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-lg font-bold transition-colors"
       >
         ⬇️ Mundur
@@ -62,6 +74,7 @@ const props = defineProps({
   selectedPlayerId: { type: Number, required: false, default: null },
   selectedPlayerName: { type: String, required: false, default: '' },
   steps: { type: Number, required: true },
+  disabled: { type: Boolean, default: false },
 })
 
 defineEmits([
@@ -77,7 +90,10 @@ defineEmits([
 // Style konsisten untuk semua pemain; not-selected mirip tombol langkah
 const getPlayerBtnClass = (player) => {
   const base =
-    'w-full px-3 py-2 rounded font-semibold transition-all duration-200 text-left focus:outline-none'
+    'w-full px-3 py-2 rounded font-semibold transition-all duration-200 text-left focus:outline-none disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed'
+  if (player.finished) {
+    return `${base} bg-gray-200 text-gray-600 border border-gray-300`
+  }
   if (props.selectedPlayerId === player.id) {
     // Selected: tema seragam (amber) seperti langkah terpilih
     return `${base} bg-amber-500 text-white shadow-lg ring-1 ring-white/40`
