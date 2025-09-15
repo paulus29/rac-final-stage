@@ -27,7 +27,7 @@
           v-if="markers && markers[cell.number]"
           class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
           :title="
-            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)' 
+            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'
           "
         >
           <span
@@ -44,17 +44,27 @@
 
         <!-- Start Cell Design -->
         <div v-if="cell.number === 1" class="absolute inset-0 z-10 pointer-events-none">
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.35)_0%,transparent_60%)]"></div>
+          <div
+            class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.35)_0%,transparent_60%)]"
+          ></div>
           <div class="absolute bottom-1 left-1/2 -translate-x-1/2">
-            <span class="text-[10px] sm:text-xs font-bold text-emerald-900 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow">START</span>
+            <span
+              class="text-[10px] sm:text-xs font-bold text-emerald-900 bg-emerald-200/90 px-1.5 py-0.5 rounded shadow"
+              >START</span
+            >
           </div>
         </div>
 
         <!-- Finish Cell Design -->
         <div v-if="cell.number === maxCell" class="absolute inset-0 z-10 pointer-events-none">
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(244,63,94,0.4)_0%,transparent_60%)]"></div>
+          <div
+            class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(244,63,94,0.4)_0%,transparent_60%)]"
+          ></div>
           <div class="absolute bottom-1 left-1/2 -translate-x-1/2">
-            <span class="text-[10px] sm:text-xs font-bold text-white bg-rose-500/90 px-1.5 py-0.5 rounded shadow">FINISH</span>
+            <span
+              class="text-[10px] sm:text-xs font-bold text-white bg-rose-500/90 px-1.5 py-0.5 rounded shadow"
+              >FINISH</span
+            >
           </div>
         </div>
 
@@ -113,6 +123,15 @@
         :style="shieldEffect.style"
       >
         <div class="shield-pulse"></div>
+      </div>
+
+      <!-- Shield Hold (static) -->
+      <div
+        v-if="shieldHold.visible"
+        class="absolute z-40 pointer-events-none"
+        :style="shieldHold.style"
+      >
+        <img :src="shieldLogo" alt="shield" class="hold-shield w-6 h-6" />
       </div>
 
       <!-- Shield Gain Pop Effect -->
@@ -194,23 +213,34 @@ const shieldGain = ref({
   },
 })
 
-// Computed board cells (zigzag numbering sesuai urutan DOM)
+// Shield hold (static protective ring shown before a shot)
+const shieldHold = ref({
+  visible: false,
+  style: {
+    left: '0px',
+    top: '0px',
+    transform: 'translate(-50%, -50%)',
+  },
+})
+
+// Computed board cells (start di bawah kiri = 1, zigzag ke atas)
 const boardCells = computed(() => {
   const cells = []
-  for (let row = 0; row < props.boardSize; row++) {
-    const isEvenRow = row % 2 === 0
-    for (let col = 0; col < props.boardSize; col++) {
-      const position = isEvenRow
-        ? row * props.boardSize + col + 1
-        : row * props.boardSize + (props.boardSize - col)
+  const N = props.boardSize
+  // Iterasi DOM row dari atas ke bawah, tapi nomor logis dihitung dari bawah
+  for (let rowDOM = 0; rowDOM < N; rowDOM++) {
+    const logicalRow = N - 1 - rowDOM // 0 = baris terbawah
+    const isEvenLogical = logicalRow % 2 === 0
+    for (let col = 0; col < N; col++) {
+      const position = isEvenLogical ? logicalRow * N + col + 1 : logicalRow * N + (N - col)
       cells.push({
         number: position,
-        row: props.boardSize - 1 - row,
-        col: isEvenRow ? col : props.boardSize - 1 - col,
+        row: logicalRow,
+        col: isEvenLogical ? col : N - 1 - col,
       })
     }
   }
-  // jangan sort; biarkan dalam urutan DOM zigzag
+  // Biarkan urutan sesuai DOM grid
   return cells
 })
 
@@ -278,13 +308,15 @@ const getPlayerOffsetStyle = (cellNumber, idx) => {
 const getPlayerShadow = (_color) => 'drop-shadow-lg'
 
 // Animation helpers
-// Map posisi logis (1..N) ke index elemen DOM pada pola zigzag
+// Map posisi logis (1..N, dihitung dari bawah) ke index elemen DOM (baris atas ke bawah)
 const positionToDomIndex = (position) => {
-  const row = Math.floor((position - 1) / props.boardSize)
-  const colInRow = (position - 1) % props.boardSize
-  const isEvenRow = row % 2 === 0
-  const col = isEvenRow ? colInRow : props.boardSize - 1 - colInRow
-  return row * props.boardSize + col
+  const N = props.boardSize
+  const logicalRow = Math.floor((position - 1) / N) // 0 = baris terbawah
+  const colInRow = (position - 1) % N
+  const isEvenLogical = logicalRow % 2 === 0
+  const col = isEvenLogical ? colInRow : N - 1 - colInRow
+  const rowDOM = N - 1 - logicalRow
+  return rowDOM * N + col
 }
 
 const getPositionCoordinates = (position) => {
@@ -307,6 +339,47 @@ const getPositionCoordinates = (position) => {
   }
 
   return { x: 0, y: 0 }
+}
+
+// NEW: hitung koordinat pusat pion (memperhitungkan offset pion di dalam sel)
+const getPlayerOffsetPerc = (position, playerId) => {
+  const playersOnCell = getPlayersOnCell(position)
+  const count = playersOnCell.length
+  let offsets = [{ left: 0.5, top: 0.5 }]
+  if (count === 2) {
+    offsets = [
+      { left: 0.35, top: 0.5 },
+      { left: 0.65, top: 0.5 },
+    ]
+  } else if (count >= 3) {
+    offsets = [
+      { left: 0.35, top: 0.35 },
+      { left: 0.65, top: 0.35 },
+      { left: 0.5, top: 0.65 },
+      { left: 0.65, top: 0.65 },
+    ]
+  }
+  const idx = playersOnCell.findIndex((p) => p.id === playerId)
+  return offsets[idx >= 0 ? idx : 0]
+}
+
+const getPlayerCoordinates = (player) => {
+  if (!boardContainer.value) return { x: 0, y: 0 }
+
+  const cellElements = boardContainer.value.children
+  const targetCellIndex = positionToDomIndex(player.position)
+  if (targetCellIndex >= 0 && targetCellIndex < cellElements.length) {
+    const cellElement = cellElements[targetCellIndex]
+    const cellRect = cellElement.getBoundingClientRect()
+    const containerRect = boardContainer.value.getBoundingClientRect()
+
+    const { left, top } = getPlayerOffsetPerc(player.position, player.id)
+    const x = cellRect.left - containerRect.left + cellRect.width * left
+    const y = cellRect.top - containerRect.top + cellRect.height * top
+    return { x, y }
+  }
+  // fallback ke tengah sel
+  return getPositionCoordinates(player.position)
 }
 
 // Exposed animation method for forward movement
@@ -389,8 +462,15 @@ const animateBackward = async (player, steps, speed = 300) => {
 const animateShoot = async (attacker, target, duration = 500) => {
   if (!boardContainer.value) return
 
-  const start = getPositionCoordinates(attacker.position)
-  const end = getPositionCoordinates(target.position)
+  const start = getPlayerCoordinates(attacker)
+  const end = getPlayerCoordinates(target)
+
+  // Kecepatan konstan (px per detik)
+  const speedPxPerSec = 900
+  const dx = end.x - start.x
+  const dy = end.y - start.y
+  const distance = Math.hypot(dx, dy)
+  const travelMs = Math.max(120, Math.round((distance / speedPxPerSec) * 1000))
 
   // Setup projectile at start
   projectile.value.visible = true
@@ -408,12 +488,12 @@ const animateShoot = async (attacker, target, duration = 500) => {
       left: `${end.x}px`,
       top: `${end.y}px`,
       transform: 'translate(-50%, -50%)',
-      transition: `left ${duration}ms linear, top ${duration}ms linear`,
+      transition: `left ${travelMs}ms linear, top ${travelMs}ms linear`,
     }
   })
 
   // wait for travel to finish
-  await new Promise((res) => setTimeout(res, duration))
+  await new Promise((res) => setTimeout(res, travelMs))
   projectile.value.visible = false
 
   // Show hit burst at target
@@ -435,7 +515,7 @@ const animateShoot = async (attacker, target, duration = 500) => {
 // Shield pulse effect when an attack is blocked
 const animateShieldPulse = async (target, duration = 600) => {
   if (!boardContainer.value) return
-  const pos = getPositionCoordinates(target.position)
+  const pos = getPlayerCoordinates(target)
   shieldEffect.value.visible = true
   shieldEffect.value.style = {
     left: `${pos.x}px`,
@@ -449,7 +529,7 @@ const animateShieldPulse = async (target, duration = 600) => {
 // When gaining shield: show a popping shield icon and a protective pulse
 const animateShieldGain = async (target, duration = 1200) => {
   if (!boardContainer.value) return
-  const pos = getPositionCoordinates(target.position)
+  const pos = getPlayerCoordinates(target)
   // Start both effects
   shieldGain.value.visible = true
   shieldGain.value.style = {
@@ -469,6 +549,22 @@ const animateShieldGain = async (target, duration = 1200) => {
   shieldEffect.value.visible = false
 }
 
+// Shield hold controls
+const animateShieldHoldStart = (target) => {
+  if (!boardContainer.value) return
+  const pos = getPlayerCoordinates(target)
+  shieldHold.value.visible = true
+  shieldHold.value.style = {
+    left: `${pos.x}px`,
+    top: `${pos.y}px`,
+    transform: 'translate(-50%, -50%)',
+  }
+}
+
+const animateShieldHoldStop = () => {
+  shieldHold.value.visible = false
+}
+
 // Expose methods to parent
 defineExpose({
   animateMove,
@@ -476,6 +572,8 @@ defineExpose({
   animateShoot,
   animateShieldPulse,
   animateShieldGain,
+  animateShieldHoldStart,
+  animateShieldHoldStop,
 })
 </script>
 
@@ -546,6 +644,12 @@ defineExpose({
     transform: scale(3.4);
     opacity: 0;
   }
+}
+
+/* Shield hold icon glow (static) */
+.hold-shield {
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.9));
+  opacity: 0.95;
 }
 
 /* Shield gain pop (emoji) */

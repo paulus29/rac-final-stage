@@ -1,30 +1,20 @@
-Apa ibu kota Indonesia?
-Sebutkan warna pada bendera Indonesia?
-Gunung tertinggi di dunia apa namanya?
-Laut terluas di dunia apa?
-Siapa penemu lampu pijar?
-Planet terdekat dengan Matahari adalah?
-Hewan tercepat di darat apa?
-Bahasa resmi negara Jepang adalah?
-Alat musik tradisional dari Jawa Barat yang dipetik adalah?
-Nama pulau terbesar di Indonesia?
-Ibukota Provinsi Jawa Barat adalah?
-Berapa jumlah sisi pada segi enam?
-Benda langit yang mengelilingi planet disebut?
-Apa hasil fotosintesis utama tumbuhan?
-Siapa tokoh Proklamator Indonesia selain Soekarno?
-Kota yang dikenal sebagai Kota Pahlawan di Indonesia adalah?
-Sebutkan tiga warna primer!
-Apa nama samudra di sebelah selatan Indonesia?
-Apa satuan internasional untuk kuat arus listrik?
-Benua terbesar di dunia adalah?
-Siapa penulis novel Laskar Pelangi?
-Hewan yang mengalami metamorfosis sempurna salah satunya adalah?
-Apa nama tarian khas Bali yang terkenal?
-Pulau di Indonesia yang terkenal dengan komodo adalah?
-Apa lambang sila pertama Pancasila?
-Alat untuk mengukur suhu disebut?
-Bahasa pemrograman yang berjalan di browser secara default adalah?
-Apa nama mata uang negara Jepang?
-Sebutkan unsur kimia dengan simbol H!
-Siapa ilmuwan yang merumuskan teori relativitas?
+Apa itu phishing? | Mengelabui pengguna untuk mencuri data | Mempercepat koneksi internet | Memindai virus di komputer | Mengunci file dengan password | A
+Yang manakah contoh kata sandi yang kuat? | 123456 | TanggalLahir | P@ssw0rd!2024 | namauser | C
+Dua langkah penting untuk keamanan akun? | Gunakan password yang sama di semua akun | Aktifkan 2FA dan gunakan password unik | Berbagi password via chat | Menonaktifkan update otomatis | B
+Apa itu malware? | Perangkat keras komputer | Perangkat lunak berbahaya | Protokol jaringan aman | Layanan cloud | B
+Apa fungsi 2FA (Two-Factor Authentication)? | Menyimpan password | Mempercepat login | Lapisan verifikasi tambahan | Menghapus akun | C
+Contoh email phishing? | Domain resmi perusahaan dan tanda tangan sah | Meminta verifikasi data mendadak dengan link mencurigakan | Informasi internal melalui portal resmi | Notifikasi keamanan dari aplikasi yang diinstal | B
+Jika menerima lampiran .exe dari pengirim tidak dikenal, sebaiknya? | Jalankan untuk cek isi | Upload ke media sosial | Hapus atau scan terlebih dulu | Kirim kembali ke teman | C
+VPN digunakan untuk? | Menyembunyikan dan mengenkripsi lalu lintas | Mempercepat hardware | Mengganti antivirus | Mengunci folder lokal | A
+Apa itu ransomware? | Serangan yang mengenkripsi data dan meminta tebusan | Aplikasi pembersih sampah | Sistem backup | Firewall | A
+Kapan aman menggunakan Wi-Fi publik tanpa VPN? | Saat login akun bank | Saat mengirim data sensitif | Tidak pernah untuk data sensitif | Saat mengunduh aplikasi keamanan | C
+Praktik terbaik untuk update software? | Tunda update selama mungkin | Matikan update otomatis | Rutin update untuk perbaikan keamanan | Hanya update jika ada fitur baru | C
+Tanda situs web aman? | URL http tanpa s | Ikon gembok dan https | Banyak iklan popup | Meminta install plugin | B
+Apa itu social engineering? | Teknik desain UI | Manipulasi psikologis untuk mendapat informasi | Proses enkripsi data | Pengujian penetrasi | B
+Back up data sebaiknya dilakukan? | Sekali setahun | Tidak perlu | Secara rutin dengan 3-2-1 rule | Hanya saat akan format ulang | C
+Mengamankan perangkat saat hilang? | Menonaktifkan kata sandi | Mengaktifkan kunci layar dan temukan perangkat | Membiarkan akun tetap login | Berbagi lokasi ke semua orang | B
+Apa yang harus dicek sebelum klik link? | Panjang link | Warna link | Domain dan pratinjau URL | Jumlah huruf kapital | C
+Fungsi password manager? | Mengingat semua password secara aman | Menghapus history | Meningkatkan kecepatan internet | Mengompres file | A
+Email dari 'IT Support' meminta password akun Anda, tindakan? | Balas dan kirim password | Abaikan atau laporkan phishing | Bagikan ke rekan kerja | Klik semua link | B
+Data pribadi sensitif adalah? | Nama panggilan | Riwayat tontonan | Nomor KTP, password, PIN | Warna favorit | C
+Memproteksi akun media sosial? | Mengaktifkan 2FA dan periksa izin aplikasi | Membagikan password ke admin grup | Nonaktifkan notifikasi | Gunakan Wi-Fi publik | A

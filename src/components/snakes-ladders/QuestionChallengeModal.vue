@@ -1,6 +1,9 @@
 <template>
   <Transition name="modal" appear>
-    <div v-if="isVisible && !isMinimized" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+    <div
+      v-if="isVisible && !isMinimized"
+      class="fixed inset-0 z-[80] flex items-center justify-center p-4"
+    >
       <!-- Overlay tanpa blur -->
       <div class="absolute inset-0" @click="$emit('close')"></div>
 
@@ -26,15 +29,15 @@
               @click="isMinimized = true"
               class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
               title="Minimize"
-            >▁</button>
+            >
+              ▁
+            </button>
           </div>
         </div>
 
         <!-- Step 1 (optional only): pilih penjawab -->
         <div v-if="type === 'optional' && !decided" class="space-y-4">
-          <p class="text-gray-700">
-            Kelompok yang mendarat dapat memilih menjawab sendiri atau melempar pertanyaan ke lawan.
-          </p>
+          <p class="text-gray-700">Ambil tantangan atau lempar ke lawan?</p>
 
           <!-- Pilih lawan (opsional untuk lempar) -->
           <div class="bg-white rounded-lg p-3 border border-amber-300 shadow-sm">
@@ -64,17 +67,21 @@
             <button
               @click="selectSelf"
               class="min-w-[120px] px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-amber-700 shadow-md"
-            >Ambil</button>
+            >
+              Ambil
+            </button>
 
             <button
               @click="confirmDecide"
               :disabled="!selectedAnswererId"
               class="min-w-[120px] px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-            >Lempar</button>
+            >
+              Lempar
+            </button>
           </div>
         </div>
 
-        <!-- Step 2: pertanyaan + timer + penilaian -->
+        <!-- Step 2: pertanyaan + timer + pilihan ganda -->
         <div v-else class="space-y-4">
           <!-- Timer -->
           <div v-if="!isTimeOut" class="mb-2">
@@ -102,44 +109,65 @@
               >
             </div>
           </div>
+          <div v-else class="mb-2 text-center">
+            <span class="text-red-600 font-semibold"
+              >⏰ Waktu habis. Silakan tetap pilih jawaban.</span
+            >
+          </div>
 
           <!-- Info penjawab -->
           <div class="flex items-center justify-between text-sm">
             <div class="text-gray-600">
               Penjawab: <span class="font-semibold">{{ answererLabel }}</span>
             </div>
-            <div v-if="type === 'optional'" class="text-xs text-gray-500">
-              (Dipilih pada tantangan "?")
-            </div>
           </div>
 
           <!-- Pertanyaan -->
           <div class="bg-white p-5 rounded-lg border border-amber-300 shadow-sm">
             <p class="text-gray-800 text-lg sm:text-xl font-medium text-center leading-relaxed">
-              {{ question }}
+              {{ question && question.question ? question.question : 'Memuat pertanyaan...' }}
             </p>
           </div>
 
-          <!-- Penilaian Game Master -->
+          <!-- Pilihan Ganda A/B/C/D -->
           <div class="border-t border-amber-200 pt-3">
-            <p class="text-sm text-gray-600 text-center mb-3">Apakah jawaban kelompok benar?</p>
-            <div class="flex gap-4 justify-center">
+            <div class="grid grid-cols-1 gap-2">
               <button
-                @click="handleJudge(true)"
-                class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg flex items-center gap-2"
+                v-for="(opt, idx) in question?.options || []"
+                :key="idx"
+                :disabled="isOptionLocked || isDisabled(idx)"
+                @click="chooseOption(idx)"
+                :class="[
+                  'px-4 py-3 rounded-lg border font-semibold text-left transition-all',
+                  isOptionLocked
+                    ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                    : isDisabled(idx)
+                      ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed line-through'
+                      : 'bg-white hover:bg-amber-50 border-amber-200 text-gray-800',
+                ]"
               >
-                ✅ Benar
-              </button>
-              <button
-                @click="handleJudge(false)"
-                class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-bold hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg flex items-center gap-2"
-              >
-                ❌ Salah
+                <span class="inline-flex items-center gap-2">
+                  <span
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-md font-bold text-white bg-amber-600"
+                    >{{ letterLabel(idx) }}</span
+                  >
+                  <span class="flex-1">{{ opt }}</span>
+                </span>
               </button>
             </div>
-            <p class="text-xs text-gray-500 text-center mt-2">
-              Benar → maju 4 langkah. Salah → mundur 4 langkah.
-            </p>
+            <!-- Feedback benar/salah -->
+            <div v-if="resultStatus" class="mt-3 text-center" aria-live="polite">
+              <span
+                v-if="resultStatus === 'correct'"
+                class="inline-block px-3 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold"
+                >✅ Jawaban benar!</span
+              >
+              <span
+                v-else-if="resultStatus === 'incorrect'"
+                class="inline-block px-3 py-1 rounded-md bg-rose-100 text-rose-700 font-semibold"
+                >❌ Jawaban salah</span
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -166,7 +194,10 @@ const props = defineProps({
   type: { type: String, default: 'optional' }, // 'optional' | 'forced'
   players: { type: Array, required: true },
   currentPlayerId: { type: Number, default: null },
-  question: { type: String, default: '' },
+  // question object: { id, question, options: string[], correctIndex: number }
+  question: { type: Object, default: null },
+  // indices of options that should be disabled due to previous wrong answers on this cell
+  disabledOptions: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['close', 'decide', 'judge'])
@@ -182,6 +213,8 @@ const timerInterval = ref(null)
 const isWarning = ref(false)
 const isTimerActive = ref(true)
 const isTimeOut = ref(false)
+const isOptionLocked = ref(false)
+const resultStatus = ref('') // '', 'correct', 'incorrect'
 
 // Hanya lawan yang belum selesai yang dapat dilempar tantangan
 const opponents = computed(() =>
@@ -232,7 +265,7 @@ const resetTimer = () => {
 const handleTimeout = () => {
   stopTimer()
   isTimeOut.value = true
-  // Tetap biarkan game master memutuskan benar/salah setelah waktu habis
+  // Jangan auto-penalti dan tetap izinkan menjawab setelah waktu habis.
 }
 
 // Lifecycle: kelola open/close
@@ -246,6 +279,8 @@ watch(
       stopTimer()
       decided.value = false
       selectedAnswererId.value = props.type === 'forced' ? props.currentPlayerId : null
+      isOptionLocked.value = false
+      resultStatus.value = ''
     } else {
       // Open
       resetTimer()
@@ -261,6 +296,8 @@ watch(
         resetTimer()
         startTimer()
       }
+      isOptionLocked.value = false
+      resultStatus.value = ''
     }
   },
   { immediate: true },
@@ -291,11 +328,24 @@ const confirmDecide = () => {
   startTimer()
 }
 
-const handleJudge = (isCorrect) => {
-  if (!selectedAnswererId.value) return
+// Pilih opsi A/B/C/D
+const letterLabel = (idx) => ['A', 'B', 'C', 'D'][idx] || '?'
+
+const chooseOption = (idx) => {
+  if (!selectedAnswererId.value || isOptionLocked.value || isDisabled(idx)) return
+  isOptionLocked.value = true
   stopTimer()
-  emit('judge', { answererId: selectedAnswererId.value, isCorrect })
+  const isCorrect =
+    props.question && typeof props.question.correctIndex === 'number'
+      ? idx === props.question.correctIndex
+      : false
+  resultStatus.value = isCorrect ? 'correct' : 'incorrect'
+  // Emit penilaian; parent akan menutup modal. Tidak menandai jawaban benar saat salah.
+  emit('judge', { answererId: selectedAnswererId.value, isCorrect, selectedIndex: idx })
 }
+
+const isDisabled = (idx) =>
+  Array.isArray(props.disabledOptions) && props.disabledOptions.includes(idx)
 
 onUnmounted(() => stopTimer())
 </script>

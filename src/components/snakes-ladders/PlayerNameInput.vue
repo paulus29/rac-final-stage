@@ -16,8 +16,9 @@ const isValid1 = computed(() => name1.value.trim().length > 0)
 const isValid2 = computed(() => name2.value.trim().length > 0)
 const isValid3 = computed(() => name3.value.trim().length > 0)
 const uniqueAll = computed(() => {
-  const normalized = [name1.value, name2.value, name3.value]
-    .map((n) => (n || '').trim().toLowerCase().replace(/\s+/g, ' '))
+  const normalized = [name1.value, name2.value, name3.value].map((n) =>
+    (n || '').trim().toLowerCase().replace(/\s+/g, ' '),
+  )
   if (normalized.some((n) => n.length === 0)) return false
   return new Set(normalized).size === 3
 })
@@ -58,98 +59,98 @@ const startGame = () => {
       <div
         class="relative bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-2xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg transform transition-all duration-300 pointer-events-auto"
       >
-        
-
         <h2 class="text-amber-800 text-2xl font-extrabold mb-6 text-center">Ular Tangga</h2>
         <p class="text-center text-amber-900/90 font-semibold mb-4">Masukkan nama 3 kelompok</p>
 
         <form @submit.prevent="startGame">
-        <!-- Player 1 -->
-        <div class="mb-4">
-          <label class="block text-amber-900 font-semibold mb-2">🔴 Nama Kelompok 1</label>
-          <input
-            v-model="name1"
-            type="text"
-            placeholder="Masukkan nama Kelompok 1"
-            class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
-            :class="{
-              'border-red-400 bg-red-50': name1.length > 0 && !isValid1,
-              'border-green-500 bg-green-50': isValid1,
-            }"
-            maxlength="20"
-            @keyup.enter="startGame"
-          />
-          <p v-if="name1.length > 0 && !isValid1" class="text-red-600 text-sm mt-1">Nama Kelompok 1 tidak boleh kosong</p>
-        </div>
-
-        <!-- Player 2 -->
-        <div class="mb-4">
-          <label class="block text-amber-900 font-semibold mb-2">🟢 Nama Kelompok 2</label>
-          <input
-            v-model="name2"
-            type="text"
-            placeholder="Masukkan nama Kelompok 2"
-            class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
-            :class="{
-              'border-red-400 bg-red-50': name2.length > 0 && !isValid2,
-              'border-green-500 bg-green-50': isValid2,
-            }"
-            maxlength="20"
-            @keyup.enter="startGame"
-          />
-          <p v-if="name2.length > 0 && !isValid2" class="text-red-600 text-sm mt-1">Nama Kelompok 2 tidak boleh kosong</p>
-        </div>
-
-        <!-- Player 3 -->
-        <div class="mb-4">
-          <label class="block text-amber-900 font-semibold mb-2">🔵 Nama Kelompok 3</label>
-          <input
-            v-model="name3"
-            type="text"
-            placeholder="Masukkan nama Kelompok 3"
-            class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
-            :class="{
-              'border-red-400 bg-red-50': name3.length > 0 && !isValid3,
-              'border-green-500 bg-green-50': isValid3,
-            }"
-            maxlength="20"
-            @keyup.enter="startGame"
-          />
-          <p v-if="name3.length > 0 && !isValid3" class="text-red-600 text-sm mt-1">Nama Kelompok 3 tidak boleh kosong</p>
-        </div>
-
-        <!-- Unique check -->
-        <div v-if="isValid1 && isValid2 && isValid3 && !uniqueAll" class="mb-4">
-          <p class="text-red-600 text-sm text-center bg-red-100 p-2 rounded border border-red-200">⚠️ Nama kelompok harus berbeda semua</p>
-        </div>
-
-        <!-- Start button -->
-        <div class="flex justify-center">
-          <button
-            type="submit"
-            @click.stop
-            class="relative z-[200] px-8 py-3 rounded-lg font-bold text-white transition-all duration-300 shadow-lg pointer-events-auto"
-            :class="
-              isFormValid
-                ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 cursor-pointer'
-                : 'bg-gray-400 cursor-not-allowed'
-            "
-          >
-            🚀 Mulai Permainan
-          </button>
-        </div>
-        </form>
-        <!-- Debug info (only in dev) -->
-        <div v-if="isDev" class="mt-3 text-[11px] text-amber-900/70 text-center">
-          <div>isFormValid: {{ isFormValid }}</div>
-          <div>
-            v1: {{ isValid1 }}, v2: {{ isValid2 }}, v3: {{ isValid3 }}, unique: {{ uniqueAll }}
+          <!-- Player 1 -->
+          <div class="mb-4">
+            <label class="block text-amber-900 font-semibold mb-2">🔴 Nama Kelompok 1</label>
+            <input
+              v-model="name1"
+              type="text"
+              placeholder="Masukkan nama Kelompok 1"
+              class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
+              :class="{
+                'border-red-400 bg-red-50': name1.length > 0 && !isValid1,
+                'border-green-500 bg-green-50': isValid1,
+              }"
+              maxlength="20"
+              @keyup.enter="startGame"
+            />
+            <p v-if="name1.length > 0 && !isValid1" class="text-red-600 text-sm mt-1">
+              Nama Kelompok 1 tidak boleh kosong
+            </p>
           </div>
-        </div>
+
+          <!-- Player 2 -->
+          <div class="mb-4">
+            <label class="block text-amber-900 font-semibold mb-2">🟢 Nama Kelompok 2</label>
+            <input
+              v-model="name2"
+              type="text"
+              placeholder="Masukkan nama Kelompok 2"
+              class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
+              :class="{
+                'border-red-400 bg-red-50': name2.length > 0 && !isValid2,
+                'border-green-500 bg-green-50': isValid2,
+              }"
+              maxlength="20"
+              @keyup.enter="startGame"
+            />
+            <p v-if="name2.length > 0 && !isValid2" class="text-red-600 text-sm mt-1">
+              Nama Kelompok 2 tidak boleh kosong
+            </p>
+          </div>
+
+          <!-- Player 3 -->
+          <div class="mb-4">
+            <label class="block text-amber-900 font-semibold mb-2">🔵 Nama Kelompok 3</label>
+            <input
+              v-model="name3"
+              type="text"
+              placeholder="Masukkan nama Kelompok 3"
+              class="w-full px-4 py-3 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-600 transition-colors bg-white"
+              :class="{
+                'border-red-400 bg-red-50': name3.length > 0 && !isValid3,
+                'border-green-500 bg-green-50': isValid3,
+              }"
+              maxlength="20"
+              @keyup.enter="startGame"
+            />
+            <p v-if="name3.length > 0 && !isValid3" class="text-red-600 text-sm mt-1">
+              Nama Kelompok 3 tidak boleh kosong
+            </p>
+          </div>
+
+          <!-- Unique check -->
+          <div v-if="isValid1 && isValid2 && isValid3 && !uniqueAll" class="mb-4">
+            <p
+              class="text-red-600 text-sm text-center bg-red-100 p-2 rounded border border-red-200"
+            >
+              ⚠️ Nama kelompok harus berbeda semua
+            </p>
+          </div>
+
+          <!-- Start button -->
+          <div class="flex justify-center">
+            <button
+              type="submit"
+              @click.stop
+              class="relative z-[200] px-8 py-3 rounded-lg font-bold text-white transition-all duration-300 shadow-lg pointer-events-auto"
+              :class="
+                isFormValid
+                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 cursor-pointer'
+                  : 'bg-gray-400 cursor-not-allowed'
+              "
+            >
+              🚀 Mulai Permainan
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </Transition>
-  
 </template>
 
 <style scoped>
