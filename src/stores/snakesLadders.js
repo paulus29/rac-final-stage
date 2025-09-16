@@ -150,6 +150,7 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
       cellQuestions.value[cell] = {
         q: chosen,
         wrongOptions: [],
+        wrongAttempts: 0,
         asked: false,
       }
       assigned.add(chosen.id)
@@ -185,6 +186,7 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     cellQuestions.value[cell] = {
       q: chosen,
       wrongOptions: [],
+      wrongAttempts: 0,
       asked: false,
     }
   }
@@ -286,8 +288,6 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     if (entry && entry.q) {
       challengeQuestion.value = entry.q
       challengeDisabledOptions.value = [...(entry.wrongOptions || [])]
-      // Tandai pertanyaan ini sudah pernah ditanyakan
-      markQuestionAskedForCell(cell)
     } else {
       // Fallback minimal jika tidak ada entry karena alasan tertentu
       challengeQuestion.value = {
@@ -303,10 +303,23 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
 
   const closeChallenge = () => {
     showChallengeModal.value = false
+    // Jika tantangan ditutup (mis. memilih tidak membuka pada sel '!'), ganti giliran
+    if (landedPlayerId.value != null) {
+      selectedPlayerId.value = getNextActivePlayerId(landedPlayerId.value)
+    }
+    // Bersihkan state aktif tantangan
+    landedPlayerId.value = null
+    selectedAnswererId.value = null
+    activeChallengeCell.value = null
+    challengeDisabledOptions.value = []
   }
 
   const onChallengeDecide = (answererId) => {
     selectedAnswererId.value = answererId
+    // Tandai pertanyaan pada sel aktif sebagai sudah pernah ditanyakan saat penjawab diputuskan
+    if (activeChallengeCell.value != null) {
+      markQuestionAskedForCell(activeChallengeCell.value)
+    }
   }
 
   // Update state per hasil jawaban (mark wrong options, or reassign question on correct)
@@ -317,6 +330,12 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     if (!entry) return
     if (!isCorrect && selectedIndex != null) {
       if (!entry.wrongOptions.includes(selectedIndex)) entry.wrongOptions.push(selectedIndex)
+      // Hitung percobaan salah untuk soal pada sel ini
+      entry.wrongAttempts = (entry.wrongAttempts || 0) + 1
+      if (entry.wrongAttempts >= 2) {
+        // Setelah 2 kali salah, ganti soal untuk sel ini
+        reassignCellQuestion(cell)
+      }
     }
     if (isCorrect) {
       // Ganti pertanyaan untuk sel ini dengan yang belum pernah ditanyakan

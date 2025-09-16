@@ -25,6 +25,15 @@
             <div class="text-amber-800 font-semibold">Giliran: {{ currentPlayerName }}</div>
           </div>
           <div class="flex items-center gap-2">
+            <!-- Close (X) button -->
+            <button
+              @click="handleClose"
+              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              title="Tutup"
+              aria-label="Tutup"
+            >
+              ✕
+            </button>
             <button
               @click="isMinimized = true"
               class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
@@ -77,6 +86,25 @@
               class="min-w-[120px] px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
               Lempar
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 1 (forced only): konfirmasi buka atau lewati -->
+        <div v-else-if="type === 'forced' && !decided" class="space-y-4">
+          <p class="text-gray-700 text-center">Buka pertanyaan sekarang?</p>
+          <div class="pt-1 flex gap-3 justify-center">
+            <button
+              @click="confirmOpenForced"
+              class="min-w-[120px] px-5 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-lg font-semibold hover:from-rose-600 hover:to-rose-700 shadow-md"
+            >
+              Buka
+            </button>
+            <button
+              @click="handleClose"
+              class="min-w-[120px] px-5 py-2.5 bg-white border border-rose-300 text-rose-700 rounded-lg font-semibold hover:bg-rose-50 shadow-sm"
+            >
+              Lewati
             </button>
           </div>
         </div>
@@ -285,9 +313,9 @@ watch(
       // Open
       resetTimer()
       selectedAnswererId.value = props.type === 'forced' ? props.currentPlayerId : null
-      decided.value = props.type === 'forced'
-      // Mulai timer segera jika forced, atau nanti setelah decide untuk optional
-      if (decided.value) startTimer()
+      // Untuk sel '!' (forced), mulai pada step konfirmasi (belum decided)
+      decided.value = props.type === 'forced' ? false : false
+      // Timer akan dimulai saat pengguna memilih 'Buka' pada forced, atau setelah decide pada optional
       // Jika optional dan tidak ada lawan tersedia, auto pilih diri sendiri
       if (props.type === 'optional' && !decided.value && opponents.value.length === 0) {
         selectedAnswererId.value = props.currentPlayerId
@@ -322,6 +350,16 @@ const selectOpponent = (id) => {
 
 const confirmDecide = () => {
   if (!selectedAnswererId.value) return
+  decided.value = true
+  emit('decide', selectedAnswererId.value)
+  resetTimer()
+  startTimer()
+}
+
+// Konfirmasi buka pada sel '!' (forced)
+const confirmOpenForced = () => {
+  // Penjawab selalu pemain yang mendarat
+  selectedAnswererId.value = props.currentPlayerId
   decided.value = true
   emit('decide', selectedAnswererId.value)
   resetTimer()
