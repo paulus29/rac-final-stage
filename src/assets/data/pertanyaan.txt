@@ -1,14 +1,30 @@
-Apa yang dimaksud dengan risiko operasional? | Clue 1 | Clue 2
-Manakah yang termasuk komponen utama dalam manajemen risiko siber? | Clue 1 | Clue 2
-Apa kepanjangan dari CIA dalam konteks keamanan informasi? | Clue 1 | Clue 2
-Manakah yang merupakan jenis serangan siber yang paling umum? | Clue 1 | Clue 2
-Apa yang dimaksud dengan Business Continuity Plan (BCP)? | Clue 1 | Clue 2
-Manakah yang termasuk dalam kategori risiko operasional? | Clue 1 | Clue 2
-Apa yang dimaksud dengan penetration testing? | Clue 1 | Clue 2
-Manakah yang merupakan prinsip dasar dalam manajemen risiko? | Clue 1 | Clue 2
-Apa kepanjangan dari GDPR? | Clue 1 | Clue 2
-Manakah yang termasuk dalam incident response plan? | Clue 1 | Clue 2
-Apa yang dimaksud dengan risk appetite? | Clue 1 | Clue 2
-Manakah yang merupakan contoh kontrol preventif dalam keamanan siber? | Clue 1 | Clue 2
-Apa yang dimaksud dengan operational resilience? | Clue 1 | Clue 2
-Manakah yang termasuk dalam three lines of defense model? | Clue 1 | Clue 2
+Apa nama aktivitas penipuan dengan mengirimkan email palsu untuk mencuri informasi? | Phishing
+Jenis malware apa yang mengenkripsi data korban dan meminta tebusan? | Ransomware
+Apa istilah untuk upaya menebak kata sandi dengan mencoba berbagai kombinasi secara otomatis? | Brute Force Attack
+Apa nama sistem keamanan yang menambahkan lapisan verifikasi kedua saat login? | Two-Factor Authentication
+Apa kepanjangan dari VPN dalam konteks jaringan komputer? | Virtual Private Network
+Apa protokol komunikasi yang digunakan untuk mengakses situs web secara aman? | HTTPS
+Apa nama teknik penyerangan yang menyamar sebagai situs atau identitas tepercaya? | Spoofing
+Jenis serangan apa yang dilakukan dengan membanjiri sistem dengan lalu lintas data secara berlebihan? | DDoS
+Apa nama program jahat yang merekam penekanan tombol pada keyboard? | Keylogger
+Apa istilah untuk strategi memindahkan risiko keamanan ke pihak lain, seperti melalui asuransi? | Asuransi Siber
+Apa istilah untuk kata sandi yang panjang dan terdiri dari beberapa kata unik? | Passphrase
+Dalam prinsip CIA, huruf 'C' merujuk pada apa? | Confidentiality
+Dalam prinsip CIA, huruf 'I' merujuk pada apa? | Integrity
+Dalam prinsip CIA, huruf 'A' merujuk pada apa? | Availability
+Apa istilah untuk proses memverifikasi identitas pengguna? | Autentikasi
+Apa istilah untuk sistem kontrol akses berdasarkan peran pengguna? | Role-Based Access Control
+Apa istilah untuk praktik memberikan hak akses seminimal mungkin kepada pengguna? | Least Privilege
+Apa nama proses memperbaiki celah atau kerentanan keamanan dalam perangkat lunak? | Patching
+Apa istilah untuk pengujian keamanan sistem secara terkendali dan legal? | Penetration Testing
+Apa nama bentuk phishing yang ditargetkan pada individu tertentu? | Spear Phishing
+Jenis malware apa yang menyamar sebagai program sah tetapi berbahaya? | Trojan
+Apa nama perangkat lunak yang menampilkan iklan secara agresif dan mengganggu? | Adware
+Apa istilah untuk kata sandi yang hanya berlaku satu kali saja? | One-Time Password
+Apa nama serangan sosial yang memancing korban dengan media seperti flashdisk? | Baiting
+Apa istilah untuk proses mengubah data agar tidak dapat dibaca oleh pihak yang tidak berwenang? | Enkripsi
+Apa kepanjangan dari IRP dalam konteks keamanan informasi? | Incident Response Plan
+Apa kepanjangan dari IDS dalam sistem deteksi gangguan? | Intrusion Detection System
+Apa kepanjangan dari IPS dalam sistem pencegahan gangguan? | Intrusion Prevention System
+Apa standar keamanan jaringan Wi-Fi rumah yang paling umum digunakan? | WPA2
+Apa nama teknik menyembunyikan data di dalam file lain, seperti gambar atau audio? | Steganografi

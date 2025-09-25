@@ -19,21 +19,23 @@ export function useQuestions() {
 
       const parsedQuestions = lines
         .map((line, index) => {
-          // Format: "Pertanyaan | Clue 1 | Clue 2 | ... (opsional lebih banyak)"
+          // New format: "Pertanyaan | Jawaban | Clue 1 | Clue 2 | ... (opsional lebih banyak)"
+          // Backward-compatible: if only 2 parts, treat as "Pertanyaan | Jawaban"
           const parts = line.split('|').map((s) => s.trim()).filter((p) => p.length > 0)
           if (parts.length < 2) {
             console.warn(
-              `Question ${index + 1} has invalid format (expected at least 2 fields separated by |):`,
+              `Question ${index + 1} has invalid format (expected at least 'Pertanyaan | Jawaban'):`,
               line,
             )
             return null
           }
 
-          const [question, ...clues] = parts
+          const [question, answer, ...clues] = parts
 
           return {
             id: index + 1,
             question,
+            answer,
             clues,
           }
         })
@@ -47,13 +49,15 @@ export function useQuestions() {
       questions.value = [
         {
           id: 1,
-          question: 'Siapa presiden pertama Indonesia?',
-          clues: ['Soekarno', 'Proklamator RI'],
+          question: 'Apa itu phishing?',
+          answer: 'phishing',
+          clues: [],
         },
         {
           id: 2,
-          question: 'Apa ibu kota negara Australia?',
-          clues: ['Bukan Sydney', 'Canberra'],
+          question: 'Kepanjangan MFA?',
+          answer: 'multi faktor',
+          clues: [],
         },
       ]
     } finally {

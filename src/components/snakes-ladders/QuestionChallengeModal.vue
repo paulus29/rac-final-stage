@@ -25,7 +25,15 @@
             <div class="text-amber-800 font-semibold">Giliran: {{ currentPlayerName }}</div>
           </div>
           <div class="flex items-center gap-2">
-            <!-- Close (X) button -->
+            <!-- Minimize (left) -->
+            <button
+              @click="isMinimized = true"
+              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              title="Minimize"
+            >
+              ▁
+            </button>
+            <!-- Close (X) button on the right -->
             <button
               @click="handleClose"
               class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
@@ -33,13 +41,6 @@
               aria-label="Tutup"
             >
               ✕
-            </button>
-            <button
-              @click="isMinimized = true"
-              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
-              title="Minimize"
-            >
-              ▁
             </button>
           </div>
         </div>
@@ -98,13 +99,7 @@
               @click="confirmOpenForced"
               class="min-w-[120px] px-5 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-lg font-semibold hover:from-rose-600 hover:to-rose-700 shadow-md"
             >
-              Buka
-            </button>
-            <button
-              @click="handleClose"
-              class="min-w-[120px] px-5 py-2.5 bg-white border border-rose-300 text-rose-700 rounded-lg font-semibold hover:bg-rose-50 shadow-sm"
-            >
-              Lewati
+              Buka Soal
             </button>
           </div>
         </div>
@@ -138,9 +133,7 @@
             </div>
           </div>
           <div v-else class="mb-2 text-center">
-            <span class="text-red-600 font-semibold"
-              >⏰ Waktu habis. Silakan tetap pilih jawaban.</span
-            >
+            <span class="text-red-600 font-semibold">⏰ Waktu habis</span>
           </div>
 
           <!-- Info penjawab -->

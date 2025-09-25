@@ -8,6 +8,11 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  points: {
+    type: Number,
+    required: false,
+    default: 100,
+  },
   isFlipped: {
     type: Boolean,
     default: false,
@@ -55,6 +60,13 @@ const handleClick = () => {
           position
         }}</span>
         <span>?</span>
+        <!-- Points badge at bottom-right -->
+        <span
+          class="absolute bottom-1 right-1 text-[10px] sm:text-xs font-bold text-amber-900 bg-yellow-300/90 border border-yellow-500 rounded px-1 py-0.5 shadow"
+          title="Poin kartu"
+        >
+          {{ points }}
+        </span>
       </div>
 
       <div

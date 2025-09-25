@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMatchGameStore } from '@/stores/matchGame'
 import Card from './GameCard.vue'
@@ -20,7 +20,6 @@ const {
   gameStarted,
   namesSet,
   gameCompleted,
-  score,
   attempts,
   timer,
   isCardDisabled,
@@ -28,8 +27,10 @@ const {
   currentQuestion,
   pendingCardIndex,
   currentPlayer,
-  player1Score,
-  player2Score,
+  player1Points,
+  player2Points,
+  player1Matches,
+  player2Matches,
   player1Attempts,
   player2Attempts,
   player1Name,
@@ -40,6 +41,7 @@ const {
   isFirstAttemptInTurn,
   isProcessingClick,
   cardRows,
+  pointGainEvent,
 } = storeToRefs(mg)
 
 // Map actions for template compatibility
@@ -59,6 +61,15 @@ const resetTurnState = mg.resetTurnState
 const switchPlayer = mg.switchPlayer
 const handleContinueTurn = mg.handleContinueTurn
 const handleEndTurn = mg.handleEndTurn
+const getCardPoints = mg.getCardPoints
+
+// Map point gain event to each player panel for animation
+const p1Gain = computed(() =>
+  pointGainEvent.value && pointGainEvent.value.playerId === 1 ? pointGainEvent.value : null,
+)
+const p2Gain = computed(() =>
+  pointGainEvent.value && pointGainEvent.value.playerId === 2 ? pointGainEvent.value : null,
+)
 
 onMounted(() => {
   mg.init()
@@ -86,7 +97,9 @@ onBeforeUnmount(() => {
       <div class="order-1 lg:order-1 flex items-center">
         <PlayerPanel
           :playerName="player1Name"
-          :score="player1Score"
+          :points="player1Points"
+          :pointGain="p1Gain"
+          :matches="player1Matches"
           :attempts="player1Attempts"
           :isActive="currentPlayer === 1"
           :currentTurnAttempts="currentPlayer === 1 ? currentTurnAttempts : 0"
@@ -109,6 +122,7 @@ onBeforeUnmount(() => {
                 :key="`r${rowIndex}-c${idx}`"
                 :number="card.number"
                 :position="row.startIndex + idx + 1"
+                :points="getCardPoints(row.startIndex + idx + 1)"
                 :isFlipped="card.isFlipped"
                 :isMatched="card.isMatched"
                 :isDisabled="isCardDisabled"
@@ -122,7 +136,9 @@ onBeforeUnmount(() => {
       <div class="order-2 lg:order-3 flex items-center">
         <PlayerPanel
           :playerName="player2Name"
-          :score="player2Score"
+          :points="player2Points"
+          :pointGain="p2Gain"
+          :matches="player2Matches"
           :attempts="player2Attempts"
           :isActive="currentPlayer === 2"
           :currentTurnAttempts="currentPlayer === 2 ? currentTurnAttempts : 0"
@@ -135,11 +151,10 @@ onBeforeUnmount(() => {
       :winner="winner"
       :player1Name="player1Name"
       :player2Name="player2Name"
-      :player1Score="player1Score"
-      :player2Score="player2Score"
+      :player1Points="player1Points"
+      :player2Points="player2Points"
       :player1Attempts="player1Attempts"
       :player2Attempts="player2Attempts"
-      :totalAttempts="attempts"
       :timer="timer"
       :formatTime="formatTime"
       @reset-game="handleResetFromModal"

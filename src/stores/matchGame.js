@@ -10,11 +10,16 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const gameStarted = ref(false)
   const namesSet = ref(false)
   const gameCompleted = ref(false)
-  const score = ref(0)
   const attempts = ref(0)
   const timer = ref(0)
   let timerId = null
   const isCardDisabled = ref(false)
+
+  // Points system
+  // Poin per kartu (key: position -> points), default 100 per kartu
+  const cardPoints = ref({})
+  // Event untuk animasi penambahan poin di UI
+  const pointGainEvent = ref(null) // { playerId, amount, ts }
 
   // Question modal state
   const showQuestionModal = ref(false)
@@ -22,12 +27,14 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const pendingCardIndex = ref(null)
 
   // Questions deck (Q&A)
-  const { loadQuestions, getQuestionById } = useQuestions()
+  const { loadQuestions, getQuestionById, getRandomQuestion } = useQuestions()
 
   // Players state
   const currentPlayer = ref(1)
-  const player1Score = ref(0)
-  const player2Score = ref(0)
+  const player1Points = ref(0)
+  const player2Points = ref(0)
+  const player1Matches = ref(0)
+  const player2Matches = ref(0)
   const player1Attempts = ref(0)
   const player2Attempts = ref(0)
   const player1Name = ref('Kelompok 1')
@@ -39,6 +46,64 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const showContinueChoice = ref(false)
   const isFirstAttemptInTurn = ref(true)
   const isProcessingClick = ref(false)
+
+  // Per-card question & clue state
+  // Structure: { [position: number]: { questionId: number, revealed: number[], wrong: number } }
+  const cardQuestionState = ref({})
+
+  const ensureCardQuestionState = (position) => {
+    if (!position) return
+    if (!cardQuestionState.value[position]) {
+      const q = getQuestionById(position)
+      const qid = q?.id ?? 1
+      cardQuestionState.value[position] = { questionId: qid, revealed: [], wrong: 0 }
+    }
+  }
+
+  const getRevealedIndices = (position) => {
+    const st = cardQuestionState.value[position]
+    return st ? st.revealed : []
+  }
+
+  const getWrongCountForPosition = (position) => {
+    const st = cardQuestionState.value[position]
+    return st ? (st.wrong || 0) : 0
+  }
+
+  const revealRandomLetterForPosition = (position) => {
+    ensureCardQuestionState(position)
+    const st = cardQuestionState.value[position]
+    if (!st) return []
+    // Max 2 letters
+    if (st.revealed.length >= 2) return st.revealed
+    const q = getQuestionById(st.questionId)
+    const ans = (q?.answer || '').toString()
+    const candidates = []
+    for (let i = 0; i < ans.length; i++) {
+      const ch = ans[i]
+      const isAlphaNum = /[A-Za-z0-9]/.test(ch)
+      if (isAlphaNum && !st.revealed.includes(i)) candidates.push(i)
+    }
+    if (candidates.length === 0) return st.revealed
+    const idx = candidates[Math.floor(Math.random() * candidates.length)]
+    st.revealed.push(idx)
+    return st.revealed
+  }
+
+  const swapQuestionForCard = (position) => {
+    ensureCardQuestionState(position)
+    const st = cardQuestionState.value[position]
+    if (!st) return
+    let next = getRandomQuestion()
+    let guard = 0
+    while (next && next.id === st.questionId && guard < 10) {
+      next = getRandomQuestion()
+      guard++
+    }
+    if (next && next.id) st.questionId = next.id
+    st.revealed = []
+    st.wrong = 0
+  }
 
   // Getters
   const cardRows = computed(() => {
@@ -72,14 +137,15 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     cards.value = numbers.map((number) => ({ number, isFlipped: false, isMatched: false }))
     openedCards.value = []
     matchedPairs.value = 0
-    score.value = 0
     attempts.value = 0
     timer.value = 0
     gameCompleted.value = false
     isCardDisabled.value = false
     currentPlayer.value = 1
-    player1Score.value = 0
-    player2Score.value = 0
+    player1Points.value = 0
+    player2Points.value = 0
+    player1Matches.value = 0
+    player2Matches.value = 0
     player1Attempts.value = 0
     player2Attempts.value = 0
     winner.value = null
@@ -87,6 +153,12 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     showContinueChoice.value = false
     isFirstAttemptInTurn.value = true
     isProcessingClick.value = false
+
+    // Init poin per kartu: set 100 untuk setiap posisi kartu
+    cardPoints.value = {}
+    for (let pos = 1; pos <= cards.value.length; pos++) {
+      cardPoints.value[pos] = 100
+    }
   }
 
   const startTimer = () => {
@@ -160,7 +232,9 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     currentTurnAttempts.value++
     pendingCardIndex.value = cardIndex
     const cardPosition = cardIndex + 1
-    currentQuestion.value = getQuestionById(cardPosition)
+    ensureCardQuestionState(cardPosition)
+    const st = cardQuestionState.value[cardPosition]
+    currentQuestion.value = getQuestionById(st.questionId)
     showQuestionModal.value = true
 
     setTimeout(() => {
@@ -173,6 +247,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
 
     const cardIndex = pendingCardIndex.value
     const currentPlayerBeforeMatch = currentPlayer.value
+    const cardPosition = cardIndex + 1
 
     attempts.value++
     if (currentPlayerBeforeMatch === 1) {
@@ -181,10 +256,15 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       player2Attempts.value++
     }
 
+    // Award poin kartu kepada pemain yang menjawab benar (tanpa emit event)
+    const gainedFromCard = awardCardPointsToPlayerSilent(cardPosition, currentPlayerBeforeMatch)
+
     showQuestionModal.value = false
     currentQuestion.value = null
     pendingCardIndex.value = null
     cards.value[cardIndex].isFlipped = true
+    // Cleanup per-card state when matched
+    if (cardQuestionState.value[cardPosition]) delete cardQuestionState.value[cardPosition]
 
     const matchingCardIndex = openedCards.value.find(
       (openIndex) =>
@@ -198,18 +278,35 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       cards.value[cardIndex].isMatched = true
       cards.value[matchingCardIndex].isMatched = true
       matchedPairs.value++
-      score.value += 1
 
-      if (currentPlayerBeforeMatch === 1) player1Score.value += 1
-      else player2Score.value += 1
+      // Catat match untuk pemain saat ini (untuk tie-breaker)
+      if (currentPlayerBeforeMatch === 1) player1Matches.value++
+      else player2Matches.value++
+
+      // Bonus poin saat terjadi match
+      const matchBonus = 100
+      if (currentPlayerBeforeMatch === 1) player1Points.value += matchBonus
+      else player2Points.value += matchBonus
+
+      // Emit satu event total: poin kartu + bonus match
+      const totalGain = (gainedFromCard || 0) + matchBonus
+      if (totalGain > 0) registerPointGain(currentPlayerBeforeMatch, totalGain)
 
       if (matchedPairs.value === 7) {
         gameCompleted.value = true
         stopTimer()
         resetTurnState()
-        if (player1Score.value > player2Score.value) winner.value = 1
-        else if (player2Score.value > player1Score.value) winner.value = 2
-        else winner.value = 'tie'
+        // Winner by total points; tie-breaker by total matches
+        if (player1Points.value > player2Points.value) {
+          winner.value = 1
+        } else if (player2Points.value > player1Points.value) {
+          winner.value = 2
+        } else {
+          // tie on points -> compare matches
+          if (player1Matches.value > player2Matches.value) winner.value = 1
+          else if (player2Matches.value > player1Matches.value) winner.value = 2
+          else winner.value = 'tie'
+        }
         return
       }
 
@@ -234,6 +331,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
           }
         }, 1000)
       }
+      // Tidak match: emit event hanya dari poin kartu jika ada
+      if (gainedFromCard > 0) registerPointGain(currentPlayerBeforeMatch, gainedFromCard)
     }
   }
 
@@ -243,6 +342,18 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     attempts.value++
     if (currentPlayer.value === 1) player1Attempts.value++
     else player2Attempts.value++
+
+    const pos = (pendingCardIndex.value ?? -1) + 1
+    if (pos > 0) {
+      ensureCardQuestionState(pos)
+      const st = cardQuestionState.value[pos]
+      if (st) {
+        st.wrong = (st.wrong || 0) + 1
+        if (st.wrong >= 3) {
+          swapQuestionForCard(pos)
+        }
+      }
+    }
 
     showQuestionModal.value = false
     currentQuestion.value = null
@@ -285,6 +396,58 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     loadQuestions()
   }
 
+  // Reveal clue for the currently open card (one random letter, max 2)
+  const revealClue = () => {
+    if (pendingCardIndex.value === null) return
+    const position = pendingCardIndex.value + 1
+    // Kurangi poin hanya jika berhasil mengungkap huruf baru
+    ensureCardQuestionState(position)
+    const before = (cardQuestionState.value[position]?.revealed?.length) || 0
+    revealRandomLetterForPosition(position)
+    const after = (cardQuestionState.value[position]?.revealed?.length) || 0
+    if (after > before) {
+      reduceCardPoints(position, 20)
+    }
+  }
+
+  // Points helpers
+  const getCardPoints = (position) => {
+    return cardPoints.value[position] ?? 0
+  }
+
+  const reduceCardPoints = (position, amount) => {
+    if (cardPoints.value[position] == null) cardPoints.value[position] = 100
+    cardPoints.value[position] = Math.max(0, (cardPoints.value[position] || 0) - amount)
+  }
+
+  const awardCardPointsToPlayer = (position, playerId) => {
+    const pts = cardPoints.value[position] ?? 0
+    if (pts > 0) {
+      if (playerId === 1) player1Points.value += pts
+      else player2Points.value += pts
+      // Setelah diambil, poin kartu jadi 0
+      cardPoints.value[position] = 0
+      registerPointGain(playerId, pts)
+    }
+  }
+
+  // Versi silent: tidak emit event; mengembalikan jumlah poin yang dipindahkan
+  const awardCardPointsToPlayerSilent = (position, playerId) => {
+    const pts = cardPoints.value[position] ?? 0
+    if (pts > 0) {
+      if (playerId === 1) player1Points.value += pts
+      else player2Points.value += pts
+      cardPoints.value[position] = 0
+      return pts
+    }
+    return 0
+  }
+
+  // Emit event animasi poin
+  const registerPointGain = (playerId, amount) => {
+    pointGainEvent.value = { playerId, amount, ts: Date.now() }
+  }
+
   return {
     // state
     cards,
@@ -293,7 +456,6 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     gameStarted,
     namesSet,
     gameCompleted,
-    score,
     attempts,
     timer,
     isCardDisabled,
@@ -303,8 +465,6 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     pendingCardIndex,
 
     currentPlayer,
-    player1Score,
-    player2Score,
     player1Attempts,
     player2Attempts,
     player1Name,
@@ -321,6 +481,17 @@ export const useMatchGameStore = defineStore('matchGame', () => {
 
     // actions
     init,
+    // points
+    player1Points,
+    player2Points,
+    player1Matches,
+    player2Matches,
+    getCardPoints,
+    pointGainEvent,
+    
+    getWrongCountForPosition,
+    getRevealedIndices,
+    revealClue,
     startGame,
     resetGame,
     resetToNameInput,

@@ -14,11 +14,11 @@ defineProps({
     type: String,
     required: true,
   },
-  player1Score: {
+  player1Points: {
     type: Number,
     required: true,
   },
-  player2Score: {
+  player2Points: {
     type: Number,
     required: true,
   },
@@ -115,7 +115,7 @@ const isMinimized = ref(false)
             <div class="font-bold text-amber-800 text-sm sm:text-base">{{ player1Name }}</div>
             <div class="text-xs sm:text-sm text-amber-700">
               <div>
-                Skor: <span class="font-bold">{{ player1Score }}</span>
+                Poin: <span class="font-bold">{{ player1Points }}</span>
               </div>
               <div>
                 Percobaan: <span class="font-bold">{{ player1Attempts }}</span>
@@ -126,7 +126,7 @@ const isMinimized = ref(false)
             <div class="font-bold text-green-800 text-sm sm:text-base">{{ player2Name }}</div>
             <div class="text-xs sm:text-sm text-green-700">
               <div>
-                Skor: <span class="font-bold">{{ player2Score }}</span>
+                Poin: <span class="font-bold">{{ player2Points }}</span>
               </div>
               <div>
                 Percobaan: <span class="font-bold">{{ player2Attempts }}</span>

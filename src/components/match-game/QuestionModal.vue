@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useMatchGameStore } from '@/stores/matchGame'
 
 const props = defineProps({
   questionData: {
@@ -26,28 +27,36 @@ const props = defineProps({
 
 const emit = defineEmits(['answer-correct', 'answer-wrong', 'close-modal'])
 
-// State untuk Clue
-const revealedCluesCount = ref(0)
-const totalClues = computed(() =>
-  Array.isArray(props.questionData.clues) ? props.questionData.clues.length : 0,
-)
-const revealedClues = computed(() =>
-  (props.questionData.clues || []).slice(0, revealedCluesCount.value),
-)
-const canRevealMore = computed(() => revealedCluesCount.value < totalClues.value)
+// Store untuk clue huruf hangman
+const mg = useMatchGameStore()
+const cardPoints = computed(() => mg.getCardPoints(props.cardPosition))
 
-const revealNextClue = () => {
-  if (canRevealMore.value) revealedCluesCount.value++
-}
-
-const revealAllClues = () => {
-  revealedCluesCount.value = totalClues.value
+// Hangman: tampilkan jawaban dalam bentuk placeholder dengan _ dan huruf terungkap
+const revealedIndices = computed(() => mg.getRevealedIndices(props.cardPosition))
+const answerText = computed(() => (props.questionData?.answer || '').toString())
+const displayChars = computed(() => {
+  const ans = answerText.value
+  const idxs = revealedIndices.value || []
+  return ans.split('').map((ch, i) => {
+    if (ch === ' ') return ' '
+    if (/[A-Za-z0-9]/.test(ch)) {
+      return idxs.includes(i) ? ch.toUpperCase() : '_'
+    }
+    return ch
+  })
+})
+const canRevealLetter = computed(() => (revealedIndices.value?.length || 0) < 2)
+const onRevealLetter = () => {
+  if (canRevealLetter.value) mg.revealClue()
 }
 
 // Status untuk menampilkan feedback setelah game master memberikan jawaban
 const showFeedback = ref(false)
 const isCorrect = ref(false)
 const feedbackMessage = ref('')
+// Tampilkan jawaban benar pada salah ke-3
+const showCorrectAnswer = ref(false)
+const wrongCountBefore = computed(() => mg.getWrongCountForPosition(props.cardPosition))
 
 // Timer state - 30 detik untuk menjawab pertanyaan
 const timeLeft = ref(30)
@@ -90,15 +99,9 @@ const stopTimer = () => {
   isTimerActive.value = false
 }
 
-// Fungsi ketika waktu habis
+// Fungsi ketika waktu habis: jangan melakukan apa-apa selain menghentikan timer
 const handleTimeout = () => {
   stopTimer()
-  isTimeOut.value = true
-  feedbackMessage.value = '⏰ Waktu Habis!'
-  showFeedback.value = true
-
-  // Tidak melakukan apa-apa ketika waktu habis
-  // Hanya menampilkan notifikasi, modal tetap terbuka
 }
 
 const handleGameMasterAnswer = (correct) => {
@@ -112,10 +115,20 @@ const handleGameMasterAnswer = (correct) => {
       emit('answer-correct', props.cardPosition)
     }, 1500)
   } else {
-    feedbackMessage.value = '❌ Jawaban Salah!'
-    setTimeout(() => {
-      emit('answer-wrong')
-    }, 1500)
+    const willBeThirdWrong = (wrongCountBefore.value + 1) >= 3
+    if (willBeThirdWrong) {
+      feedbackMessage.value = '❌ Jawaban Salah!'
+      showCorrectAnswer.value = true
+      // Beri waktu untuk membaca jawaban yang benar, baru emit wrong agar store mengganti soal
+      setTimeout(() => {
+        emit('answer-wrong')
+      }, 2500)
+    } else {
+      feedbackMessage.value = '❌ Jawaban Salah!'
+      setTimeout(() => {
+        emit('answer-wrong')
+      }, 1500)
+    }
   }
 }
 
@@ -126,8 +139,6 @@ const handleClose = () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  // Reset jumlah clue yang ditampilkan saat modal dibuka
-  revealedCluesCount.value = 0
   startTimer()
 })
 
@@ -153,13 +164,27 @@ onUnmounted(() => {
             <div class="text-amber-800 font-semibold">Giliran: {{ playerName }}</div>
           </div>
           <div class="flex items-center gap-2">
+            <!-- Minimize (kiri) -->
             <button
               @click="isMinimized = true"
               class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
               title="Minimize"
-            >▁</button>
+            >
+              ▁
+            </button>
+            <!-- Close (kanan) -->
+            <button
+              @click="handleClose"
+              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              title="Tutup"
+              aria-label="Tutup"
+            >
+              ✕
+            </button>
           </div>
         </div>
+
+        
 
         <!-- Timer Display -->
         <div v-if="!showFeedback && !isTimeOut" class="mb-4">
@@ -205,44 +230,44 @@ onUnmounted(() => {
               {{ questionData.question }}
             </p>
           </div>
+          <!-- Card Points Display (moved below the question) -->
+          <div class="mt-3 flex justify-center">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border border-amber-300 text-sm font-semibold shadow-sm"
+              title="Poin kartu saat ini"
+            >
+              <span class="text-base">🎯</span>
+              <span>Poin Kartu:</span>
+              <span class="tabular-nums font-bold">{{ cardPoints }}</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Clue Section -->
-        <div v-if="!showFeedback && questionData.clues && questionData.clues.length" class="mb-6">
+        <!-- Jawaban (Hangman) + Clue Huruf -->
+        <div v-if="!showFeedback" class="mb-6">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-amber-900 text-lg sm:text-xl font-bold">💡 Clue</h3>
+            <h3 class="text-amber-900 text-lg sm:text-xl font-bold">🔤 Jawaban</h3>
             <span class="text-xs font-semibold bg-amber-600 text-white px-2.5 py-1 rounded-full">
-              {{ revealedCluesCount }} / {{ totalClues }}
+              {{ revealedIndices?.length || 0 }} / 2
             </span>
           </div>
 
-          <div class="bg-white rounded-lg border border-amber-300 shadow-sm p-4">
-            <ul v-if="revealedClues.length > 0" class="space-y-2">
-              <li
-                v-for="(clue, idx) in revealedClues"
-                :key="idx"
-                class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-md px-3 py-2"
-              >
-                <span class="text-amber-700 font-bold">#{{ idx + 1 }}</span>
-                <span class="text-amber-900">{{ clue }}</span>
-              </li>
-            </ul>
-            <div v-else class="text-sm text-amber-700 italic">Belum ada clue ditampilkan.</div>
+          <div class="bg-white rounded-lg border border-amber-300 shadow-sm p-5">
+            <div
+              class="flex flex-wrap justify-center gap-2 font-mono text-xl sm:text-2xl tracking-widest text-amber-900"
+            >
+              <span v-for="(ch, i) in displayChars" :key="i" class="min-w-5 text-center">
+                {{ ch === ' ' ? '\u00A0' : ch }}
+              </span>
+            </div>
 
-            <div class="mt-4 flex flex-wrap gap-3 justify-center">
+            <div class="mt-4 flex justify-center">
               <button
-                @click="revealNextClue"
-                :disabled="!canRevealMore"
+                @click="onRevealLetter"
+                :disabled="!canRevealLetter"
                 class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
               >
                 💡 Tampilkan Clue
-              </button>
-              <button
-                @click="revealAllClues"
-                :disabled="revealedCluesCount === totalClues || totalClues === 0"
-                class="px-4 py-2.5 bg-amber-100 text-amber-800 rounded-lg font-semibold hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
-              >
-                🔎 Tampilkan Semua
               </button>
             </div>
           </div>
@@ -259,6 +284,15 @@ onUnmounted(() => {
             }"
           >
             {{ feedbackMessage }}
+          </div>
+          <!-- Correct Answer Reveal on 3rd wrong -->
+          <div v-if="showCorrectAnswer" class="mt-4">
+            <div class="text-center text-amber-900 font-semibold mb-2">Jawaban yang benar:</div>
+            <div
+              class="bg-white p-4 rounded-lg border border-amber-300 shadow-sm text-center font-mono text-xl sm:text-2xl tracking-wider text-amber-900"
+            >
+              {{ answerText }}
+            </div>
           </div>
         </div>
 
