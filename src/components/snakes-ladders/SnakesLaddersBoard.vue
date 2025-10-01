@@ -77,6 +77,7 @@
           :players="players"
           :board-size="boardSize"
           :markers="markers"
+          :checkpoint-cells="checkpointCells"
           class="w-full"
         />
       </div>
@@ -121,6 +122,7 @@
       :currentPlayerId="landedPlayerId"
       :question="challengeQuestion"
       :disabledOptions="challengeDisabledOptions"
+      :source="activeChallengeSource"
       @close="closeChallenge"
       @decide="onChallengeDecide"
       @judge="onChallengeJudge"
@@ -189,12 +191,14 @@ const {
   finishPlayerRank,
   showFinalModal,
   markers,
+  checkpointCells,
   showChallengeModal,
   challengeType,
   challengeQuestion,
   challengeDisabledOptions,
   landedPlayerId,
   selectedAnswererId,
+  activeChallengeSource,
   showRewardModal,
   rewardPlayerId,
   selectedPlayerName,
@@ -237,6 +241,7 @@ const movePlayerForward = async () => {
   if (player.finished) return
   const maxCellVal = maxCell.value
   const newPosition = Math.min(player.position + steps.value, maxCellVal)
+  const startPos = player.position
 
   // Start animation
   isAnimating.value = true
@@ -268,9 +273,16 @@ const movePlayerForward = async () => {
       }
     } else {
       // Check challenge marker setelah mendarat (hanya jika belum finish)
-      await sl.maybeTriggerChallenge(playerIndex)
-      // Jika tidak ada tantangan di sel ini, langsung ganti giliran
-      if (!markers.value[newPosition]) {
+      const crossed = sl.getCrossedCheckpointCell(startPos, newPosition, player.id)
+      const markerTriggered = await sl.maybeTriggerChallenge(playerIndex)
+      if (markerTriggered) {
+        // Jika marker terpicu, tetap tandai checkpoint sebagai visited agar tidak ditanya lagi
+        if (crossed) sl.markVisitedCheckpoint(player.id, crossed)
+      } else if (crossed) {
+        // Tidak ada marker, tapi melewati checkpoint yang belum visited -> tampilkan challenge checkpoint
+        await sl.triggerCheckpointChallenge(playerIndex, crossed)
+      } else {
+        // Jika tidak ada tantangan apapun, langsung ganti giliran
         selectedPlayerId.value = sl.getNextActivePlayerId(player.id)
       }
     }
@@ -290,6 +302,7 @@ const movePlayerBackward = async () => {
   if (player.finished) return
   const minCell = 1
   const newPosition = Math.max(player.position - steps.value, minCell)
+  const startPos = player.position
 
   // Start animation
   isAnimating.value = true
@@ -307,9 +320,15 @@ const movePlayerBackward = async () => {
   }
 
   // Check challenge marker after landing (hanya jika belum finish)
-  await sl.maybeTriggerChallenge(playerIndex)
-  const newPos = players.value[playerIndex].position
-  if (!markers.value[newPos]) {
+  const crossed = sl.getCrossedCheckpointCell(startPos, newPosition, player.id)
+  const markerTriggered = await sl.maybeTriggerChallenge(playerIndex)
+  if (markerTriggered) {
+    if (crossed) sl.markVisitedCheckpoint(player.id, crossed)
+  } else if (crossed) {
+    // Saat mundur: hanya tandai visited, tidak memicu soal checkpoint
+    sl.markVisitedCheckpoint(player.id, crossed)
+    selectedPlayerId.value = sl.getNextActivePlayerId(player.id)
+  } else {
     selectedPlayerId.value = sl.getNextActivePlayerId(player.id)
   }
 }
@@ -422,6 +441,7 @@ const onChallengeJudge = async ({ answererId, isCorrect, selectedIndex }) => {
     // cleanup setelah selesai tanpa reward modal
     landedPlayerId.value = null
     selectedAnswererId.value = null
+    activeChallengeSource.value = null
   }
 }
 
@@ -534,6 +554,7 @@ const onRewardChoose = async ({ action, targetId }) => {
   rewardPlayerId.value = null
   landedPlayerId.value = null
   selectedAnswererId.value = null
+  activeChallengeSource.value = null
 }
 
 // Helper round-robin disediakan oleh store: sl.getNextActivePlayerId

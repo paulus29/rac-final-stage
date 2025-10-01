@@ -2,6 +2,14 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { useQuestionDeck } from '@/composables/useQuestionDeck'
 
+/**
+ * Store Pinia untuk game Ular Tangga (Snakes & Ladders) dengan sistem tantangan.
+ * Berisi:
+ * - State pemain, papan, marker tantangan ("?" opsional, "!" wajib), dan checkpoint per baris.
+ * - Integrasi deck pertanyaan pilihan ganda.
+ * - Logika pemetaan pertanyaan permanen per sel, tracking opsi salah, dan rotasi soal.
+ * - Mekanisme checkpoint satu-kali per pemain saat melintasi awal baris.
+ */
 export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   // Core game state
   const players = ref([
@@ -58,11 +66,13 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   // Challenge system state
   // markers: { [cellNumber]: 'optional' | 'forced' }
   const markers = ref({})
+  const checkpointCells = ref([])
   const showChallengeModal = ref(false)
   const challengeType = ref('optional')
   const challengeQuestion = ref(null)
   const landedPlayerId = ref(null)
   const selectedAnswererId = ref(null)
+  const activeChallengeSource = ref(null)
 
   // Reward state
   const showRewardModal = ref(false)
@@ -79,6 +89,8 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   const activeChallengeCell = ref(null)
   // Global list of question IDs that have been asked (any cell)
   const usedQuestionIds = ref([])
+  // Checkpoint visited per playerId: { [playerId]: number[] }
+  const visitedCheckpoints = ref({})
 
   // Getters
   const selectedPlayerName = computed(() => {
@@ -99,10 +111,20 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   }
 
   // Actions
+  /**
+   * Menghasilkan peta marker "?" (optional) dan "!" (forced) secara acak
+   * dengan rasio 1/3 dari sel eligible (tanpa start/finish dan tanpa checkpoint).
+   */
   const generateMarkers = () => {
     const total = boardSize.value * boardSize.value
     const eligible = []
     for (let n = 2; n <= total - 1; n++) eligible.push(n)
+    if (checkpointCells.value && checkpointCells.value.length) {
+      const skip = new Set(checkpointCells.value)
+      for (let i = eligible.length - 1; i >= 0; i--) {
+        if (skip.has(eligible[i])) eligible.splice(i, 1)
+      }
+    }
     // Gunakan rasio 1/3 dari sel yang memenuhi syarat (tanpa start & finish)
     const count = Math.floor(eligible.length / 3)
     const chosen = shuffle(eligible).slice(0, count)
@@ -115,23 +137,81 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     markers.value = map
   }
 
+  /**
+   * Menentukan sel checkpoint di awal baris (mengikuti arah zigzag):
+   * - Baris genap (dari bawah) → awal baris di kiri.
+   * - Baris ganjil (dari bawah) → awal baris di kanan.
+   * Selang-seling antar baris (ambil setengahnya) agar beban pertanyaan seimbang.
+   */
+  const generateCheckpoints = () => {
+    const cells = []
+    const size = boardSize.value
+    if (size <= 2) {
+      checkpointCells.value = []
+      return
+    }
+    // Baris logis dihitung dari bawah (row 0 = start row, row size-1 = finish row)
+    for (let logicalRow = 1; logicalRow < size - 1; logicalRow++) {
+      // Selang-seling: ambil hanya baris ganjil (setengah dari total baris tengah)
+      const includeRow = logicalRow % 2 === 1
+      if (!includeRow) continue
+      const isEvenLogical = logicalRow % 2 === 0
+      const cellNumber = isEvenLogical
+        ? logicalRow * size + 1 // awal baris di kiri untuk baris genap (arah kiri->kanan)
+        : (logicalRow + 1) * size // awal baris di kanan untuk baris ganjil (arah kanan->kiri)
+      cells.push(cellNumber)
+    }
+    checkpointCells.value = cells
+  }
+
+  /**
+   * Inisialisasi game: set pemain aktif, generate checkpoint & marker,
+   * memuat deck pertanyaan, dan memetakan soal ke semua sel tantangan.
+   */
   const init = async () => {
     // Set default selected player & prepare deck/markers
     selectedPlayerId.value = players.value[0]?.id ?? null
+    generateCheckpoints()
     generateMarkers()
     await deck.load()
     assignQuestionsToAllMarkers()
+    // init visited
+    visitedCheckpoints.value = {}
   }
 
   const getUsedSet = () => new Set(usedQuestionIds.value)
 
+  /**
+   * Mengambil gabungan seluruh sel yang dapat menantang: marker ("?"/"!") + checkpoint.
+   */
+  const getAllChallengeCells = () => {
+    const union = new Set()
+    Object.keys(markers.value).forEach((k) => union.add(parseInt(k, 10)))
+    checkpointCells.value.forEach((cell) => union.add(cell))
+    return Array.from(union.values())
+  }
+
+  /**
+   * Memetakan pertanyaan ke semua sel tantangan (sekali di awal),
+   * memaksimalkan keunikan sementara dan membersihkan entry yang tidak lagi valid.
+   */
   const assignQuestionsToAllMarkers = () => {
-    const markerCells = Object.keys(markers.value).map((k) => parseInt(k, 10))
+    const challengeCells = getAllChallengeCells()
+    if (challengeCells.length === 0) return
     if (!deck.deck || !Array.isArray(deck.deck.value)) return
     const all = deck.deck.value
     const assigned = new Set()
     let cursor = 0
-    for (const cell of markerCells) {
+    const challengeSet = new Set(challengeCells)
+
+    // Bersihkan entry yang tidak lagi termasuk sel tantangan
+    for (const key of Object.keys(cellQuestions.value)) {
+      const numericKey = parseInt(key, 10)
+      if (!challengeSet.has(numericKey)) delete cellQuestions.value[key]
+    }
+
+    for (const cell of challengeCells) {
+      if (cellQuestions.value[cell]) continue
       // Pick next question not yet assigned in this pass to maximize uniqueness
       let chosen = null
       for (let tries = 0; tries < all.length; tries++) {
@@ -157,12 +237,19 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     }
   }
 
+  /**
+   * Menjamin sel memiliki entry pertanyaan. Jika belum, panggil pemetaan ulang.
+   */
   const ensureCellHasQuestion = (cell) => {
     if (!cellQuestions.value[cell]) {
       assignQuestionsToAllMarkers()
     }
   }
 
+  /**
+   * Menandai bahwa soal pada sel ini sudah pernah ditanyakan (asked),
+   * dan menambah id soal ke daftar global usedQuestionIds.
+   */
   const markQuestionAskedForCell = (cell) => {
     const entry = cellQuestions.value[cell]
     if (!entry) return
@@ -172,6 +259,10 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     }
   }
 
+  /**
+   * Mengganti pertanyaan untuk sebuah sel dengan prioritas
+   * ke soal yang belum pernah ditanyakan secara global.
+   */
   const reassignCellQuestion = (cell) => {
     if (!deck.deck || !Array.isArray(deck.deck.value)) return
     const all = deck.deck.value
@@ -191,26 +282,32 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     }
   }
 
+  /** Memilih pemain aktif pada panel Game Master. */
   const selectPlayer = (playerId) => {
     selectedPlayerId.value = playerId
   }
 
+  /** Menambah jumlah langkah (maks 6). */
   const incrementSteps = () => {
     if (steps.value < 6) steps.value++
   }
 
+  /** Mengurangi jumlah langkah (min 1). */
   const decrementSteps = () => {
     if (steps.value > 1) steps.value--
   }
 
+  /** Set jumlah langkah secara langsung (dipakai oleh input number). */
   const setSteps = (value) => {
     steps.value = value
   }
 
+  /** Menampilkan modal konfirmasi reset permainan. */
   const resetGame = () => {
     showResetModal.value = true
   }
 
+  /** Melakukan reset penuh state permainan ke kondisi awal. */
   const confirmReset = () => {
     players.value.forEach((player) => {
       player.position = 1
@@ -233,15 +330,19 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     landedPlayerId.value = null
     selectedAnswererId.value = null
     showRewardModal.value = false
+    generateCheckpoints()
     generateMarkers()
     // Reset mapping & usage tracking
     cellQuestions.value = {}
     usedQuestionIds.value = []
     activeChallengeCell.value = null
+    activeChallengeSource.value = null
     challengeDisabledOptions.value = []
+    visitedCheckpoints.value = {}
     assignQuestionsToAllMarkers()
   }
 
+  /** Set nama 3 pemain dan menutup modal input nama. */
   const startGameSetNames = ({ player1Name, player2Name, player3Name }) => {
     if (import.meta.env.DEV) {
       console.log('[SL Store] startGameSetNames', {
@@ -257,6 +358,10 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     selectedPlayerId.value = players.value[0]?.id ?? null
   }
 
+  /**
+   * Mengembalikan ID pemain berikutnya yang belum finish secara round-robin,
+   * dimulai dari pemain setelah fromId.
+   */
   const getNextActivePlayerId = (fromId) => {
     if (!players.value || players.value.length === 0) return null
     const unfinished = players.value.filter((p) => !p.finished)
@@ -272,15 +377,51 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     return unfinished[0].id
   }
 
+  /** Mengecek apakah suatu sel adalah checkpoint. */
+  const isCheckpointCell = (cell) => checkpointCells.value.includes(cell)
+  /** Mendapatkan array checkpoint yang sudah dikunjungi oleh pemain tertentu. */
+  const getVisitedList = (playerId) => {
+    if (!visitedCheckpoints.value[playerId]) visitedCheckpoints.value[playerId] = []
+    return visitedCheckpoints.value[playerId]
+  }
+  /** Apakah pemain sudah pernah melewati checkpoint tertentu. */
+  const hasVisitedCheckpoint = (playerId, cell) => getVisitedList(playerId).includes(cell)
+  /** Menandai checkpoint sebagai sudah dikunjungi untuk pemain tertentu. */
+  const markVisitedCheckpoint = (playerId, cell) => {
+    const list = getVisitedList(playerId)
+    if (!list.includes(cell)) list.push(cell)
+  }
+
+  /**
+   * Mendeteksi checkpoint pertama yang dilintasi pada lintasan [from -> to].
+   * Mengembalikan nomor sel checkpoint jika ditemukan dan belum visited, selain itu null.
+   */
+  const getCrossedCheckpointCell = (from, to, playerId) => {
+    if (from === to) return null
+    const dir = to > from ? 1 : -1
+    for (let pos = from + dir; dir > 0 ? pos <= to : pos >= to; pos += dir) {
+      if (isCheckpointCell(pos) && !hasVisitedCheckpoint(playerId, pos)) {
+        return pos
+      }
+    }
+    return null
+  }
+
+  /**
+   * Memicu tantangan berdasarkan marker pada sel mendarat saat ini.
+   * Mengabaikan checkpoint (ditangani terpisah). Return true jika tantangan terbuka.
+   */
   const maybeTriggerChallenge = async (playerIndex) => {
-    if (players.value[playerIndex]?.finished) return
+    if (players.value[playerIndex]?.finished) return false
     const cell = players.value[playerIndex]?.position
     const type = markers.value[cell]
-    if (!type) return
+    if (!type) return false
 
     landedPlayerId.value = players.value[playerIndex].id
     challengeType.value = type
-    selectedAnswererId.value = type === 'forced' ? landedPlayerId.value : null
+    activeChallengeSource.value = 'marker'
+    const isForcedLike = type === 'forced'
+    selectedAnswererId.value = isForcedLike ? landedPlayerId.value : null
     activeChallengeCell.value = cell
     ensureCellHasQuestion(cell)
     // Ambil pertanyaan yang sudah dipetakan untuk sel ini
@@ -299,8 +440,44 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
       challengeDisabledOptions.value = []
     }
     showChallengeModal.value = true
+    return true
   }
 
+  /**
+   * Memicu tantangan checkpoint (tipe forced) untuk pemain yang baru melintasinya.
+   * Menandai checkpoint sebagai visited agar tidak terulang untuk pemain itu.
+   */
+  const triggerCheckpointChallenge = async (playerIndex, checkpointCell) => {
+    if (players.value[playerIndex]?.finished) return false
+    const playerId = players.value[playerIndex].id
+    if (hasVisitedCheckpoint(playerId, checkpointCell)) return false
+
+    landedPlayerId.value = playerId
+    challengeType.value = 'forced'
+    activeChallengeSource.value = 'checkpoint'
+    selectedAnswererId.value = landedPlayerId.value
+    activeChallengeCell.value = checkpointCell
+    ensureCellHasQuestion(checkpointCell)
+    const entry = cellQuestions.value[checkpointCell]
+    if (entry && entry.q) {
+      challengeQuestion.value = entry.q
+      challengeDisabledOptions.value = [...(entry.wrongOptions || [])]
+    } else {
+      challengeQuestion.value = {
+        id: 0,
+        question: 'Pertanyaan tidak tersedia. Coba lagi.',
+        options: ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'],
+        correctIndex: 0,
+      }
+      challengeDisabledOptions.value = []
+    }
+    // tandai checkpoint telah dilewati untuk pemain ini
+    markVisitedCheckpoint(playerId, checkpointCell)
+    showChallengeModal.value = true
+    return true
+  }
+
+  /** Menutup modal tantangan dan meneruskan giliran ke pemain berikutnya. */
   const closeChallenge = () => {
     showChallengeModal.value = false
     // Jika tantangan ditutup (mis. memilih tidak membuka pada sel '!'), ganti giliran
@@ -308,12 +485,10 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
       selectedPlayerId.value = getNextActivePlayerId(landedPlayerId.value)
     }
     // Bersihkan state aktif tantangan
-    landedPlayerId.value = null
-    selectedAnswererId.value = null
-    activeChallengeCell.value = null
-    challengeDisabledOptions.value = []
+    clearChallengeContext()
   }
 
+  /** Dipanggil saat penjawab diputuskan (optional/forced). Menandai soal sebagai asked. */
   const onChallengeDecide = (answererId) => {
     selectedAnswererId.value = answererId
     // Tandai pertanyaan pada sel aktif sebagai sudah pernah ditanyakan saat penjawab diputuskan
@@ -323,6 +498,10 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   }
 
   // Update state per hasil jawaban (mark wrong options, or reassign question on correct)
+  /**
+   * Penilaian hasil jawaban: menandai opsi salah untuk sel (disable di kesempatan berikutnya),
+   * melakukan rotasi soal setelah 2x salah pada sel itu, dan ganti soal saat benar.
+   */
   const onJudgeResult = ({ isCorrect, selectedIndex = null }) => {
     const cell = activeChallengeCell.value
     if (!cell) return
@@ -343,6 +522,15 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     }
   }
 
+  /** Membersihkan seluruh context/jejak state tantangan yang sedang aktif. */
+  const clearChallengeContext = () => {
+    landedPlayerId.value = null
+    selectedAnswererId.value = null
+    activeChallengeCell.value = null
+    activeChallengeSource.value = null
+    challengeDisabledOptions.value = []
+  }
+
   return {
     // state
     players,
@@ -361,12 +549,14 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     showFinalModal,
 
     markers,
+    checkpointCells,
     showChallengeModal,
     challengeType,
     challengeQuestion,
     challengeDisabledOptions,
     landedPlayerId,
     selectedAnswererId,
+    activeChallengeSource,
 
     showRewardModal,
     rewardPlayerId,
@@ -378,6 +568,7 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     // actions
     init,
     generateMarkers,
+    generateCheckpoints,
     selectPlayer,
     incrementSteps,
     decrementSteps,
@@ -387,6 +578,9 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     startGameSetNames,
     getNextActivePlayerId,
     maybeTriggerChallenge,
+    getCrossedCheckpointCell,
+    triggerCheckpointChallenge,
+    markVisitedCheckpoint,
     closeChallenge,
     onChallengeDecide,
     onJudgeResult,

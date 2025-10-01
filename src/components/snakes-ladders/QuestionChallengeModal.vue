@@ -5,7 +5,7 @@
       class="fixed inset-0 z-[80] flex items-center justify-center p-4"
     >
       <!-- Overlay tanpa blur -->
-      <div class="absolute inset-0" @click="$emit('close')"></div>
+      <div class="absolute inset-0" @click="handleBackdrop"></div>
 
       <!-- Konten modal bergaya match-game -->
       <div
@@ -35,6 +35,7 @@
             </button>
             <!-- Close (X) button on the right -->
             <button
+              v-if="canDismiss"
               @click="handleClose"
               class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
               title="Tutup"
@@ -91,9 +92,11 @@
           </div>
         </div>
 
-        <!-- Step 1 (forced only): konfirmasi buka atau lewati -->
+        <!-- Step 1 (forced only): konfirmasi buka (baik marker '!' maupun checkpoint) -->
         <div v-else-if="type === 'forced' && !decided" class="space-y-4">
-          <p class="text-gray-700 text-center">Buka pertanyaan sekarang?</p>
+          <p class="text-gray-700 text-center">
+            {{ source === 'checkpoint' ? 'Checkpoint! Buka pertanyaan sekarang?' : 'Buka pertanyaan sekarang?' }}
+          </p>
           <div class="pt-1 flex gap-3 justify-center">
             <button
               @click="confirmOpenForced"
@@ -219,6 +222,7 @@ const props = defineProps({
   question: { type: Object, default: null },
   // indices of options that should be disabled due to previous wrong answers on this cell
   disabledOptions: { type: Array, default: () => [] },
+  source: { type: String, default: 'marker' },
 })
 
 const emit = defineEmits(['close', 'decide', 'judge'])
@@ -236,6 +240,9 @@ const isTimerActive = ref(true)
 const isTimeOut = ref(false)
 const isOptionLocked = ref(false)
 const resultStatus = ref('') // '', 'correct', 'incorrect'
+
+// Izinkan modal ditutup (X/backdrop) untuk semua sumber, termasuk checkpoint
+const canDismiss = computed(() => true)
 
 // Hanya lawan yang belum selesai yang dapat dilempar tantangan
 const opponents = computed(() =>
@@ -327,6 +334,11 @@ watch(
 const handleClose = () => {
   stopTimer()
   emit('close')
+}
+
+const handleBackdrop = () => {
+  if (!canDismiss.value) return
+  handleClose()
 }
 
 const selectSelf = () => {

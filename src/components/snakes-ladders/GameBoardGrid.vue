@@ -27,8 +27,7 @@
           v-if="markers && markers[cell.number]"
           class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
           :title="
-            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'
-          "
+            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'"
         >
           <span
             :class="[
@@ -39,6 +38,17 @@
             ]"
           >
             {{ markers[cell.number] === 'optional' ? '?' : '!' }}
+          </span>
+        </div>
+
+        <!-- Checkpoint watermark -->
+        <div
+          v-else-if="isCheckpoint(cell.number)"
+          class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
+          title="Checkpoint: Tantangan wajib"
+        >
+          <span class="select-none leading-none text-4xl sm:text-5xl lg:text-6xl text-emerald-500/55">
+            ⚑
           </span>
         </div>
 
@@ -156,6 +166,7 @@ const props = defineProps({
   boardSize: { type: Number, default: 8 },
   // markers: mapping nomor sel -> 'optional' ("?") atau 'forced' ("!")
   markers: { type: Object, default: () => ({}) },
+  checkpointCells: { type: Array, default: () => [] },
 })
 
 // Refs
@@ -263,6 +274,8 @@ const getMarkerRingClass = (cellNumber) => {
     ? 'ring-2 ring-amber-400/40 ring-offset-0'
     : 'ring-2 ring-rose-400/40 ring-offset-0'
 }
+
+const isCheckpoint = (cellNumber) => Array.isArray(props.checkpointCells) && props.checkpointCells.includes(cellNumber)
 
 // Special ring highlight for Start (1) and Finish (max)
 const getStartFinishRingClass = (cellNumber) => {
