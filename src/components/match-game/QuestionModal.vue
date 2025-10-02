@@ -111,9 +111,10 @@ const handleGameMasterAnswer = (correct) => {
 
   if (correct) {
     feedbackMessage.value = '✅ Jawaban Benar!'
+    showCorrectAnswer.value = true // Tampilkan jawaban benar
     setTimeout(() => {
       emit('answer-correct', props.cardPosition)
-    }, 1500)
+    }, 2000) // Tambah waktu untuk melihat jawaban
   } else {
     const willBeThirdWrong = (wrongCountBefore.value + 1) >= 3
     if (willBeThirdWrong) {

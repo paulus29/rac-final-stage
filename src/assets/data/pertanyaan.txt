@@ -1,30 +1,44 @@
-Apa nama aktivitas penipuan dengan mengirimkan email palsu untuk mencuri informasi? | Phishing
-Jenis malware apa yang mengenkripsi data korban dan meminta tebusan? | Ransomware
-Apa istilah untuk upaya menebak kata sandi dengan mencoba berbagai kombinasi secara otomatis? | Brute Force Attack
-Apa nama sistem keamanan yang menambahkan lapisan verifikasi kedua saat login? | Two-Factor Authentication
-Apa kepanjangan dari VPN dalam konteks jaringan komputer? | Virtual Private Network
-Apa protokol komunikasi yang digunakan untuk mengakses situs web secara aman? | HTTPS
-Apa nama teknik penyerangan yang menyamar sebagai situs atau identitas tepercaya? | Spoofing
-Jenis serangan apa yang dilakukan dengan membanjiri sistem dengan lalu lintas data secara berlebihan? | DDoS
-Apa nama program jahat yang merekam penekanan tombol pada keyboard? | Keylogger
-Apa istilah untuk strategi memindahkan risiko keamanan ke pihak lain, seperti melalui asuransi? | Asuransi Siber
-Apa istilah untuk kata sandi yang panjang dan terdiri dari beberapa kata unik? | Passphrase
-Dalam prinsip CIA, huruf 'C' merujuk pada apa? | Confidentiality
-Dalam prinsip CIA, huruf 'I' merujuk pada apa? | Integrity
-Dalam prinsip CIA, huruf 'A' merujuk pada apa? | Availability
-Apa istilah untuk proses memverifikasi identitas pengguna? | Autentikasi
-Apa istilah untuk sistem kontrol akses berdasarkan peran pengguna? | Role-Based Access Control
-Apa istilah untuk praktik memberikan hak akses seminimal mungkin kepada pengguna? | Least Privilege
-Apa nama proses memperbaiki celah atau kerentanan keamanan dalam perangkat lunak? | Patching
-Apa istilah untuk pengujian keamanan sistem secara terkendali dan legal? | Penetration Testing
-Apa nama bentuk phishing yang ditargetkan pada individu tertentu? | Spear Phishing
-Jenis malware apa yang menyamar sebagai program sah tetapi berbahaya? | Trojan
-Apa nama perangkat lunak yang menampilkan iklan secara agresif dan mengganggu? | Adware
-Apa istilah untuk kata sandi yang hanya berlaku satu kali saja? | One-Time Password
-Apa nama serangan sosial yang memancing korban dengan media seperti flashdisk? | Baiting
-Apa istilah untuk proses mengubah data agar tidak dapat dibaca oleh pihak yang tidak berwenang? | Enkripsi
-Apa kepanjangan dari IRP dalam konteks keamanan informasi? | Incident Response Plan
-Apa kepanjangan dari IDS dalam sistem deteksi gangguan? | Intrusion Detection System
-Apa kepanjangan dari IPS dalam sistem pencegahan gangguan? | Intrusion Prevention System
-Apa standar keamanan jaringan Wi-Fi rumah yang paling umum digunakan? | WPA2
-Apa nama teknik menyembunyikan data di dalam file lain, seperti gambar atau audio? | Steganografi
+Apa nama sebuah benda yang kalau ditutup berubah jadi tongkat, tapi ketika dibuka malah jadi tenda? | Payung
+Apakah huruf keempat dalam abjad? | Huruf a
+Seorang pria terjebak di dalam gua, ia kebingungan karena gua tersebut gelap. Di tangannya ada lilin dan obor. Apa yang harus ia nyalakan terlebih dahulu? | Korek Api
+Kalau sedang sendiri, kakinya ada empat, kalau berdua, kakinya jadi ada delapan. Siapakah aku? | Kursi
+Kera apa yang suci? | Keramat
+Apa yang dimiliki gajah tetapi tidak dimiliki hewan lain? | Anak Gajah
+Kera apa yang bikin heboh dan bikin repot? | Kerasukan Jin
+Lemari apa yang bisa dimasukkan kantong? | Lemaribuan
+Posisiku ada di depan ibu, tetapi suka bersembunyi di belakang televisi. Aku bisa hidup di tengah air. Tapi, kalau ayah datang, aku akan menghilang. Siapakah aku? | Huruf I
+Dikasih makan nangis, tidak diberi makan malah diam. Apakah itu? | Kue Putu
+Siapa nama istri ikan mas? | Ikan Mbakyu
+Bank apa yang selalu rugi? | Bangkrut
+Pejabat bukan, bos juga bukan tapi semua orang tunduk padanya. Pekerjaan apa itu? | Tukang Cukur
+Naik apa yang tidak bisa turun lagi? | Naik Haji
+Malam apa yang paling menakutkan? | Ma Lampir
+Daun apa yang paling besar di dunia? | Daun Pintu
+Siapakah menteri kebersihan dari Republik Rakyat Cina? | Ke Mo Ceng
+Bisa ditonton, bisa dimakan. Apakah itu? | Ketoprak
+Buah apa yang luarnya hitam, tengahnya putih, dan di dalamnya hitam? | Salak
+Bijinya di atas, daunnya di bawah. Pohon apa itu? | Pohon Toge
+Nasi apa yang menjadi pegangan hidup kita? | Nasihat
+Menteri apa yang suka makan anak buah? | Menteri Catur
+Garuk-garuk tetapi tidak gatal. Kenapa itu? | Kebingungan
+Kalau gajah main drum kelihatan apanya? | Kelihatan Boongnya
+Tari apa yang paling menakutkan? | Taring Harimau
+Jika ada 1 kilo batu dan ada 1 kilo kapas, ketika dijatuhkan ke atas kaki, apa yang lebih sakit? | Kaki Kita
+Apa yang ada di ujung langit? | Huruf t
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
