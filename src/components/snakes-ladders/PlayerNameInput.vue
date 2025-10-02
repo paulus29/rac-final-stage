@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
+import player1Img from '@/assets/images/player-1.png'
+import player2Img from '@/assets/images/player-2.png'
+import player3Img from '@/assets/images/player-3.png'
 
 const emit = defineEmits(['start-game'])
 
@@ -65,7 +68,10 @@ const startGame = () => {
         <form @submit.prevent="startGame">
           <!-- Player 1 -->
           <div class="mb-4">
-            <label class="block text-amber-900 font-semibold mb-2">🔴 Nama Kelompok 1</label>
+            <label class="block text-amber-900 font-semibold mb-2 flex items-center gap-2">
+              <img :src="player1Img" alt="Player 1" class="w-6 h-6" />
+              Nama Kelompok 1
+            </label>
             <input
               v-model="name1"
               type="text"
@@ -85,7 +91,10 @@ const startGame = () => {
 
           <!-- Player 2 -->
           <div class="mb-4">
-            <label class="block text-amber-900 font-semibold mb-2">🟢 Nama Kelompok 2</label>
+            <label class="block text-amber-900 font-semibold mb-2 flex items-center gap-2">
+              <img :src="player2Img" alt="Player 2" class="w-6 h-6" />
+              Nama Kelompok 2
+            </label>
             <input
               v-model="name2"
               type="text"
@@ -105,7 +114,10 @@ const startGame = () => {
 
           <!-- Player 3 -->
           <div class="mb-4">
-            <label class="block text-amber-900 font-semibold mb-2">🔵 Nama Kelompok 3</label>
+            <label class="block text-amber-900 font-semibold mb-2 flex items-center gap-2">
+              <img :src="player3Img" alt="Player 3" class="w-6 h-6" />
+              Nama Kelompok 3
+            </label>
             <input
               v-model="name3"
               type="text"

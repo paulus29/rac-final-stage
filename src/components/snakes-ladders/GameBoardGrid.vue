@@ -27,18 +27,14 @@
           v-if="markers && markers[cell.number]"
           class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
           :title="
-            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'"
+            markers[cell.number] === 'optional' ? 'Tantangan opsional (?)' : 'Tantangan wajib (!)'
+          "
         >
-          <span
-            :class="[
-              'select-none leading-none',
-              // size responsif agar tetap proporsional di berbagai viewport (sedikit lebih kecil)
-              'text-5xl sm:text-6xl lg:text-7xl',
-              markers[cell.number] === 'optional' ? 'text-amber-500/50' : 'text-rose-500/50',
-            ]"
-          >
-            {{ markers[cell.number] === 'optional' ? '?' : '!' }}
-          </span>
+          <img
+            :src="markers[cell.number] === 'optional' ? questionLogo : explanationMarkLogo"
+            :alt="markers[cell.number] === 'optional' ? 'question' : 'explanation'"
+            class="w-12 h-12 sm:w-14 sm:h-14 lg:w-12 lg:h-12 opacity-80"
+          />
         </div>
 
         <!-- Checkpoint watermark -->
@@ -47,9 +43,11 @@
           class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
           title="Checkpoint: Tantangan wajib"
         >
-          <span class="select-none leading-none text-4xl sm:text-5xl lg:text-6xl text-emerald-500/55">
-            ⚑
-          </span>
+          <img
+            :src="checkpointFlag"
+            alt="checkpoint"
+            class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16"
+          />
         </div>
 
         <!-- Start Cell Design -->
@@ -67,15 +65,19 @@
 
         <!-- Finish Cell Design -->
         <div v-if="cell.number === maxCell" class="absolute inset-0 z-10 pointer-events-none">
-          <div
+          <!-- <div
             class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(244,63,94,0.4)_0%,transparent_60%)]"
-          ></div>
-          <div class="absolute bottom-1 left-1/2 -translate-x-1/2">
+          ></div> -->
+          <!-- Finish Flag Watermark -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <img :src="finishFlag" alt="finish" class="w-12 h-12 lg:w-14 lg:h-14" />
+          </div>
+          <!-- <div class="absolute bottom-1 left-1/2 -translate-x-1/2">
             <span
               class="text-[10px] sm:text-xs font-bold text-white bg-rose-500/90 px-1.5 py-0.5 rounded shadow"
               >FINISH</span
             >
-          </div>
+          </div> -->
         </div>
 
         <!-- Players on this cell -->
@@ -83,14 +85,15 @@
           <div
             v-for="(player, idx) in getPlayersOnCell(cell.number)"
             :key="player.id"
-            class="absolute -translate-x-1/2 -translate-y-1/2"
+            class="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
             :style="getPlayerOffsetStyle(cell.number, idx)"
           >
-            <span
-              :class="`${getPlayerSizeClass(cell.number)} ${getPlayerShadow(player.color)} block leading-none select-none`"
-            >
-              {{ player.icon }}
-            </span>
+            <img
+              :src="getPlayerImage(player.id)"
+              :alt="player.name"
+              :class="`${getPlayerImgSizeClass(cell.number)} ${getPlayerShadow(player.color)} select-none`"
+              style="object-fit: contain; flex-shrink: 0; display: block;"
+            />
           </div>
         </div>
       </div>
@@ -101,9 +104,11 @@
         class="absolute z-40 pointer-events-none transition-all duration-300 ease-in-out"
         :style="ghostToken.style"
       >
-        <span class="text-3xl drop-shadow-lg block leading-none select-none">
-          {{ ghostToken.icon }}
-        </span>
+        <img
+          :src="ghostToken.image"
+          :alt="'ghost'"
+          class="w-12 h-12 sm:w-14 sm:h-14 drop-shadow-lg block select-none object-contain flex-shrink-0"
+        />
       </div>
 
       <!-- Projectile for Attack Animation -->
@@ -159,6 +164,13 @@
 <script setup>
 import { computed, ref, nextTick } from 'vue'
 import shieldLogo from '@/assets/images/shield-logo.png'
+import checkpointFlag from '@/assets/images/checkpoint-flag.png'
+import finishFlag from '@/assets/images/finish-flag.png'
+import questionLogo from '@/assets/images/question-logo.png'
+import explanationMarkLogo from '@/assets/images/explanation-mark-logo.png'
+import player1Img from '@/assets/images/player-1.png'
+import player2Img from '@/assets/images/player-2.png'
+import player3Img from '@/assets/images/player-3.png'
 
 // Props
 const props = defineProps({
@@ -169,6 +181,15 @@ const props = defineProps({
   checkpointCells: { type: Array, default: () => [] },
 })
 
+// Player image mapping
+const playerImages = {
+  1: player1Img,
+  2: player2Img,
+  3: player3Img,
+}
+
+const getPlayerImage = (playerId) => playerImages[playerId] || player1Img
+
 // Refs
 const boardContainer = ref(null)
 
@@ -176,6 +197,7 @@ const boardContainer = ref(null)
 const ghostToken = ref({
   visible: false,
   icon: '',
+  image: '',
   style: {
     left: '0px',
     top: '0px',
@@ -275,7 +297,8 @@ const getMarkerRingClass = (cellNumber) => {
     : 'ring-2 ring-rose-400/40 ring-offset-0'
 }
 
-const isCheckpoint = (cellNumber) => Array.isArray(props.checkpointCells) && props.checkpointCells.includes(cellNumber)
+const isCheckpoint = (cellNumber) =>
+  Array.isArray(props.checkpointCells) && props.checkpointCells.includes(cellNumber)
 
 // Special ring highlight for Start (1) and Finish (max)
 const getStartFinishRingClass = (cellNumber) => {
@@ -296,6 +319,14 @@ const getPlayerSizeClass = (cellNumber) => {
   if (count === 2) return 'text-3xl'
   if (count >= 3) return 'text-2xl'
   return 'text-2xl'
+}
+
+const getPlayerImgSizeClass = (cellNumber) => {
+  const count = getPlayersOnCell(cellNumber).length
+  if (count <= 1) return 'w-12 h-12 min-w-[3rem] min-h-[3rem] max-w-[3rem] max-h-[3rem]'
+  if (count === 2) return 'w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] max-w-[2.5rem] max-h-[2.5rem]'
+  if (count >= 3) return 'w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem]'
+  return 'w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem]'
 }
 
 const getPlayerOffsetStyle = (cellNumber, idx) => {
@@ -406,6 +437,7 @@ const animateMove = async (player, steps, speed = 300) => {
   const startCoords = getPositionCoordinates(startPosition)
   ghostToken.value.visible = true
   ghostToken.value.icon = player.icon
+  ghostToken.value.image = getPlayerImage(player.id)
   ghostToken.value.style = {
     left: `${startCoords.x}px`,
     top: `${startCoords.y}px`,
@@ -444,6 +476,7 @@ const animateBackward = async (player, steps, speed = 300) => {
   const startCoords = getPositionCoordinates(startPosition)
   ghostToken.value.visible = true
   ghostToken.value.icon = player.icon
+  ghostToken.value.image = getPlayerImage(player.id)
   ghostToken.value.style = {
     left: `${startCoords.x}px`,
     top: `${startCoords.y}px`,

@@ -29,7 +29,7 @@
             <!-- Runner-up (2nd) - left, lower than 1st -->
             <div v-if="podium[1]" class="flex flex-col items-center">
               <div class="mb-2 flex items-center gap-2 text-gray-700 font-semibold">
-                <span class="text-xl">{{ podium[1].icon }}</span>
+                <img :src="getPlayerImage(podium[1].id)" :alt="podium[1].name" class="w-7 h-7" />
                 <span>{{ podium[1].name }}</span>
               </div>
               <div class="w-full max-w-[120px]">
@@ -48,7 +48,7 @@
             <!-- Winner (1st) - center, highest -->
             <div v-if="podium[0]" class="flex flex-col items-center">
               <div class="mb-2 flex items-center gap-2 text-gray-800 font-extrabold">
-                <span class="text-2xl">{{ podium[0].icon }}</span>
+                <img :src="getPlayerImage(podium[0].id)" :alt="podium[0].name" class="w-8 h-8" />
                 <span class="text-lg">{{ podium[0].name }}</span>
               </div>
               <div class="w-full max-w-[140px]">
@@ -67,7 +67,7 @@
             <!-- Third (3rd) - right, lowest -->
             <div v-if="podium[2]" class="flex flex-col items-center">
               <div class="mb-2 flex items-center gap-2 text-gray-700 font-semibold">
-                <span class="text-xl">{{ podium[2].icon }}</span>
+                <img :src="getPlayerImage(podium[2].id)" :alt="podium[2].name" class="w-7 h-7" />
                 <span>{{ podium[2].name }}</span>
               </div>
               <div class="w-full max-w-[120px]">
@@ -100,9 +100,9 @@
                   >
                     {{ row.rank ?? '-' }}
                   </div>
-                  <div class="font-medium text-gray-800">
-                    <span class="mr-1">{{ row.icon }}</span
-                    >{{ row.name }}
+                  <div class="font-medium text-gray-800 flex items-center gap-2">
+                    <img :src="getPlayerImage(row.id)" :alt="row.name" class="w-6 h-6" />
+                    {{ row.name }}
                   </div>
                 </div>
                 <div class="text-xs text-gray-600">
@@ -147,11 +147,23 @@
 
 <script setup>
 import { computed, watch, ref } from 'vue'
+import player1Img from '@/assets/images/player-1.png'
+import player2Img from '@/assets/images/player-2.png'
+import player3Img from '@/assets/images/player-3.png'
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
   players: { type: Array, required: true },
 })
+
+// Player image mapping
+const playerImages = {
+  1: player1Img,
+  2: player2Img,
+  3: player3Img,
+}
+
+const getPlayerImage = (playerId) => playerImages[playerId] || player1Img
 
 const isMinimized = ref(false)
 

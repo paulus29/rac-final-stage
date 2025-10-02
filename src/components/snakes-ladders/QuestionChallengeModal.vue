@@ -59,13 +59,14 @@
                 :key="p.id"
                 @click="selectOpponent(p.id)"
                 :class="[
-                  'px-3 py-2 rounded-lg border font-semibold text-left',
+                  'px-3 py-2 rounded-lg border font-semibold text-left flex items-center gap-2',
                   selectedAnswererId === p.id
                     ? 'bg-amber-100 border-amber-300 text-amber-800'
                     : 'bg-white hover:bg-amber-50 border-amber-200 text-gray-800',
                 ]"
               >
-                {{ p.icon }} {{ p.name }}
+                <img :src="getPlayerImage(p.id)" :alt="p.name" class="w-6 h-6" />
+                {{ p.name }}
               </button>
             </div>
             <p v-if="opponents.length === 0" class="mt-2 text-xs text-amber-700 italic">
@@ -141,8 +142,10 @@
 
           <!-- Info penjawab -->
           <div class="flex items-center justify-between text-sm">
-            <div class="text-gray-600">
-              Penjawab: <span class="font-semibold">{{ answererLabel }}</span>
+            <div class="text-gray-600 flex items-center gap-2">
+              Penjawab:
+              <img v-if="answererImage" :src="answererImage" :alt="answererLabel" class="w-5 h-5" />
+              <span class="font-semibold">{{ answererLabel }}</span>
             </div>
           </div>
 
@@ -212,6 +215,9 @@
 
 <script setup>
 import { computed, ref, watch, onUnmounted } from 'vue'
+import player1Img from '@/assets/images/player-1.png'
+import player2Img from '@/assets/images/player-2.png'
+import player3Img from '@/assets/images/player-3.png'
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
@@ -226,6 +232,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'decide', 'judge'])
+
+// Player image mapping
+const playerImages = {
+  1: player1Img,
+  2: player2Img,
+  3: player3Img,
+}
+
+const getPlayerImage = (playerId) => playerImages[playerId] || player1Img
 
 // State pemilihan penjawab
 const decided = ref(false)
@@ -254,7 +269,12 @@ const currentPlayerName = computed(
 
 const answererLabel = computed(() => {
   const p = props.players.find((x) => x.id === selectedAnswererId.value)
-  return p ? `${p.icon} ${p.name}` : '-'
+  return p ? p.name : '-'
+})
+
+const answererImage = computed(() => {
+  const p = props.players.find((x) => x.id === selectedAnswererId.value)
+  return p ? getPlayerImage(p.id) : null
 })
 
 // Timer helpers

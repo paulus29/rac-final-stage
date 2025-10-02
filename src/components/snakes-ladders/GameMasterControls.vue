@@ -14,7 +14,10 @@
           :class="getPlayerBtnClass(player)"
           class="relative pr-16"
         >
-          <div class="font-semibold">{{ player.icon }} {{ player.name }}</div>
+          <div class="font-semibold flex items-center gap-2">
+            <img :src="getPlayerImage(player.id)" :alt="player.name" class="w-6 h-6" />
+            {{ player.name }}
+          </div>
           <span
             v-if="player.finished"
             class="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] px-2 py-0.5 rounded-full bg-emerald-600/90 text-white font-bold"
@@ -126,6 +129,9 @@
 <script setup>
 import { ref, computed, onBeforeUnmount } from 'vue'
 import shieldLogo from '@/assets/images/shield-logo.png'
+import player1Img from '@/assets/images/player-1.png'
+import player2Img from '@/assets/images/player-2.png'
+import player3Img from '@/assets/images/player-3.png'
 const props = defineProps({
   players: { type: Array, required: true },
   selectedPlayerId: { type: Number, required: false, default: null },
@@ -133,6 +139,15 @@ const props = defineProps({
   steps: { type: Number, required: true },
   disabled: { type: Boolean, default: false },
 })
+
+// Player image mapping
+const playerImages = {
+  1: player1Img,
+  2: player2Img,
+  3: player3Img,
+}
+
+const getPlayerImage = (playerId) => playerImages[playerId] || player1Img
 
 defineEmits([
   'select-player',

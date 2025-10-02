@@ -51,12 +51,16 @@
                 :key="p.id"
                 @click="selectTarget(p.id)"
                 :class="[
-                  'px-3 py-2 rounded-lg border font-semibold text-left',
+                  'px-3 py-2 rounded-lg border font-semibold text-left flex items-center gap-2',
                   targetId === p.id
                     ? 'bg-amber-100 border-amber-300 text-amber-800'
                     : 'bg-white hover:bg-amber-50 border-amber-200 text-gray-800',
                 ]"
-              >{{ p.icon }} {{ p.name }} <span v-if="p.shield>0" class="text-xs ml-2">🛡️ x{{ p.shield }}</span></button>
+              >
+                <img :src="getPlayerImage(p.id)" :alt="p.name" class="w-6 h-6" />
+                {{ p.name }}
+                <span v-if="p.shield>0" class="text-xs ml-auto">🛡️ x{{ p.shield }}</span>
+              </button>
             </div>
             <div class="flex justify-center mt-3">
               <button
@@ -86,6 +90,9 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import player1Img from '@/assets/images/player-1.png'
+import player2Img from '@/assets/images/player-2.png'
+import player3Img from '@/assets/images/player-3.png'
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
@@ -94,6 +101,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'choose'])
+
+// Player image mapping
+const playerImages = {
+  1: player1Img,
+  2: player2Img,
+  3: player3Img,
+}
+
+const getPlayerImage = (playerId) => playerImages[playerId] || player1Img
 
 const currentPlayer = computed(() => props.players.find(p => p.id === props.currentPlayerId))
 const currentPlayerName = computed(() => currentPlayer.value?.name || '-')
