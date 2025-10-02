@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useQuestionDeck } from '@/composables/useQuestionDeck'
 
@@ -9,7 +9,38 @@ import { useQuestionDeck } from '@/composables/useQuestionDeck'
  * - Integrasi deck pertanyaan pilihan ganda.
  * - Logika pemetaan pertanyaan permanen per sel, tracking opsi salah, dan rotasi soal.
  * - Mekanisme checkpoint satu-kali per pemain saat melintasi awal baris.
+ * - State persistence menggunakan localStorage.
  */
+
+const STORAGE_KEY = 'snakesLadders_gameState'
+
+// Helper functions untuk localStorage
+const saveToStorage = (state) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch (error) {
+    console.error('Failed to save game state:', error)
+  }
+}
+
+const loadFromStorage = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : null
+  } catch (error) {
+    console.error('Failed to load game state:', error)
+    return null
+  }
+}
+
+const clearStorage = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch (error) {
+    console.error('Failed to clear game state:', error)
+  }
+}
+
 export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   // Core game state
   const players = ref([
@@ -113,27 +144,66 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   // Actions
   /**
    * Menghasilkan peta marker "?" (optional) dan "!" (forced) secara acak
-   * dengan rasio 1/3 dari sel eligible (tanpa start/finish dan tanpa checkpoint).
+   * dengan GARANSI:
+   * 1. Minimal 1 marker per baris
+   * 2. Jumlah "?" dan "!" adalah 50:50 (atau mendekati jika ganjil)
    */
   const generateMarkers = () => {
-    const total = boardSize.value * boardSize.value
-    const eligible = []
-    for (let n = 2; n <= total - 1; n++) eligible.push(n)
-    if (checkpointCells.value && checkpointCells.value.length) {
-      const skip = new Set(checkpointCells.value)
-      for (let i = eligible.length - 1; i >= 0; i--) {
-        if (skip.has(eligible[i])) eligible.splice(i, 1)
+    const size = boardSize.value
+    const total = size * size
+    const skip = new Set([1, total, ...(checkpointCells.value || [])]) // Skip start, finish, checkpoint
+    const allMarkerCells = [] // Semua sel yang akan dapat marker
+    
+    // STEP 1: GARANSI - Minimal 1 marker per baris
+    for (let row = 0; row < size; row++) {
+      const rowStart = row * size + 1
+      const rowEnd = rowStart + size - 1
+      
+      // Collect eligible cells di baris ini
+      const rowEligible = []
+      for (let cell = rowStart; cell <= rowEnd; cell++) {
+        if (!skip.has(cell)) rowEligible.push(cell)
+      }
+      
+      // Pilih 1 sel random di baris ini untuk dijamin dapat marker
+      if (rowEligible.length > 0) {
+        const randomCell = rowEligible[Math.floor(Math.random() * rowEligible.length)]
+        allMarkerCells.push(randomCell)
+        console.log(`[SnakesLadders] Row ${row + 1} guaranteed marker at cell ${randomCell}`)
       }
     }
-    // Gunakan rasio 1/3 dari sel yang memenuhi syarat (tanpa start & finish)
-    const count = Math.floor(eligible.length / 3)
-    const chosen = shuffle(eligible).slice(0, count)
+    
+    // STEP 2: TAMBAHAN - Random markers (~1/3 dari sisa eligible)
+    const remainingEligible = []
+    for (let n = 2; n <= total - 1; n++) {
+      if (!skip.has(n) && !allMarkerCells.includes(n)) remainingEligible.push(n)
+    }
+    
+    const additionalCount = Math.floor(remainingEligible.length / 3)
+    const additionalChosen = shuffle(remainingEligible).slice(0, additionalCount)
+    allMarkerCells.push(...additionalChosen)
+    
+    // STEP 3: SPLIT 50:50 - Shuffle semua markers dan bagi menjadi optional & forced
+    const shuffledMarkers = shuffle([...allMarkerCells])
+    const totalMarkers = shuffledMarkers.length
+    const halfPoint = Math.floor(totalMarkers / 2)
+    
+    const optionalCells = shuffledMarkers.slice(0, halfPoint)
+    const forcedCells = shuffledMarkers.slice(halfPoint)
+    
     const map = {}
-    const half = Math.floor(chosen.length / 2)
-    const optionalCells = chosen.slice(0, half)
-    const forcedCells = chosen.slice(half)
     optionalCells.forEach((cell) => (map[cell] = 'optional'))
     forcedCells.forEach((cell) => (map[cell] = 'forced'))
+    
+    console.log('[SnakesLadders] Markers generated:', {
+      guaranteed: size,
+      additional: additionalChosen.length,
+      total: totalMarkers,
+      optional: optionalCells.length,
+      forced: forcedCells.length,
+      ratio: `${optionalCells.length}:${forcedCells.length}`,
+    })
+    
     markers.value = map
   }
 
@@ -167,16 +237,39 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   /**
    * Inisialisasi game: set pemain aktif, generate checkpoint & marker,
    * memuat deck pertanyaan, dan memetakan soal ke semua sel tantangan.
+   * Auto-detect: Skip generate jika sudah ada data dari localStorage.
    */
   const init = async () => {
     // Set default selected player & prepare deck/markers
-    selectedPlayerId.value = players.value[0]?.id ?? null
-    generateCheckpoints()
-    generateMarkers()
+    if (!selectedPlayerId.value) {
+      selectedPlayerId.value = players.value[0]?.id ?? null
+    }
+    
+    // Auto-detect: Jika markers dan cellQuestions sudah ada (dari restore), skip generate
+    const hasRestoredData = 
+      Object.keys(markers.value).length > 0 && 
+      checkpointCells.value.length > 0 &&
+      Object.keys(cellQuestions.value).length > 0
+    
+    if (!hasRestoredData) {
+      // Generate baru jika belum ada data
+      generateCheckpoints()
+      generateMarkers()
+    }
+    
     await deck.load()
-    assignQuestionsToAllMarkers()
-    // init visited
-    visitedCheckpoints.value = {}
+    
+    // Assign questions hanya jika belum ada mapping yang valid
+    if (!hasRestoredData) {
+      assignQuestionsToAllMarkers()
+    }
+    
+    // init visited jika belum ada
+    if (!visitedCheckpoints.value || Object.keys(visitedCheckpoints.value).length === 0) {
+      visitedCheckpoints.value = {}
+    }
+    
+    console.log('[SnakesLadders] init() completed, hasRestoredData:', hasRestoredData)
   }
 
   const getUsedSet = () => new Set(usedQuestionIds.value)
@@ -193,15 +286,16 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
 
   /**
    * Memetakan pertanyaan ke semua sel tantangan (sekali di awal),
-   * memaksimalkan keunikan sementara dan membersihkan entry yang tidak lagi valid.
+   * MEMASTIKAN TIDAK ADA PERTANYAAN YANG DUPLIKAT dalam 1 board.
+   * Setiap sel mendapat pertanyaan yang unik (berbeda baris dari file).
    */
   const assignQuestionsToAllMarkers = () => {
     const challengeCells = getAllChallengeCells()
     if (challengeCells.length === 0) return
     if (!deck.deck || !Array.isArray(deck.deck.value)) return
-    const all = deck.deck.value
-    const assigned = new Set()
-    let cursor = 0
+    
+    // Shuffle deck untuk random distribution
+    const shuffledDeck = shuffle([...deck.deck.value])
     const challengeSet = new Set(challengeCells)
 
     // Bersihkan entry yang tidak lagi termasuk sel tantangan
@@ -210,31 +304,68 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
       if (!challengeSet.has(numericKey)) delete cellQuestions.value[key]
     }
 
+    // Track pertanyaan yang sudah digunakan (termasuk yang sudah ada)
+    const usedQuestionIds = new Set()
+    
+    // Collect question IDs yang sudah di-assign sebelumnya (dari restore)
     for (const cell of challengeCells) {
-      if (cellQuestions.value[cell]) continue
-      // Pick next question not yet assigned in this pass to maximize uniqueness
+      if (cellQuestions.value[cell] && cellQuestions.value[cell].q) {
+        usedQuestionIds.add(cellQuestions.value[cell].q.id)
+      }
+    }
+
+    // Assign pertanyaan ke sel yang belum punya pertanyaan
+    let questionIndex = 0
+    for (const cell of challengeCells) {
+      // Skip jika sel sudah punya pertanyaan (dari restore)
+      if (cellQuestions.value[cell] && cellQuestions.value[cell].q) {
+        continue
+      }
+      
+      // Cari pertanyaan yang belum digunakan
       let chosen = null
-      for (let tries = 0; tries < all.length; tries++) {
-        const q = all[(cursor + tries) % all.length]
-        if (!assigned.has(q.id)) {
+      for (let i = questionIndex; i < shuffledDeck.length; i++) {
+        const q = shuffledDeck[i]
+        if (!usedQuestionIds.has(q.id)) {
           chosen = q
-          cursor = (cursor + tries + 1) % all.length
+          questionIndex = i + 1
           break
         }
       }
+      
+      // Jika tidak ada pertanyaan unique tersisa, wrap around dan cari lagi
       if (!chosen) {
-        // Fallback: reuse
-        chosen = all[cursor]
-        cursor = (cursor + 1) % all.length
+        for (let i = 0; i < questionIndex; i++) {
+          const q = shuffledDeck[i]
+          if (!usedQuestionIds.has(q.id)) {
+            chosen = q
+            break
+          }
+        }
       }
-      cellQuestions.value[cell] = {
-        q: chosen,
-        wrongOptions: [],
-        wrongAttempts: 0,
-        asked: false,
+      
+      // Fallback: jika masih null (jumlah sel > jumlah pertanyaan), gunakan pertanyaan pertama yang available
+      if (!chosen && shuffledDeck.length > 0) {
+        chosen = shuffledDeck[questionIndex % shuffledDeck.length]
+        console.warn('[SnakesLadders] Not enough unique questions! Reusing question ID:', chosen.id)
       }
-      assigned.add(chosen.id)
+      
+      if (chosen) {
+        cellQuestions.value[cell] = {
+          q: chosen,
+          wrongOptions: [],
+          wrongAttempts: 0,
+          asked: false,
+        }
+        usedQuestionIds.add(chosen.id)
+      }
     }
+    
+    console.log('[SnakesLadders] Questions assigned:', {
+      totalCells: challengeCells.length,
+      uniqueQuestions: usedQuestionIds.size,
+      availableQuestions: shuffledDeck.length,
+    })
   }
 
   /**
@@ -260,26 +391,52 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   }
 
   /**
-   * Mengganti pertanyaan untuk sebuah sel dengan prioritas
-   * ke soal yang belum pernah ditanyakan secara global.
+   * Mengganti pertanyaan untuk sebuah sel dengan prioritas:
+   * 1. Belum ditanyakan secara global (usedQuestionIds)
+   * 2. Tidak sedang digunakan di sel lain dalam board yang sama (unique per board)
+   * 3. Bukan pertanyaan saat ini di sel ini
    */
   const reassignCellQuestion = (cell) => {
     if (!deck.deck || !Array.isArray(deck.deck.value)) return
-    const all = deck.deck.value
-    const used = getUsedSet()
-    // Prefer a question not yet asked globally
-    let chosen = all.find((q) => !used.has(q.id))
-    if (!chosen) {
-      // Fallback: pick any (avoid current one if possible)
-      const currentId = cellQuestions.value[cell]?.q?.id
-      chosen = all.find((q) => q.id !== currentId) || all[0]
+    const all = shuffle([...deck.deck.value])
+    const globalUsed = getUsedSet()
+    const currentId = cellQuestions.value[cell]?.q?.id
+    
+    // Collect IDs pertanyaan yang sedang digunakan di sel lain dalam board ini
+    const usedInBoard = new Set()
+    for (const [cellNum, entry] of Object.entries(cellQuestions.value)) {
+      if (parseInt(cellNum, 10) !== cell && entry && entry.q) {
+        usedInBoard.add(entry.q.id)
+      }
     }
+    
+    // Priority 1: Belum ditanyakan global DAN tidak ada di board
+    let chosen = all.find((q) => !globalUsed.has(q.id) && !usedInBoard.has(q.id))
+    
+    // Priority 2: Tidak ada di board (boleh yang sudah ditanyakan global)
+    if (!chosen) {
+      chosen = all.find((q) => !usedInBoard.has(q.id) && q.id !== currentId)
+    }
+    
+    // Priority 3: Beda dari pertanyaan saat ini (allow duplicate di board jika terpaksa)
+    if (!chosen) {
+      chosen = all.find((q) => q.id !== currentId)
+    }
+    
+    // Fallback: gunakan pertanyaan pertama
+    if (!chosen) {
+      chosen = all[0]
+      console.warn('[SnakesLadders] No unique question available for cell', cell, '- reusing question')
+    }
+    
     cellQuestions.value[cell] = {
       q: chosen,
       wrongOptions: [],
       wrongAttempts: 0,
       asked: false,
     }
+    
+    console.log('[SnakesLadders] Cell', cell, 'reassigned to question ID:', chosen.id)
   }
 
   /** Memilih pemain aktif pada panel Game Master. */
@@ -308,12 +465,13 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   }
 
   /** Melakukan reset penuh state permainan ke kondisi awal. */
-  const confirmReset = () => {
+  const confirmReset = async () => {
     players.value.forEach((player) => {
       player.position = 1
       player.finished = false
       player.rank = null
       player.shield = 0
+      player.name = player.id === 1 ? 'Kelompok 1' : player.id === 2 ? 'Kelompok 2' : 'Kelompok 3'
     })
     selectedPlayerId.value = null
     steps.value = 1
@@ -330,8 +488,11 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     landedPlayerId.value = null
     selectedAnswererId.value = null
     showRewardModal.value = false
+    
+    // Generate posisi marker dan checkpoint baru (random)
     generateCheckpoints()
     generateMarkers()
+    
     // Reset mapping & usage tracking
     cellQuestions.value = {}
     usedQuestionIds.value = []
@@ -339,7 +500,18 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     activeChallengeSource.value = null
     challengeDisabledOptions.value = []
     visitedCheckpoints.value = {}
+    
+    // PENTING: Reload deck pertanyaan dari file untuk ambil pertanyaan terbaru
+    await deck.load()
+    console.log('[SnakesLadders] Deck reloaded:', deck.deck.value?.length, 'questions')
+    
+    // Assign pertanyaan baru ke semua markers (random assignment)
     assignQuestionsToAllMarkers()
+    
+    // Clear localStorage saat reset
+    clearStorage()
+    
+    console.log('[SnakesLadders] Game reset complete - new markers, checkpoints, and questions assigned')
   }
 
   /** Set nama 3 pemain dan menutup modal input nama. */
@@ -499,25 +671,39 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
 
   // Update state per hasil jawaban (mark wrong options, or reassign question on correct)
   /**
-   * Penilaian hasil jawaban: menandai opsi salah untuk sel (disable di kesempatan berikutnya),
-   * melakukan rotasi soal setelah 2x salah pada sel itu, dan ganti soal saat benar.
+   * Penilaian hasil jawaban:
+   * - CHECKPOINT: Langsung ganti soal jika salah (tidak perlu 2x)
+   * - MARKER (? atau !): Ganti soal setelah 2x salah
+   * - Semua: Ganti soal saat benar
    */
   const onJudgeResult = ({ isCorrect, selectedIndex = null }) => {
     const cell = activeChallengeCell.value
     if (!cell) return
     const entry = cellQuestions.value[cell]
     if (!entry) return
+    const source = activeChallengeSource.value
+    
     if (!isCorrect && selectedIndex != null) {
+      // Tandai opsi salah untuk disable di kesempatan berikutnya
       if (!entry.wrongOptions.includes(selectedIndex)) entry.wrongOptions.push(selectedIndex)
-      // Hitung percobaan salah untuk soal pada sel ini
-      entry.wrongAttempts = (entry.wrongAttempts || 0) + 1
-      if (entry.wrongAttempts >= 2) {
-        // Setelah 2 kali salah, ganti soal untuk sel ini
+      
+      // CHECKPOINT: Langsung ganti soal saat salah
+      if (source === 'checkpoint') {
+        console.log('[SnakesLadders] Checkpoint wrong answer - immediately reassigning question for cell', cell)
         reassignCellQuestion(cell)
+      } else {
+        // MARKER: Hitung percobaan salah, ganti setelah 2x salah
+        entry.wrongAttempts = (entry.wrongAttempts || 0) + 1
+        if (entry.wrongAttempts >= 2) {
+          console.log('[SnakesLadders] Marker 2x wrong - reassigning question for cell', cell)
+          reassignCellQuestion(cell)
+        }
       }
     }
+    
     if (isCorrect) {
       // Ganti pertanyaan untuk sel ini dengan yang belum pernah ditanyakan
+      console.log('[SnakesLadders] Correct answer - reassigning question for cell', cell)
       reassignCellQuestion(cell)
     }
   }
@@ -530,6 +716,86 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
     activeChallengeSource.value = null
     challengeDisabledOptions.value = []
   }
+
+  // Load state dari localStorage saat store diinisialisasi
+  const loadState = async () => {
+    const saved = loadFromStorage()
+    if (saved) {
+      // Restore core game state
+      if (saved.players) players.value = saved.players
+      if (saved.selectedPlayerId !== undefined) selectedPlayerId.value = saved.selectedPlayerId
+      if (saved.steps) steps.value = saved.steps
+      if (saved.boardSize) boardSize.value = saved.boardSize
+      if (saved.showNameInput !== undefined) showNameInput.value = saved.showNameInput
+      if (saved.nextRank) nextRank.value = saved.nextRank
+      if (saved.showFinalModal !== undefined) showFinalModal.value = saved.showFinalModal
+      
+      // IMPORTANT: Restore markers dan checkpoints SEBELUM load deck
+      if (saved.markers) markers.value = saved.markers
+      if (saved.checkpointCells) checkpointCells.value = saved.checkpointCells
+      if (saved.cellQuestions) cellQuestions.value = saved.cellQuestions
+      if (saved.usedQuestionIds) usedQuestionIds.value = saved.usedQuestionIds
+      if (saved.visitedCheckpoints) visitedCheckpoints.value = saved.visitedCheckpoints
+      
+      // Load deck jika game sudah dimulai (showNameInput = false)
+      if (saved.showNameInput === false) {
+        await deck.load()
+      }
+      
+      console.log('[SnakesLadders] State loaded from localStorage:', {
+        markers: Object.keys(markers.value).length,
+        checkpoints: checkpointCells.value.length,
+        cellQuestions: Object.keys(cellQuestions.value).length,
+      })
+      
+      return true // Indicate that state was loaded
+    }
+    return false // No saved state
+  }
+
+  // Auto-save state ke localStorage setiap ada perubahan penting
+  const setupAutoSave = () => {
+    // Watch semua state penting dan save ke localStorage
+    watch(
+      [
+        players,
+        selectedPlayerId,
+        steps,
+        boardSize,
+        showNameInput,
+        nextRank,
+        showFinalModal,
+        markers,
+        checkpointCells,
+        cellQuestions,
+        usedQuestionIds,
+        visitedCheckpoints,
+      ],
+      () => {
+        const stateToSave = {
+          players: players.value,
+          selectedPlayerId: selectedPlayerId.value,
+          steps: steps.value,
+          boardSize: boardSize.value,
+          showNameInput: showNameInput.value,
+          nextRank: nextRank.value,
+          showFinalModal: showFinalModal.value,
+          markers: markers.value,
+          checkpointCells: checkpointCells.value,
+          cellQuestions: cellQuestions.value,
+          usedQuestionIds: usedQuestionIds.value,
+          visitedCheckpoints: visitedCheckpoints.value,
+        }
+        saveToStorage(stateToSave)
+      },
+      { deep: true }
+    )
+  }
+
+  // Load state saat store pertama kali dibuat
+  loadState()
+  // Setup auto-save
+  setupAutoSave()
 
   return {
     // state

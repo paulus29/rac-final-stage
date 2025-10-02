@@ -64,6 +64,8 @@ const props = defineProps({
   rank: { type: Number, default: 1 },
 })
 
+defineEmits(['close'])
+
 const canvasRef = ref(null)
 let rafId = null
 let startTime = 0

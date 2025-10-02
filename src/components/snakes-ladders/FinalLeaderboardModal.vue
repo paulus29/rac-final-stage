@@ -156,6 +156,8 @@ const props = defineProps({
   players: { type: Array, required: true },
 })
 
+defineEmits(['close', 'home', 'reset'])
+
 // Player image mapping
 const playerImages = {
   1: player1Img,

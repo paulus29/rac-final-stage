@@ -9,18 +9,16 @@
 
       <!-- Konten modal bergaya match-game -->
       <div
-        class="relative w-full max-w-xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl overflow-hidden"
+        :class="[
+          'relative w-full max-w-xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 rounded-xl p-4 sm:p-6 shadow-2xl overflow-hidden',
+          source === 'checkpoint' ? 'border-emerald-600' : 'border-amber-600',
+        ]"
       >
         <!-- Header -->
         <div class="flex justify-between items-center mb-4">
           <div class="flex items-center gap-3">
-            <div
-              :class="[
-                'text-white px-3 py-1 rounded-lg font-bold text-sm',
-                type === 'optional' ? 'bg-amber-600' : 'bg-rose-600',
-              ]"
-            >
-              {{ type === 'optional' ? 'Tantangan (?)' : 'Tantangan (!)' }}
+            <div :class="['text-white px-3 py-1 rounded-lg font-bold text-sm', modalTitleBgClass]">
+              {{ modalTitle }}
             </div>
             <div class="text-amber-800 font-semibold">Giliran: {{ currentPlayerName }}</div>
           </div>
@@ -96,7 +94,11 @@
         <!-- Step 1 (forced only): konfirmasi buka (baik marker '!' maupun checkpoint) -->
         <div v-else-if="type === 'forced' && !decided" class="space-y-4">
           <p class="text-gray-700 text-center">
-            {{ source === 'checkpoint' ? 'Checkpoint! Buka pertanyaan sekarang?' : 'Buka pertanyaan sekarang?' }}
+            {{
+              source === 'checkpoint'
+                ? 'Checkpoint! Buka pertanyaan sekarang?'
+                : 'Buka pertanyaan sekarang?'
+            }}
           </p>
           <div class="pt-1 flex gap-3 justify-center">
             <button
@@ -204,11 +206,19 @@
   <div v-if="isVisible && isMinimized" class="fixed bottom-4 left-4 z-[81]">
     <button
       @click="isMinimized = false"
-      class="px-4 py-2 rounded-full bg-white/90 backdrop-blur border border-amber-400 shadow-md text-amber-900 font-semibold flex items-center gap-2 hover:bg-white"
+      :class="[
+        'px-4 py-2 rounded-full bg-white/90 backdrop-blur border shadow-md font-semibold flex items-center gap-2 hover:bg-white',
+        source === 'checkpoint' ? 'border-emerald-400 text-emerald-900' : 'border-amber-400 text-amber-900'
+      ]"
       title="Tampilkan kembali"
     >
-      <span>❓ Tantangan</span>
-      <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500 text-white">Buka</span>
+      <span>{{ source === 'checkpoint' ? '🏁 Checkpoint' : '❓ Tantangan' }}</span>
+      <span 
+        :class="[
+          'text-xs px-2 py-0.5 rounded-full text-white',
+          source === 'checkpoint' ? 'bg-emerald-500' : 'bg-amber-500'
+        ]"
+      >Buka</span>
     </button>
   </div>
 </template>
@@ -241,6 +251,21 @@ const playerImages = {
 }
 
 const getPlayerImage = (playerId) => playerImages[playerId] || player1Img
+
+// Computed untuk judul modal
+const modalTitle = computed(() => {
+  if (props.source === 'checkpoint') {
+    return 'Checkpoint'
+  }
+  return props.type === 'optional' ? 'Tantangan (?)' : 'Tantangan (!)'
+})
+
+const modalTitleBgClass = computed(() => {
+  if (props.source === 'checkpoint') {
+    return 'bg-emerald-600'
+  }
+  return props.type === 'optional' ? 'bg-amber-600' : 'bg-rose-600'
+})
 
 // State pemilihan penjawab
 const decided = ref(false)

@@ -62,8 +62,7 @@ const startGame = () => {
       <div
         class="relative bg-gradient-to-br from-amber-50 to-green-50 bg-opacity-95 border-2 border-amber-600 rounded-2xl p-6 shadow-2xl max-w-md w-full backdrop-filter backdrop-blur-lg transform transition-all duration-300 pointer-events-auto"
       >
-        <h2 class="text-amber-800 text-2xl font-extrabold mb-6 text-center">Ular Tangga</h2>
-        <p class="text-center text-amber-900/90 font-semibold mb-4">Masukkan nama 3 kelompok</p>
+        <h2 class="text-amber-800 text-2xl font-extrabold mb-6 text-center">Stage 3 Final</h2>
 
         <form @submit.prevent="startGame">
           <!-- Player 1 -->
