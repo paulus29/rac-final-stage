@@ -1,8 +1,8 @@
 <template>
   <Transition name="modal" appear>
     <div v-if="isVisible && !isMinimized" class="fixed inset-0 z-[90] flex items-center justify-center p-4">
-      <!-- Overlay -->
-      <div class="absolute inset-0 bg-black/30" @click="$emit('close')"></div>
+      <!-- Overlay (click disabled - tidak bisa close modal dengan klik backdrop) -->
+      <div class="absolute inset-0 bg-black/30"></div>
 
       <!-- Modal Card -->
       <div

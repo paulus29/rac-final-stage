@@ -353,8 +353,17 @@ const onStartGame = ({ player1Name, player2Name, player3Name }) => {
   sl.startGameSetNames({ player1Name, player2Name, player3Name })
   // Auto-start timer pada panel kontrol (tunggu komponen ter-mount via v-if)
   nextTick(() => {
-    if (controlsRef.value && controlsRef.value.resetTimer) controlsRef.value.resetTimer()
-    if (controlsRef.value && controlsRef.value.startTimer) controlsRef.value.startTimer()
+    // Tambahkan delay kecil untuk memastikan komponen sudah benar-benar ter-mount
+    setTimeout(() => {
+      if (controlsRef.value && controlsRef.value.resetTimer) {
+        controlsRef.value.resetTimer()
+        console.log('[SL Board] Timer reset')
+      }
+      if (controlsRef.value && controlsRef.value.startTimer) {
+        controlsRef.value.startTimer()
+        console.log('[SL Board] Timer started automatically')
+      }
+    }, 100)
   })
 }
 
@@ -473,9 +482,9 @@ const onRewardChoose = async ({ action, targetId }) => {
   }
 
   if (action === 'shield') {
-    // Tambah shield ke pemain dan maju 2 langkah
+    // Tambah shield ke pemain dan maju 1 langkah
     players.value[idx].shield = Math.min((players.value[idx].shield || 0) + 1, 2)
-    const steps = 2
+    const steps = 1
     isAnimating.value = true
     try {
       if (gameBoardRef.value && gameBoardRef.value.animateMove) {

@@ -83,7 +83,7 @@
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2 text-white/90 font-semibold">
             <span>⏱️</span>
-            <span>Timer</span>
+            <span>Waktu</span>
             <span
               class="ml-2 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
               :class="isRunning ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'"

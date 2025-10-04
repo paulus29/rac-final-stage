@@ -145,16 +145,16 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
   /**
    * Menghasilkan peta marker "?" (optional) dan "!" (forced) secara acak
    * dengan GARANSI:
-   * 1. Minimal 1 marker per baris
-   * 2. Jumlah "?" dan "!" adalah 50:50 (atau mendekati jika ganjil)
+   * 1. Minimal 2 marker per baris (1 optional + 1 forced minimum)
+   * 2. Distribusi merata antara "?" dan "!" per baris
    */
   const generateMarkers = () => {
     const size = boardSize.value
     const total = size * size
     const skip = new Set([1, total, ...(checkpointCells.value || [])]) // Skip start, finish, checkpoint
-    const allMarkerCells = [] // Semua sel yang akan dapat marker
+    const map = {}
     
-    // STEP 1: GARANSI - Minimal 1 marker per baris
+    // STEP 1: GARANSI - Setiap baris mendapat minimal 1 optional "?" dan 1 forced "!"
     for (let row = 0; row < size; row++) {
       const rowStart = row * size + 1
       const rowEnd = rowStart + size - 1
@@ -165,43 +165,49 @@ export const useSnakesLaddersStore = defineStore('snakesLadders', () => {
         if (!skip.has(cell)) rowEligible.push(cell)
       }
       
-      // Pilih 1 sel random di baris ini untuk dijamin dapat marker
-      if (rowEligible.length > 0) {
-        const randomCell = rowEligible[Math.floor(Math.random() * rowEligible.length)]
-        allMarkerCells.push(randomCell)
-        console.log(`[SnakesLadders] Row ${row + 1} guaranteed marker at cell ${randomCell}`)
+      if (rowEligible.length >= 2) {
+        // Shuffle dan ambil 2 sel pertama: 1 untuk optional, 1 untuk forced
+        const shuffledRow = shuffle(rowEligible)
+        map[shuffledRow[0]] = 'optional'
+        map[shuffledRow[1]] = 'forced'
+        console.log(`[SnakesLadders] Row ${row + 1} guaranteed markers: cell ${shuffledRow[0]} (?) and ${shuffledRow[1]} (!)`)
+      } else if (rowEligible.length === 1) {
+        // Jika hanya 1 sel eligible, tetap beri marker (alternatif antara ? dan !)
+        const type = row % 2 === 0 ? 'optional' : 'forced'
+        map[rowEligible[0]] = type
+        console.log(`[SnakesLadders] Row ${row + 1} only 1 eligible cell: ${rowEligible[0]} (${type === 'optional' ? '?' : '!'})`)
       }
     }
     
-    // STEP 2: TAMBAHAN - Random markers (~1/3 dari sisa eligible)
+    // STEP 2: TAMBAHAN - Tambahkan marker random ke sel yang belum diisi (~1/4 dari sel eligible yang tersisa)
+    const usedCells = new Set(Object.keys(map).map(k => parseInt(k, 10)))
     const remainingEligible = []
     for (let n = 2; n <= total - 1; n++) {
-      if (!skip.has(n) && !allMarkerCells.includes(n)) remainingEligible.push(n)
+      if (!skip.has(n) && !usedCells.has(n)) {
+        remainingEligible.push(n)
+      }
     }
     
-    const additionalCount = Math.floor(remainingEligible.length / 3)
+    const additionalCount = Math.floor(remainingEligible.length / 4)
     const additionalChosen = shuffle(remainingEligible).slice(0, additionalCount)
-    allMarkerCells.push(...additionalChosen)
     
-    // STEP 3: SPLIT 50:50 - Shuffle semua markers dan bagi menjadi optional & forced
-    const shuffledMarkers = shuffle([...allMarkerCells])
-    const totalMarkers = shuffledMarkers.length
-    const halfPoint = Math.floor(totalMarkers / 2)
+    // Bagi tambahan marker secara merata antara optional dan forced
+    additionalChosen.forEach((cell, idx) => {
+      map[cell] = idx % 2 === 0 ? 'optional' : 'forced'
+    })
     
-    const optionalCells = shuffledMarkers.slice(0, halfPoint)
-    const forcedCells = shuffledMarkers.slice(halfPoint)
-    
-    const map = {}
-    optionalCells.forEach((cell) => (map[cell] = 'optional'))
-    forcedCells.forEach((cell) => (map[cell] = 'forced'))
+    // Hitung statistik
+    const optionalCount = Object.values(map).filter(t => t === 'optional').length
+    const forcedCount = Object.values(map).filter(t => t === 'forced').length
+    const totalMarkers = Object.keys(map).length
     
     console.log('[SnakesLadders] Markers generated:', {
-      guaranteed: size,
+      guaranteedPerRow: 2,
       additional: additionalChosen.length,
       total: totalMarkers,
-      optional: optionalCells.length,
-      forced: forcedCells.length,
-      ratio: `${optionalCells.length}:${forcedCells.length}`,
+      optional: optionalCount,
+      forced: forcedCount,
+      ratio: `${optionalCount}:${forcedCount}`,
     })
     
     markers.value = map

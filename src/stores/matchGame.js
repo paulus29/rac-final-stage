@@ -1,6 +1,35 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useQuestions } from '@/composables/useQuestions'
+
+const STORAGE_KEY = 'matchGame_gameState'
+
+// Helper functions untuk localStorage
+const saveToStorage = (state) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch (error) {
+    console.error('Failed to save game state:', error)
+  }
+}
+
+const loadFromStorage = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : null
+  } catch (error) {
+    console.error('Failed to load game state:', error)
+    return null
+  }
+}
+
+const clearStorage = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch (error) {
+    console.error('Failed to clear game state:', error)
+  }
+}
 
 export const useMatchGameStore = defineStore('matchGame', () => {
   // Core state
@@ -103,6 +132,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     if (next && next.id) st.questionId = next.id
     st.revealed = []
     st.wrong = 0
+    // Reset poin kartu ke 100 saat pertanyaan diganti
+    cardPoints.value[position] = 100
   }
 
   // Getters
@@ -201,6 +232,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const resetToNameInput = () => {
     resetGame()
     namesSet.value = false
+    // Clear localStorage saat reset
+    clearStorage()
   }
 
   const handlePlayerNames = ({ player1Name: p1, player2Name: p2 }) => {
@@ -212,6 +245,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
 
   const handleResetFromModal = () => {
     resetGame()
+    // Clear localStorage saat reset dari modal
+    clearStorage()
   }
 
   const handleCardClick = (cardIndex) => {
@@ -447,6 +482,127 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const registerPointGain = (playerId, amount) => {
     pointGainEvent.value = { playerId, amount, ts: Date.now() }
   }
+
+  // Load state dari localStorage saat store diinisialisasi
+  const loadState = () => {
+    const saved = loadFromStorage()
+    if (saved) {
+      // Restore core game state
+      if (saved.cards) cards.value = saved.cards
+      if (saved.openedCards) openedCards.value = saved.openedCards
+      if (saved.matchedPairs !== undefined) matchedPairs.value = saved.matchedPairs
+      if (saved.gameStarted !== undefined) gameStarted.value = saved.gameStarted
+      if (saved.namesSet !== undefined) namesSet.value = saved.namesSet
+      if (saved.gameCompleted !== undefined) gameCompleted.value = saved.gameCompleted
+      if (saved.attempts !== undefined) attempts.value = saved.attempts
+      if (saved.timer !== undefined) timer.value = saved.timer
+      
+      // Restore player state
+      if (saved.currentPlayer !== undefined) currentPlayer.value = saved.currentPlayer
+      if (saved.player1Points !== undefined) player1Points.value = saved.player1Points
+      if (saved.player2Points !== undefined) player2Points.value = saved.player2Points
+      if (saved.player1Matches !== undefined) player1Matches.value = saved.player1Matches
+      if (saved.player2Matches !== undefined) player2Matches.value = saved.player2Matches
+      if (saved.player1Attempts !== undefined) player1Attempts.value = saved.player1Attempts
+      if (saved.player2Attempts !== undefined) player2Attempts.value = saved.player2Attempts
+      if (saved.player1Name) player1Name.value = saved.player1Name
+      if (saved.player2Name) player2Name.value = saved.player2Name
+      if (saved.winner !== undefined) winner.value = saved.winner
+      
+      // Restore card points and question state
+      if (saved.cardPoints) cardPoints.value = saved.cardPoints
+      if (saved.cardQuestionState) cardQuestionState.value = saved.cardQuestionState
+      
+      // Restore turn/kesempatan state
+      if (saved.currentTurnAttempts !== undefined) currentTurnAttempts.value = saved.currentTurnAttempts
+      if (saved.showContinueChoice !== undefined) showContinueChoice.value = saved.showContinueChoice
+      if (saved.isFirstAttemptInTurn !== undefined) isFirstAttemptInTurn.value = saved.isFirstAttemptInTurn
+      
+      // Load pertanyaan jika game sudah dimulai (namesSet = true)
+      if (saved.namesSet) {
+        loadQuestions()
+      }
+      
+      // Restart timer jika game sedang berlangsung (started tapi belum completed)
+      if (saved.gameStarted && !saved.gameCompleted) {
+        startTimer()
+      }
+      
+      console.log('[MatchGame] State loaded from localStorage:', {
+        cards: cards.value.length,
+        matchedPairs: matchedPairs.value,
+        gameStarted: gameStarted.value,
+      })
+      
+      return true
+    }
+    return false
+  }
+
+  // Auto-save state ke localStorage setiap ada perubahan penting
+  const setupAutoSave = () => {
+    watch(
+      [
+        cards,
+        openedCards,
+        matchedPairs,
+        gameStarted,
+        namesSet,
+        gameCompleted,
+        attempts,
+        timer,
+        currentPlayer,
+        player1Points,
+        player2Points,
+        player1Matches,
+        player2Matches,
+        player1Attempts,
+        player2Attempts,
+        player1Name,
+        player2Name,
+        winner,
+        cardPoints,
+        cardQuestionState,
+        currentTurnAttempts,
+        showContinueChoice,
+        isFirstAttemptInTurn,
+      ],
+      () => {
+        const stateToSave = {
+          cards: cards.value,
+          openedCards: openedCards.value,
+          matchedPairs: matchedPairs.value,
+          gameStarted: gameStarted.value,
+          namesSet: namesSet.value,
+          gameCompleted: gameCompleted.value,
+          attempts: attempts.value,
+          timer: timer.value,
+          currentPlayer: currentPlayer.value,
+          player1Points: player1Points.value,
+          player2Points: player2Points.value,
+          player1Matches: player1Matches.value,
+          player2Matches: player2Matches.value,
+          player1Attempts: player1Attempts.value,
+          player2Attempts: player2Attempts.value,
+          player1Name: player1Name.value,
+          player2Name: player2Name.value,
+          winner: winner.value,
+          cardPoints: cardPoints.value,
+          cardQuestionState: cardQuestionState.value,
+          currentTurnAttempts: currentTurnAttempts.value,
+          showContinueChoice: showContinueChoice.value,
+          isFirstAttemptInTurn: isFirstAttemptInTurn.value,
+        }
+        saveToStorage(stateToSave)
+      },
+      { deep: true }
+    )
+  }
+
+  // Load state saat store pertama kali dibuat
+  loadState()
+  // Setup auto-save
+  setupAutoSave()
 
   return {
     // state

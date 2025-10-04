@@ -4,7 +4,8 @@
       v-if="isVisible && !isMinimized"
       class="fixed inset-0 z-[85] flex items-center justify-center p-4"
     >
-      <div class="absolute inset-0" @click="$emit('close')"></div>
+      <!-- Overlay (click disabled - tidak bisa close modal dengan klik backdrop) -->
+      <div class="absolute inset-0"></div>
 
       <div
         class="relative w-full max-w-xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-600 rounded-xl p-5 shadow-2xl overflow-hidden"
@@ -39,21 +40,21 @@
               :title="isShieldMax ? 'Shield sudah maksimum (2)' : ''"
               class="min-w-[160px] px-4 py-3 rounded-lg font-bold text-white shadow-md bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              🛡️ Ambil Shield + Maju 2
+              🛡️ Ambil Shield + Maju 1 Langkah
             </button>
 
             <button
               @click="toggleShoot"
               class="min-w-[160px] px-4 py-3 rounded-lg font-bold text-white shadow-md bg-gradient-to-r from-fuchsia-600 to-fuchsia-700 hover:from-fuchsia-700 hover:to-fuchsia-800"
             >
-              🎯 Serang Kelompok
+              🎯 Serang Kelompok Lain
             </button>
 
             <button
               @click="chooseAdvance"
               class="min-w-[160px] px-4 py-3 rounded-lg font-bold text-white shadow-md bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
             >
-              ➡️ Maju 4
+              ➡️ Maju 4 Langkah
             </button>
           </div>
 

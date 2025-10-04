@@ -1,8 +1,8 @@
 <template>
   <Transition name="modal" appear>
     <div v-if="isVisible && !isMinimized" class="fixed inset-0 z-[90] flex items-center justify-center p-4">
-      <!-- Overlay tanpa blur (konsisten dengan QuestionChallengeModal) -->
-      <div class="absolute inset-0" @click="$emit('close')"></div>
+      <!-- Overlay tanpa blur (click disabled - tidak bisa close modal dengan klik backdrop) -->
+      <div class="absolute inset-0"></div>
 
       <!-- Canvas confetti (hanya untuk juara 1) -->
       <canvas v-if="rank === 1" ref="canvasRef" class="absolute inset-0 pointer-events-none"></canvas>

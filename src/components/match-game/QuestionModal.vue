@@ -58,8 +58,8 @@ const feedbackMessage = ref('')
 const showCorrectAnswer = ref(false)
 const wrongCountBefore = computed(() => mg.getWrongCountForPosition(props.cardPosition))
 
-// Timer state - 30 detik untuk menjawab pertanyaan
-const timeLeft = ref(30)
+// Timer state - 60 detik untuk menjawab pertanyaan
+const timeLeft = ref(60)
 const timerInterval = ref(null)
 const isWarning = ref(false)
 const isTimerActive = ref(true)
@@ -116,7 +116,7 @@ const handleGameMasterAnswer = (correct) => {
       emit('answer-correct', props.cardPosition)
     }, 2000) // Tambah waktu untuk melihat jawaban
   } else {
-    const willBeThirdWrong = (wrongCountBefore.value + 1) >= 3
+    const willBeThirdWrong = wrongCountBefore.value + 1 >= 3
     if (willBeThirdWrong) {
       feedbackMessage.value = '❌ Jawaban Salah!'
       showCorrectAnswer.value = true
@@ -185,8 +185,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        
-
         <!-- Timer Display -->
         <div v-if="!showFeedback && !isTimeOut" class="mb-4">
           <div class="flex items-center justify-center gap-3 mb-2">
@@ -209,7 +207,7 @@ onUnmounted(() => {
                 'bg-red-500 animate-pulse': isWarning,
                 'bg-gradient-to-r from-green-500 to-amber-500': !isWarning,
               }"
-              :style="{ width: (timeLeft / 30) * 100 + '%' }"
+              :style="{ width: (timeLeft / 60) * 100 + '%' }"
             ></div>
           </div>
 

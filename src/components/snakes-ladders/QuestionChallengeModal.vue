@@ -4,8 +4,8 @@
       v-if="isVisible && !isMinimized"
       class="fixed inset-0 z-[80] flex items-center justify-center p-4"
     >
-      <!-- Overlay tanpa blur -->
-      <div class="absolute inset-0" @click="handleBackdrop"></div>
+      <!-- Overlay tanpa blur (click disabled - tidak bisa close modal dengan klik backdrop) -->
+      <div class="absolute inset-0"></div>
 
       <!-- Konten modal bergaya match-game -->
       <div
@@ -129,7 +129,7 @@
                   'bg-red-500 animate-pulse': isWarning,
                   'bg-gradient-to-r from-green-500 to-amber-500': !isWarning,
                 }"
-                :style="{ width: (timeLeft / 30) * 100 + '%' }"
+                :style="{ width: (timeLeft / 60) * 100 + '%' }"
               ></div>
             </div>
             <div v-if="isWarning" class="text-center mt-2">
@@ -273,7 +273,7 @@ const selectedAnswererId = ref(null)
 const isMinimized = ref(false)
 
 // Timer state (mengadopsi pola match-game)
-const timeLeft = ref(30)
+const timeLeft = ref(60)
 const timerInterval = ref(null)
 const isWarning = ref(false)
 const isTimerActive = ref(true)
@@ -329,7 +329,7 @@ const stopTimer = () => {
 
 const resetTimer = () => {
   stopTimer()
-  timeLeft.value = 30
+  timeLeft.value = 60
   isWarning.value = false
   isTimeOut.value = false
   isTimerActive.value = true
