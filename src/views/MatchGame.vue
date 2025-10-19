@@ -5,5 +5,14 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount } from 'vue'
+import { useSoundEffects } from '@/composables/useSoundEffects'
 import GameBoard from '../components/match-game/GameBoard.vue'
+
+// Pastikan background music berhenti saat view di-unmount (navigasi ke halaman lain)
+const { stopMatchGameBackgroundMusic } = useSoundEffects()
+
+onBeforeUnmount(() => {
+  stopMatchGameBackgroundMusic()
+})
 </script>

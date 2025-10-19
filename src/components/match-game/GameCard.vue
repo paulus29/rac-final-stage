@@ -1,7 +1,7 @@
 <script setup>
 const props = defineProps({
-  number: {
-    type: Number,
+  letter: {
+    type: String,
     required: true,
   },
   position: {
@@ -31,7 +31,7 @@ const emit = defineEmits(['card-click'])
 
 const handleClick = () => {
   if (!props.isDisabled && !props.isFlipped && !props.isMatched) {
-    emit('card-click', props.number)
+    emit('card-click', props.letter)
   }
 }
 </script>
@@ -77,7 +77,7 @@ const handleClick = () => {
           class="absolute top-1 left-1 text-sm sm:text-base font-bold text-white rounded px-1"
           >{{ position }}</span
         >
-        <span>{{ number }}</span>
+        <span>{{ letter }}</span>
       </div>
     </div>
   </div>

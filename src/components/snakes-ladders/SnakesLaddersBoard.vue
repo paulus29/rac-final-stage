@@ -161,6 +161,7 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useSnakesLaddersStore } from '@/stores/snakesLadders'
+import { useSoundEffects } from '@/composables/useSoundEffects'
 import GameMasterControls from './GameMasterControls.vue'
 import GameBoardGrid from './GameBoardGrid.vue'
 import ResetConfirmModal from './ResetConfirmModal.vue'
@@ -174,6 +175,22 @@ import PlayerNameInput from './PlayerNameInput.vue'
 const gameBoardRef = ref(null)
 const menuRef = ref(null)
 const controlsRef = ref(null)
+
+// Sound effects
+const {
+  playWalkingForward,
+  playWalkingBackward,
+  playShooting,
+  playShieldBroken,
+  playGetShield,
+  playVictory1st,
+  playVictoryAllRanking,
+  stopSound,
+  playBackgroundMusic,
+  stopBackgroundMusic,
+  fadeOutBackgroundMusic,
+  fadeInBackgroundMusic,
+} = useSoundEffects()
 
 // Pinia store
 const sl = useSnakesLaddersStore()
@@ -246,6 +263,9 @@ const movePlayerForward = async () => {
   // Start animation
   isAnimating.value = true
 
+  // Play sound: jalan maju (looped)
+  const walkingAudio = playWalkingForward()
+
   try {
     // Play animation first
     if (gameBoardRef.value && gameBoardRef.value.animateMove) {
@@ -266,10 +286,25 @@ const movePlayerForward = async () => {
       finishPlayerName.value = player.name
       finishPlayerRank.value = players.value[playerIndex].rank
       showFinishModal.value = true
+      
+      // Play sound: victory untuk juara pertama
+      if (players.value[playerIndex].rank === 1) {
+        // Fade out background music, play victory, lalu fade in
+        await fadeOutBackgroundMusic(500)
+        playVictory1st()
+        // Tunggu victory sound selesai (sekitar 3 detik), lalu fade in background
+        setTimeout(() => fadeInBackgroundMusic(0.3, 1000), 3000)
+      }
+      
       // Cek finalisasi (dua pemain sudah finish)
       const finishedCount = players.value.filter((p) => p.finished).length
       if (finishedCount >= 2) {
         showFinalModal.value = true
+        // Play sound: semua ranking lengkap
+        await fadeOutBackgroundMusic(500)
+        playVictoryAllRanking()
+        // Tunggu victory sound selesai (sekitar 5 detik), lalu fade in background
+        setTimeout(() => fadeInBackgroundMusic(0.3, 1000), 5000)
       }
     } else {
       // Check challenge marker setelah mendarat (hanya jika belum finish)
@@ -287,6 +322,8 @@ const movePlayerForward = async () => {
       }
     }
   } finally {
+    // Stop walking sound after animation (always executed)
+    stopSound(walkingAudio)
     isAnimating.value = false
   }
 }
@@ -306,6 +343,9 @@ const movePlayerBackward = async () => {
 
   // Start animation
   isAnimating.value = true
+
+  // Play sound: jalan mundur
+  playWalkingBackward()
 
   try {
     // Play animation first
@@ -338,6 +378,8 @@ const resetGame = () => {
 }
 
 const confirmReset = () => {
+  // Stop background music saat reset game
+  stopBackgroundMusic()
   sl.confirmReset()
 }
 
@@ -351,6 +393,10 @@ const onStartGame = ({ player1Name, player2Name, player3Name }) => {
     })
   }
   sl.startGameSetNames({ player1Name, player2Name, player3Name })
+  
+  // Play background music saat game dimulai
+  playBackgroundMusic()
+  
   // Auto-start timer pada panel kontrol (tunggu komponen ter-mount via v-if)
   nextTick(() => {
     // Tambahkan delay kecil untuk memastikan komponen sudah benar-benar ter-mount
@@ -369,6 +415,8 @@ const onStartGame = ({ player1Name, player2Name, player3Name }) => {
 
 const goHome = () => {
   showMenu.value = false
+  // Stop background music saat kembali ke menu utama
+  stopBackgroundMusic()
   router.push('/')
 }
 
@@ -380,6 +428,12 @@ const openReset = () => {
 // Initialize
 onMounted(() => {
   sl.init()
+  
+  // Play background music jika game sudah dimulai (loaded dari storage)
+  if (!showNameInput.value) {
+    playBackgroundMusic()
+  }
+  
   // click outside to close menu
   const onDocClick = (e) => {
     if (!menuRef.value) return
@@ -393,6 +447,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // Stop background music saat komponen di-unmount
+  stopBackgroundMusic()
+  
   if (menuRef.value && menuRef.value.__onDocClick) {
     document.removeEventListener('click', menuRef.value.__onDocClick)
   }
@@ -432,6 +489,9 @@ const onChallengeJudge = async ({ answererId, isCorrect, selectedIndex }) => {
       rewardPlayerId.value = answererId
       // Tidak ada animasi di sini; animasi akan terjadi pada handler pilihan
     } else {
+      // Play sound: jalan mundur karena jawaban salah
+      playWalkingBackward()
+      
       const steps = 4
       if (gameBoardRef.value && gameBoardRef.value.animateBackward) {
         await gameBoardRef.value.animateBackward(player, steps, 250)
@@ -473,10 +533,25 @@ const onRewardChoose = async ({ action, targetId }) => {
       finishPlayerName.value = p.name
       finishPlayerRank.value = p.rank
       showFinishModal.value = true
+      
+      // Play sound: victory untuk juara pertama
+      if (p.rank === 1) {
+        // Fade out background music, play victory, lalu fade in
+        await fadeOutBackgroundMusic(500)
+        playVictory1st()
+        // Tunggu victory sound selesai (sekitar 3 detik), lalu fade in background
+        setTimeout(() => fadeInBackgroundMusic(0.3, 1000), 3000)
+      }
+      
       // Finalize if two players finished
       const finishedCount = players.value.filter((pl) => pl.finished).length
       if (finishedCount >= 2) {
         showFinalModal.value = true
+        // Play sound: semua ranking lengkap
+        await fadeOutBackgroundMusic(500)
+        playVictoryAllRanking()
+        // Tunggu victory sound selesai (sekitar 5 detik), lalu fade in background
+        setTimeout(() => fadeInBackgroundMusic(0.3, 1000), 5000)
       }
     }
   }
@@ -486,6 +561,10 @@ const onRewardChoose = async ({ action, targetId }) => {
     players.value[idx].shield = Math.min((players.value[idx].shield || 0) + 1, 2)
     const steps = 1
     isAnimating.value = true
+    
+    // Play sound: mendapatkan shield (tanpa sound jalan maju)
+    playGetShield()
+    
     try {
       if (gameBoardRef.value && gameBoardRef.value.animateMove) {
         await gameBoardRef.value.animateMove(actor, steps, 250)
@@ -503,6 +582,10 @@ const onRewardChoose = async ({ action, targetId }) => {
     // Maju 4 langkah seperti sebelumnya
     const steps = 4
     isAnimating.value = true
+    
+    // Play sound: jalan maju (looped)
+    const walkingAudio = playWalkingForward()
+    
     try {
       if (gameBoardRef.value && gameBoardRef.value.animateMove) {
         await gameBoardRef.value.animateMove(actor, steps, 250)
@@ -510,6 +593,8 @@ const onRewardChoose = async ({ action, targetId }) => {
       players.value[idx].position = Math.min(actor.position + steps, maxCellVal)
       await checkFinish(idx)
     } finally {
+      // Stop walking sound
+      stopSound(walkingAudio)
       isAnimating.value = false
     }
   } else if (action === 'shoot') {
@@ -530,6 +615,9 @@ const onRewardChoose = async ({ action, targetId }) => {
       }
 
       // 2) Tembakkan proyektil (kecepatan konstan ditentukan internal)
+      // Play sound: menyerang lawan
+      playShooting()
+      
       if (gameBoardRef.value && gameBoardRef.value.animateShoot) {
         await gameBoardRef.value.animateShoot(actor, target)
       }
@@ -539,11 +627,18 @@ const onRewardChoose = async ({ action, targetId }) => {
         if (gameBoardRef.value && gameBoardRef.value.animateShieldHoldStop) {
           gameBoardRef.value.animateShieldHoldStop()
         }
+        
+        // Play sound: shield rusak
+        playShieldBroken()
+        
         if (gameBoardRef.value && gameBoardRef.value.animateShieldPulse) {
           await gameBoardRef.value.animateShieldPulse(target, 600)
         }
         players.value[tIdx].shield = Math.max(target.shield - 1, 0)
       } else {
+        // Play sound: jalan mundur karena diserang tanpa shield
+        playWalkingBackward()
+        
         const steps = 4
         if (gameBoardRef.value && gameBoardRef.value.animateBackward) {
           await gameBoardRef.value.animateBackward(target, steps, 250)

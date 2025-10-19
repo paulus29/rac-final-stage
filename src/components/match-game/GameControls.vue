@@ -1,15 +1,19 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useSoundEffects } from '@/composables/useSoundEffects'
 
 const showMenu = ref(false)
 const menuRef = ref(null)
 const emit = defineEmits(['reset-game'])
 
 const router = useRouter()
+const { stopMatchGameBackgroundMusic } = useSoundEffects()
 
 const goHome = () => {
   showMenu.value = false
+  // Stop background music saat kembali ke menu utama
+  stopMatchGameBackgroundMusic()
   router.push('/')
 }
 

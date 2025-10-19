@@ -52,5 +52,16 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useSoundEffects } from '@/composables/useSoundEffects'
+
+// Pastikan semua background music berhenti saat di menu utama
+const { stopBackgroundMusic, stopMatchGameBackgroundMusic } = useSoundEffects()
+
+onMounted(() => {
+  // Stop semua background music saat kembali ke home
+  stopBackgroundMusic()
+  stopMatchGameBackgroundMusic()
+})
 </script>

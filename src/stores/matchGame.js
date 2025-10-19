@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useQuestions } from '@/composables/useQuestions'
+import { useSoundEffects } from '@/composables/useSoundEffects'
 
 const STORAGE_KEY = 'matchGame_gameState'
 
@@ -32,6 +33,17 @@ const clearStorage = () => {
 }
 
 export const useMatchGameStore = defineStore('matchGame', () => {
+  // Sound effects
+  const {
+    playOpenCard,
+    playMatchCard,
+    playFinishGame,
+    playMatchGameBackgroundMusic,
+    stopMatchGameBackgroundMusic,
+    fadeOutMatchGameBackgroundMusic,
+    fadeInMatchGameBackgroundMusic,
+  } = useSoundEffects()
+
   // Core state
   const cards = ref([])
   const openedCards = ref([])
@@ -96,7 +108,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
 
   const getWrongCountForPosition = (position) => {
     const st = cardQuestionState.value[position]
-    return st ? (st.wrong || 0) : 0
+    return st ? st.wrong || 0 : 0
   }
 
   const revealRandomLetterForPosition = (position) => {
@@ -160,12 +172,14 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   }
 
   const initializeGame = () => {
-    const numbers = []
-    for (let i = 1; i <= 7; i++) {
-      numbers.push(i, i)
+    // Generate letters A-G (7 pairs)
+    const letters = []
+    for (let i = 0; i < 7; i++) {
+      const letter = String.fromCharCode(65 + i) // A=65, B=66, ..., G=71
+      letters.push(letter, letter)
     }
-    shuffleArray(numbers)
-    cards.value = numbers.map((number) => ({ number, isFlipped: false, isMatched: false }))
+    shuffleArray(letters)
+    cards.value = letters.map((letter) => ({ letter, isFlipped: false, isMatched: false }))
     openedCards.value = []
     matchedPairs.value = 0
     attempts.value = 0
@@ -232,6 +246,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const resetToNameInput = () => {
     resetGame()
     namesSet.value = false
+    // Stop background music saat reset
+    stopMatchGameBackgroundMusic()
     // Clear localStorage saat reset
     clearStorage()
   }
@@ -241,10 +257,14 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     player2Name.value = p2
     namesSet.value = true
     startGame()
+    // Play background music saat game dimulai
+    playMatchGameBackgroundMusic()
   }
 
   const handleResetFromModal = () => {
     resetGame()
+    // Stop background music saat reset dari modal
+    stopMatchGameBackgroundMusic()
     // Clear localStorage saat reset dari modal
     clearStorage()
   }
@@ -298,12 +318,16 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     currentQuestion.value = null
     pendingCardIndex.value = null
     cards.value[cardIndex].isFlipped = true
+
+    // Play sound: kartu berhasil dibuka
+    playOpenCard()
+
     // Cleanup per-card state when matched
     if (cardQuestionState.value[cardPosition]) delete cardQuestionState.value[cardPosition]
 
     const matchingCardIndex = openedCards.value.find(
       (openIndex) =>
-        cards.value[openIndex].number === cards.value[cardIndex].number &&
+        cards.value[openIndex].letter === cards.value[cardIndex].letter &&
         !cards.value[openIndex].isMatched,
     )
 
@@ -313,6 +337,9 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       cards.value[cardIndex].isMatched = true
       cards.value[matchingCardIndex].isMatched = true
       matchedPairs.value++
+
+      // Play sound: 2 kartu match
+      playMatchCard()
 
       // Catat match untuk pemain saat ini (untuk tie-breaker)
       if (currentPlayerBeforeMatch === 1) player1Matches.value++
@@ -331,6 +358,15 @@ export const useMatchGameStore = defineStore('matchGame', () => {
         gameCompleted.value = true
         stopTimer()
         resetTurnState()
+
+        // Fade out background music, play finish sound, lalu fade in
+        fadeOutMatchGameBackgroundMusic(500).then(() => {
+          // Play sound: game selesai
+          playFinishGame()
+          // Tunggu finish sound selesai (sekitar 2 detik), lalu fade in background
+          setTimeout(() => fadeInMatchGameBackgroundMusic(0.25, 1000), 2000)
+        })
+
         // Winner by total points; tie-breaker by total matches
         if (player1Points.value > player2Points.value) {
           winner.value = 1
@@ -437,9 +473,9 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     const position = pendingCardIndex.value + 1
     // Kurangi poin hanya jika berhasil mengungkap huruf baru
     ensureCardQuestionState(position)
-    const before = (cardQuestionState.value[position]?.revealed?.length) || 0
+    const before = cardQuestionState.value[position]?.revealed?.length || 0
     revealRandomLetterForPosition(position)
-    const after = (cardQuestionState.value[position]?.revealed?.length) || 0
+    const after = cardQuestionState.value[position]?.revealed?.length || 0
     if (after > before) {
       reduceCardPoints(position, 20)
     }
@@ -487,6 +523,13 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const loadState = () => {
     const saved = loadFromStorage()
     if (saved) {
+      // Check if saved data uses old format (number) instead of new format (letter)
+      if (saved.cards && saved.cards.length > 0 && saved.cards[0].number !== undefined) {
+        console.log('[MatchGame] Old format detected, clearing storage')
+        clearStorage()
+        return false
+      }
+
       // Restore core game state
       if (saved.cards) cards.value = saved.cards
       if (saved.openedCards) openedCards.value = saved.openedCards
@@ -496,7 +539,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       if (saved.gameCompleted !== undefined) gameCompleted.value = saved.gameCompleted
       if (saved.attempts !== undefined) attempts.value = saved.attempts
       if (saved.timer !== undefined) timer.value = saved.timer
-      
+
       // Restore player state
       if (saved.currentPlayer !== undefined) currentPlayer.value = saved.currentPlayer
       if (saved.player1Points !== undefined) player1Points.value = saved.player1Points
@@ -508,32 +551,35 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       if (saved.player1Name) player1Name.value = saved.player1Name
       if (saved.player2Name) player2Name.value = saved.player2Name
       if (saved.winner !== undefined) winner.value = saved.winner
-      
+
       // Restore card points and question state
       if (saved.cardPoints) cardPoints.value = saved.cardPoints
       if (saved.cardQuestionState) cardQuestionState.value = saved.cardQuestionState
-      
+
       // Restore turn/kesempatan state
-      if (saved.currentTurnAttempts !== undefined) currentTurnAttempts.value = saved.currentTurnAttempts
-      if (saved.showContinueChoice !== undefined) showContinueChoice.value = saved.showContinueChoice
-      if (saved.isFirstAttemptInTurn !== undefined) isFirstAttemptInTurn.value = saved.isFirstAttemptInTurn
-      
+      if (saved.currentTurnAttempts !== undefined)
+        currentTurnAttempts.value = saved.currentTurnAttempts
+      if (saved.showContinueChoice !== undefined)
+        showContinueChoice.value = saved.showContinueChoice
+      if (saved.isFirstAttemptInTurn !== undefined)
+        isFirstAttemptInTurn.value = saved.isFirstAttemptInTurn
+
       // Load pertanyaan jika game sudah dimulai (namesSet = true)
       if (saved.namesSet) {
         loadQuestions()
       }
-      
+
       // Restart timer jika game sedang berlangsung (started tapi belum completed)
       if (saved.gameStarted && !saved.gameCompleted) {
         startTimer()
       }
-      
+
       console.log('[MatchGame] State loaded from localStorage:', {
         cards: cards.value.length,
         matchedPairs: matchedPairs.value,
         gameStarted: gameStarted.value,
       })
-      
+
       return true
     }
     return false
@@ -595,7 +641,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
         }
         saveToStorage(stateToSave)
       },
-      { deep: true }
+      { deep: true },
     )
   }
 
@@ -644,7 +690,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     player2Matches,
     getCardPoints,
     pointGainEvent,
-    
+
     getWrongCountForPosition,
     getRevealedIndices,
     revealClue,

@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMatchGameStore } from '@/stores/matchGame'
+import { useSoundEffects } from '@/composables/useSoundEffects'
 import Card from './GameCard.vue'
 import PlayerPanel from './PlayerPanel.vue'
 import GameCompleteModal from './GameCompleteModal.vue'
@@ -10,6 +11,9 @@ import GameStats from './GameStats.vue'
 import PlayerNameInput from './PlayerNameInput.vue'
 import QuestionModal from './QuestionModal.vue'
 import TurnChoiceModal from './TurnChoiceModal.vue'
+
+// Sound effects
+const { playMatchGameBackgroundMusic, stopMatchGameBackgroundMusic } = useSoundEffects()
 
 // Pinia store hookup
 const mg = useMatchGameStore()
@@ -73,10 +77,17 @@ const p2Gain = computed(() =>
 
 onMounted(() => {
   mg.init()
+
+  // Play background music hanya jika game sudah dimulai DAN nama sudah di-set (loaded dari storage)
+  if (gameStarted.value && namesSet.value) {
+    playMatchGameBackgroundMusic()
+  }
 })
 
 onBeforeUnmount(() => {
   mg.stopTimer()
+  // Stop background music saat komponen di-unmount
+  stopMatchGameBackgroundMusic()
 })
 </script>
 
@@ -120,7 +131,7 @@ onBeforeUnmount(() => {
               <Card
                 v-for="(card, idx) in row.items"
                 :key="`r${rowIndex}-c${idx}`"
-                :number="card.number"
+                :letter="card.letter"
                 :position="row.startIndex + idx + 1"
                 :points="getCardPoints(row.startIndex + idx + 1)"
                 :isFlipped="card.isFlipped"
