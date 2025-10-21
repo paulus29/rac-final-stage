@@ -1,44 +1,30 @@
-Apa nama sebuah benda yang kalau ditutup berubah jadi tongkat, tapi ketika dibuka malah jadi tenda? | Payung
-Apakah huruf keempat dalam abjad? | Huruf a
-Seorang pria terjebak di dalam gua, ia kebingungan karena gua tersebut gelap. Di tangannya ada lilin dan obor. Apa yang harus ia nyalakan terlebih dahulu? | Korek Api
-Kalau sedang sendiri, kakinya ada empat, kalau berdua, kakinya jadi ada delapan. Siapakah aku? | Kursi
-Kera apa yang suci? | Keramat
-Apa yang dimiliki gajah tetapi tidak dimiliki hewan lain? | Anak Gajah
-Kera apa yang bikin heboh dan bikin repot? | Kerasukan Jin
-Lemari apa yang bisa dimasukkan kantong? | Lemaribuan
-Posisiku ada di depan ibu, tetapi suka bersembunyi di belakang televisi. Aku bisa hidup di tengah air. Tapi, kalau ayah datang, aku akan menghilang. Siapakah aku? | Huruf I
-Dikasih makan nangis, tidak diberi makan malah diam. Apakah itu? | Kue Putu
-Siapa nama istri ikan mas? | Ikan Mbakyu
-Bank apa yang selalu rugi? | Bangkrut
-Pejabat bukan, bos juga bukan tapi semua orang tunduk padanya. Pekerjaan apa itu? | Tukang Cukur
-Naik apa yang tidak bisa turun lagi? | Naik Haji
-Malam apa yang paling menakutkan? | Ma Lampir
-Daun apa yang paling besar di dunia? | Daun Pintu
-Siapakah menteri kebersihan dari Republik Rakyat Cina? | Ke Mo Ceng
-Bisa ditonton, bisa dimakan. Apakah itu? | Ketoprak
-Buah apa yang luarnya hitam, tengahnya putih, dan di dalamnya hitam? | Salak
-Bijinya di atas, daunnya di bawah. Pohon apa itu? | Pohon Toge
-Nasi apa yang menjadi pegangan hidup kita? | Nasihat
-Menteri apa yang suka makan anak buah? | Menteri Catur
-Garuk-garuk tetapi tidak gatal. Kenapa itu? | Kebingungan
-Kalau gajah main drum kelihatan apanya? | Kelihatan Boongnya
-Tari apa yang paling menakutkan? | Taring Harimau
-Jika ada 1 kilo batu dan ada 1 kilo kapas, ketika dijatuhkan ke atas kaki, apa yang lebih sakit? | Kaki Kita
-Apa yang ada di ujung langit? | Huruf t
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Siapakah yang berwenang untuk mengajukan whitelist pada transaksi-transaksi tertentu agar Aplikasi ORMIS-KRI tidak mengirimkan notifikasi saat terjadi pelampauan threshold? | Risk Manager
+Setiap orang, badan publik, dan organisasi internasional yang bertindak sendiri-sendiri atau bersama-sama dalam melakukan pemrosesan Data Pribadi atas nama Pengendali Data Pribadi, disebut ... | Prosessor data pribadi
+Koordinator aktivitas Business Continuity (BC) secara korporasi di BCA adalah ... | Tim Krisis
+Salah satu penyebab adanya risiko operasional adalah akibat ketidakcukupan dan/atau tidak berfungsinya ... yang mempengaruhi operasional bank. | Proses internal
+Pejabat atau petugas yang bertanggung jawab untuk memastikan pemenuhan kepatuhan atas prinsip pelindungan data pribadi dan mitigasi risiko pelanggaran pelindungan data pribadi, disebut ... | Data Protection Officer
+Salah satu sumber bahaya ... adalah beban kerja berlebih | Psikososial
+Nilai minimum kerugian atas kejadian risiko operasional yang perlu dilaporkan ke dalam Aplikasi ORMIS - LED+ untuk tipe kejadian Non Fraud Litigasi | Semua Nominal
+Apa teknik untuk menguji keamanan sistem | Penetration Testing
+RTO singkatan dari | Recovery Time Objective
+Kerugian setelah memperhitungkan dampak dari pemulihan, berupa jumlah kerugian yang telah menjadi tanggungan BCA, yang salah satunya diindikasikan dengan adanya penghapusan pos terbuka yang telah ditetapkan | Kerugian Aktual
+Aplikasi mobile banking Bank ABC memindai wajah untuk verifikasi. Jenis data pribadi spesifik apa yang dikumpulkan? | Data Biometrik
+Crisis Management Coordinator (CMC) dijabat oleh | Kepala Divisi MRK
+Kejadian risiko operasional yang memiliki unsur kesengajaan dan diproses secara hukum melalui pengadilan merupakan pengertian untuk tipe kejadian risiko operasional | Fraud Litigas
+Budi diminta untuk melampirkan SKCK. Dokumen tersebut termasuk data pribadi bersifat spesifik yang disebut ... | Data Spesifik
+Posisi duduk yang tidak sesuai merupakan salah satu bahaya ... yang ada di kantor. | Ergonomi
+Analisis kontrol risiko untuk RCSA dilakukan oleh | Risk Owner
+Apa istilah untuk serangan secara terus - menerus terhadap suatu layanan yang bertujuan agar layanan tersebut tidak dapat diakses? | DDoS Attack
+Kepala Divisi dalam struktur tim BC disebut juga sebagai | BC Work Unit 
+Penilaian sendiri risiko operasional adalah salah satu metode yang digunakan untuk mengelola risiko operasional, di mana pemilik risiko melakukan identifikasi, pengukuran, pemantauan, dan ... | Pengendalian Risiko
+Pemerolehan, pengumpulan, pengolahan, penganalisisan, dan penyimpanan merupakan salah satu bagian dari ... data pribadi. | Kegiatan Pemrosesan
+Kepanjangan dari BCP adalah ... | Business Continuity Plan
+Batas Waktu Penginputan Data LED+ pada ORMIS LED+untuk metode penginputan perkejadian yaitu 7 hari kerja sejak | Kejadian Teridentifikasi
+serangan siber yang mengeksploitasi kerentanan aplikasi dengan menyuntikkan kode berbahaya melalui kolom input pengguna | SQL Injection
+Peraturan Pemerintah terkait Sistem Manajemen K3 di Indonesia adalah PP No ... Tahun 2012 | Lima Puluh
+Terdapat 3 hal yang harus dikecualikan dari perhitungan kerugian potensial, salah satunya adalah | Premi Asuransi
+metode keamanan yang mengharuskan pengguna memberikan dua atau lebih bentuk verifikasi identitas untuk mengakses sebuah akun atau sistem | Multi-Factor Authentication
+Skenario yang digunakan untuk menggambarkan situasi gangguan yang muncul tiba-tiba adalah | Unpredictable
+Jumlah kerugian yang mungkin/akan ditanggung oleh BCA sehubungan dengan terjadinya kejadian risiko operasional, sebelum memperhitungkan segala bentuk pemulihan merupakan pengertian dari | Kerugian Potensial
+Jumlah kerugian yang mungkin/akan ditanggung oleh BCA sehubungan dengan terjadinya kejadian risiko operasional, sebelum memperhitungkan recovery merupakan pengertian dari | MITM Attack
+Tempat kerja cadangan saat BCP diaktivasi adalah | Secondary Work Place

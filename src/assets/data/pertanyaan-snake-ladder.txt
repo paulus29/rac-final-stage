@@ -1,39 +1,53 @@
-Proklamasi Kemerdekaan Indonesia dibacakan pada tanggal… | 1 Juni 1945 | 17 Agustus 1945 | 20 Mei 1908 | 28 Oktober 1928 | B
-Siapakah yang membacakan teks proklamasi kemerdekaan Indonesia? | Soekarno | Mohammad Hatta | Sutan Syahrir | Ki Hajar Dewantara | A
-Organisasi Budi Utomo berdiri pada tahun… | 1905 | 1908 | 1928 | 1945 | B
-Siapakah pencipta lagu “Indonesia Raya”? | W.R. Supratman | Ibu Sud | Cornel Simanjuntak | Ismail Marzuki | A
-Sumpah Pemuda dicetuskan pada tanggal… | 17 Agustus 1945 | 28 Oktober 1928 | 20 Mei 1908 | 10 November 1945 | B
-Tempat pembacaan proklamasi kemerdekaan Indonesia adalah di… | Istana Merdeka | Lapangan Ikada | Jalan Pegangsaan Timur 56 | Monas | C
-Pertempuran Surabaya terjadi pada tanggal… | 28 Oktober 1928 | 17 Agustus 1945 | 10 November 1945 | 20 Mei 1908 | C
-Siapa yang dikenal sebagai Bapak Pendidikan Nasional Indonesia? | Soekarno | Mohammad Hatta | Ki Hajar Dewantara | Tan Malaka | C
-Penjajah yang pertama kali datang ke Indonesia adalah… | Jepang | Portugis | Belanda | Inggris | B
-Nama kapal Belanda yang pertama kali tiba di Indonesia adalah… | Duyfken | Santa Maria | Victoria | Endurance | A
-Hari Kebangkitan Nasional diperingati setiap tanggal… | 28 Oktober | 20 Mei | 17 Agustus | 10 November | B
-Siapa tokoh pergerakan yang dijuluki “Bapak Koperasi Indonesia”? | Ki Hajar Dewantara | Dr. Sutomo | Ir. Soekarno | Mohammad Hatta | D
-Organisasi Taman Siswa didirikan oleh… | Soekarno | Mohammad Hatta | Ki Hajar Dewantara | Dr. Cipto Mangunkusumo | C
-Perjanjian Linggarjati terjadi pada tahun… | 1946 | 1947 | 1948 | 1949 | A
-Siapa tokoh yang memimpin perlawanan rakyat Aceh terhadap Belanda? | Cut Nyak Dien | Pangeran Diponegoro | Imam Bonjol | Sultan Hasanuddin | A
-Perang Diponegoro berlangsung pada tahun… | 1825–1830 | 1801–1805 | 1908–1910 | 1945–1949 | A
-Siapakah pahlawan yang dijuluki “Si Pitung”? | Pahlawan Betawi | Pahlawan Aceh | Pahlawan Bugis | Pahlawan Bali | A
-Perlawanan Pangeran Antasari terjadi di daerah… | Aceh | Banjarmasin | Bali | Maluku | B
-Pahlawan dari Maluku yang terkenal adalah… | Pattimura | Cut Nyak Dien | Imam Bonjol | Diponegoro | A
-Perjanjian Renville ditandatangani pada tahun… | 1946 | 1947 | 1948 | 1949 | B
-Tokoh perlawanan rakyat Bali terhadap Belanda adalah… | I Gusti Ngurah Rai | Pattimura | Teuku Umar | Cut Meutia | A
-Apa nama naskah yang menjadi dasar negara Indonesia? | Proklamasi | UUD 1945 | Sumpah Pemuda | Piagam Jakarta | B
-Bung Tomo adalah tokoh pahlawan dari… | Surabaya | Aceh | Makassar | Bali | A
-Siapa nama istri Pangeran Diponegoro yang ikut berjuang? | Cut Nyak Dien | R.A. Kartini | Raden Ayu Retnaningsih | Dewi Sartika | C
-R.A. Kartini dikenal sebagai pelopor… | Pendidikan wanita | Pendidikan koperasi | Pendidikan petani | Pendidikan tentara | A
-R.A. Kartini lahir di kota… | Jepara | Jakarta | Surabaya | Yogyakarta | A
-Siapakah pendiri organisasi Sarekat Islam? | H.O.S. Tjokroaminoto | Ki Hajar Dewantara | Dr. Sutomo | Mohammad Hatta | A
-Pertempuran Ambarawa dipimpin oleh… | Jenderal Sudirman | Soedirman | Ahmad Yani | Gatot Subroto | A
-Pangeran Diponegoro memimpin perang melawan Belanda di daerah… | Jawa Tengah | Jawa Barat | Aceh | Bali | A
-Nama asli Bung Karno adalah… | Ahmad Soekarno | Kusno Sosrodihardjo | Soekarno Hatta | Soekarno Putra | B
-Siapakah yang menjadi wakil presiden pertama Indonesia? | Soekarno | Mohammad Hatta | Sutan Syahrir | Tan Malaka | B
-Tokoh yang dikenal dengan sebutan “Singa dari Sulawesi” adalah… | Sultan Hasanuddin | Pattimura | Diponegoro | Teuku Umar | A
-Perang Padri dipimpin oleh… | Imam Bonjol | Teuku Umar | Pattimura | Hasanuddin | A
-Apa semboyan terkenal Ki Hajar Dewantara? | Merdeka atau mati | Tut Wuri Handayani | Sekali merdeka tetap merdeka | Indonesia Raya | B
-Jepang menyerah tanpa syarat pada Sekutu tahun… | 1942 | 1943 | 1945 | 1946 | C
-Organisasi Putera dibentuk pada masa… | Jepang | Belanda | Portugis | Inggris | A
-Tokoh yang terkenal dengan peristiwa Bandung Lautan Api adalah… | Mohammad Toha | Bung Tomo | Pattimura | Diponegoro | A
-Ibu kota Indonesia dipindahkan ke Yogyakarta pada tahun… | 1945 | 1946 | 1947 | 1949 | B
-Pahlawan wanita dari Aceh selain Cut Nyak Dien adalah… | Cut Meutia | Kartini | Dewi Sartika | Martha Tiahahu | A
+Proses Key Risk Indicator (KRI) terdiri dari beberapa tahap, yaitu: | Deteksi penurunan keefektifan mitigasi risiko operasional | Deteksi peningkatan risiko operasional dan Tindak lanjut peningkatan risiko operasional | Deteksi peningkatan risiko dan Tindak lanjut peningkatan risiko | Deteksi peningkatan risiko operasional dan Pelaporan ke DAI | B
+Berikut merupakan beberapa tahapan dalam proses pelaksanaan RCSA, yaitu... | Identifikasi, Pembobotan,  Pengendalian, Penilaian, dan Pemantauan Risiko | Identifikasi, Pengukuran, Pengendalian, dan Pemantauan Risiko | Identifikasi, Pengukuran, Pengendalian, dan Investigasi Risiko | Investigasi, Pengukuran, Pengendalian, dan Pemantauan Risiko | B
+Aktivitas pengukuran risiko yang dilakukan untuk mendapatkan hasil penilaian risiko sebagai berikut, kecuali | Pengukuran keefektifan kontrol | Analisis risiko | Analisa action plan | Pengukuran dampak dan kemungkinan terjadi | C
+Hasil perkalian dari nilai dampak dan nilai kemungkinan terjadinya risiko pada suatu aktivitas/kegiatan sebelum diterapkannya kontrol merupakan | Residual Risk Score | Inherent Risk Score | Impact Score | Control Score | B
+Berapa lama batas waktu penginputan data pada ORMIS LED+ jika menggunakan metode penginputan per kejadian? | Paling lambat 7 hari kerja sejak kejadian selesai | Paling lambat 7 hari kerja sejak kejadian teridentifikasi | Paling lambat 7 hari kalender sejak kejadian teridentifikasi | Paling lambat 7 hari kalender sejak kejadian selesai | B
+Tingkat kekuatan kontrol yang tidak selalu dilaksanakan secara konsisten/tepat waktu, sehingga perlu ditingkatkan adalah tingkat kekuatan kontrol… | Kuat | Cukup Kuat | Memadai | Lemah | C
+Jika BCA menerima dana lebih kecil dibandingkan dengan dana yang telah diserahkan kepada pihak ketiga maka BCA harus memperhitungkan hal ini dalam | Kerugian potensial | Kerugian tertunda | Kerugian aktual | Kerugian pihak ketiga | A
+Untuk mengkaji efektifitas penerapan internal kontrol suatu unit kerja, kita dapat menggunakan data yang ada di: | Loss Event Database+ | Key Risk Indicator | Risk Culture System | Risk and Control Self Assessment | A
+Seorang pegawai bank membuang dokumen internal bank karena tidak adanya prosedur penanganan dokumen membuat data bank tersebar, risiko apakah kejadian ini? | Manusia | Proses Internal | Kejadian Eksternal | Sistem | B
+Untuk memastikan tujuan Bank dapat tercapai dengan baik, apa yang pertama kali harus kita lakukan apabila kita berhadapan dengan risiko: | Langsung menghindari risiko | Menganalisa apakah risiko tersebut layak untuk diambil | Langsung mengendalikan risiko | Menganalisa apakah risiko tersebut layak untuk dikendalikan | B
+Penginputan kejadian risiko operasional secara upload pada ORMIS – LED+ dilakukan untuk | kejadian dengan frekuensi rendah dan perlu berkoordinasi dengan MRK | kejadian dengan frekuensi menengah dan perlu berkoordinasi dengan MRK | kejadian dengan frekuensi tinggi dan perlu berkoordinasi dengan MRK | kejadian khusus dan perlu berkoordinasi dengan MRK | D
+Jika data perkata litigasi ditolak oleh Approver Hukum, apa yang harus dilakukan oleh Data Entry Hukum? | Menghapus seluruh data perkara dari sistem | Melakukan update sesuai alasan penolakan | Menginput data baru yang sesuai dengan alasan penolakan | Menunggu instruksi dari regulator | B
+Penginputan data kejadian risiko operasional pada ORMIS LED+ dilakukan dengan cara: | Data diinput digabungkan berdasarkan tanggal kejadian | Data diinput per kejadian risiko operasional | Data diinput digabungkan pertanggal pembukuan kerugian aktual | Data diinput digabungkan berdasarkan pelaksana aktivitas yang sama | B
+Hal yang harus dikecualikan dari perhitungan kerugian potensial sebagai berikut, kecuali | Biaya kontrak pemeliharaan umum atas properti | Premi asuransi | Biaya yang timbul akibat suatu kejadian | Pengeluaran untuk meningkatkan kondisi bisnis | C
+Terdapat 4 faktor yang mempengaruhi risiko operasional bank merupakan definisi menurut: | POJK No 18/POJK.03/2016 | POJK No 16/POJK.03/2016 | SE OJK No 6/POJK.03/2016 | SE OJK No 18/POJK.03/2016 | A
+Menurut BASEL, mana yang bukan penyebab risiko operasional? | Ketidakcukupan/Kegagalan Proses | Sumber Daya Manusia | Ketidakcukupan Sistem Teknologi | Faktor Eksternal | C
+Berapakah jumlah jenis indikator KRI yang digunakan pada ORMIS saat ini? | 6 indikator | 5 indikator | 4 indikator | 3 Indikator | A
+Unit kerja wajib menyusun action plan pada risiko dengan nilai residual risk yang masuk ke area, kecuali... | Moderate | Low to Moderate | High | Moderate to High  | B
+Jika sebuah risiko disebabkan oleh gangguan sistem TI yang mengakibatkan layanan transaksi berhenti selama 1 jam, kategori penyebab risiko ini adalah | Ketidakcukupan/Kegagalan Proses | Sumber Daya Manusia | Sistem & Teknologi | Faktor Eksternal | C
+Apabila  dalam penilaian RCSA, suatu risiko memiliki nilai residual risk yang masuk ke skala Moderate, maka... | Unit kerja dapat mengabaikan risiko  | Unit kerja menyusun action plan | Risk Owner menyerahkan kepada regulator | Unit kerja menilai kembali risiko | B
+Mana yang tidak termasuk sebagai Indikator KRI saat ini | Akses rekening ​dormant | Akses data nasabah | Transaksi tarikan tabungan tanpa Pinpad | Transaksi setoran tabungan tanpa Pinpad | D
+Pengecualian pada transaksi-transaksi tertentu agar Aplikasi ORMIS – KRI tidak mengirimkan notifikasi saat terjadi pelampauan threshold adalah | Safelist | Whitelist | White Risk | Exemption List | B
+Siapa yang melakukan persetujuan, penolakan, dan penutupan kasus data kejadian risiko operasional pada ORMIS LED+? | LED Data Entry | LED Approver | LED Manager | Risk Management Division (MRK) | B
+Proses bisnis yang dinilai penting oleh BCA dan harus dilayani saat terjadi gangguan disebut dengan… | Recovery Time Objective | Recovery Point Objective | Critical Business Function | Critical Operation Function | C
+Mana dari tindakan berikut yang dapat meningkatkan risiko kebakaran akibat korsleting listrik? | Menggunakan stop kontak yang sesuai SNI | Menumpuk banyak colokan T pada satu stop kontak | Memeriksa kabel secara rutin | Mematikan peralatan elektronik saat tidak digunakan | B
+Salah satu peralatan yang tidak ada di warden box UKKP adalah ... | Police Light | Topi | Rompi | Peluit | A
+Berikut ini yang bukan tujuan penerapan BC di BCA adalah... | Mengurangi kebingungan ketika terjadi bencana | Mengurangi tahapan koordinasi bencana | Mengurangi ketergantungan pada personel tertentu | Mematuhi peraturan regulator | B
+Apa yang harus dilakukan saat terjadi gempa bumi di dalam gedung kantor? | Bersembunyi di bawah meja yang kuat | Segera lari keluar gedung melalui tangga darurat | Berdiri di dekat jendela | Menggunakan lift untuk evakuasi | A
+Salah satu peralatan yang digunakan untuk membawa dokumen yang diperlukan untuk melanjutkan pekerjaan di SWP adalah… | PC | Server | Grab Bag | Kluis | C
+Salah satu bentuk awareness terkait BCP, kecuali ... | Nonton film BCP | BC Call Testing | BC Quiz | Poster BC | A
+Mengapa jalur evakuasi harus selalu bebas dari hambatan? | Agar karyawan dapat berolahraga saat pulang | Agar petugas evakuasi dapat bekerja dengan mudah | Agar proses evakuasi dapat berjalan aman, lancar dan cepat | Agar terlihat rapi dan bersih | C
+Aktivasi BC Plan A diaktivasi apabila… | Tempat kerja Kantor Wilayah tidak dapat digunakan | Tempat kerja Kantor Cabang tidak dapat digunakan | Data Center mengalami gangguan secara nasional | Gedung kantor pusat tidak dapat digunakan | A
+Potensi ancaman yang mungkin terjadi dan berdampak pada bank saat tersebar isu kesehatan bank menurun adalah... | Rush | Demonstrasi | Huru-Hara | Perampokan | A
+Alat Pemadam Api Ringan (APAR) harus diletakkan di tempat yang... | Mudah dijangkau dan tidak terhalang | Tersembunyi agar tidak merusak estetika ruangan | Dekat dengan sumber listrik | Di dalam lemari terkunci | A
+Berikut ini adalah bentuk – bentuk testing BCP, kecuali... | BC Call Testing | Table Top Simulation | Evacuation Testing | Penetration Testing | D
+Staff yang berpindah ke SWP adalah… | Staf yang telah bekerja > 1 tahun | Seluruh staf operasional | Staf yang ditunjuk | Seluruh karyawan | C
+Penyebab utama dari Sindrom Carpal Tunnel adalah ... | Kebisingan yang berlebihan | Radiasi dari layar komputer | Gerakan repetitif pada pergelangan tangan saat mengetik atau menggunakan mouse | Kurangnya pencahayaan di tempat kerja | C
+Kepanjangan dari CBF | Critical Business Finance | Critical Business Federation | Critical Business Function | Critical Business Force | C
+Berikut ini bukan tindakan yang harus dilakukan saat proses evakuasi ... | Memasukkan dokumen ke dalam grab bag | Berkumpul di titik yang ditentukan | Mengikuti petugas evakuasi | Turun menggunakan lift | A
+Yang termasuk dalam kategori bahaya fisik di lingkungan perkantoran adalah... | Bakteri dan virus | Posisi kerja yang tidak ergonomis | Tumpahan bahan kimia | Kebisingan dari peralatan kantor | D
+Tempat yang digunakan sebagai tempat kerja alternatif UKKP yang men-support Tim Krisis disebut … | Command Center | Secondary Operation Center | Secondary Work Place | Crisis Center | C
+Sarana yang digunakan untuk menyampaikan berita secara berantai dari Tim Krisis ke seluruh staf disebut dengan … | Corporate BC Call | WA Call | Resilience Testing Call | Crisis Communication Call | A
+Tindakan yang tepat jika melihat kabel listrik terkelupas di area kerja adalah... | Memperbaikinya sendiri dengan isolasi seadanya | Melaporkannya kepada petugas terkait | Mengabaikannya karena listrik masih berfungsi | Menyingkirkan kabel tersebut dengan benda logam | B
+Perusahaan XYZ tidak memasang antivirus di komputer karyawannya. Akibatnya, beberapa komputer karyawan terinfeksi oleh malware yang mencuri data internal perusahaan. Sumber risiko dari kasus ini adalah ... | SDM | Proses | Sistem | Faktor Eksternal | C
+Berikut merupakan prinsip dalam mitigasi risiko keamanan siber, kecuali … | Identifikasi risiko | Pengukuran risiko | Pengembangan produk risiko | Pemantauan Risiko | C
+Budi adalah karyawan dari perusahaan B. Budi menggunakan Wi-Fi publik untuk mengakses sistem internal perusahaan. Risiko keamanan siber dari tindakan tersebut adalah ... | Budi mengerjakan pekerjaan dengan lancar | Data dapat disadap oleh pihak tidak berwenang | Kuota Budi cepat habis | Tidak terdapat risiko siber | B
+Andi menuliskan password akun kantornya pada sticky note yang ditempel di monitor agar mudah diingat. Apa yang dapat terjadi dari tindakan Andi? | Akun Andi dapat disalahgunakan oleh orang lain | Mencatat password membantu Andi mengingat | Meningkatkan efisiensi kerja Andi | Tidak terjadi apa-apa | A
+Penerapan manajemen risiko terkait keamanan siber mencakup 4 aspek, kecuali … | Tata kelola risiko keamanan siber | Kerangka manajemen risiko keamanan siber | Proses manajemen risiko, kecukupan SDM, serta kecukupan informasi manajemen risiko keamanan siber | Social Engineering Exercise | A
+UU Pelindungan Data Pribadi di Indonesia disahkan pada tahun: | 2018 | 2020 | 2022 | 2025 | C
+Undang-undang yang mengatur pelindungan data pribadi di Indonesia adalah | UU ITE | UU Ketenagakerjaan | UU No. 27 Tahun 2022 | UU No. 11 Tahun 2008 | C
+Jika menemukan data pribadi yang tidak seharusnya di sistem, sebaiknya harus: | Mengabaikan | Membagikan ke rekan kerja | Menerapkan prinsip minimisasi data | Menyimpan untuk referensi | C
+UU PDP merupakan bagian dari pelindungan terhadap | Data perusahaan | Hak asasi manusia | Keuangan negara | Infrastruktur digital | B
+Dalam UU PDP, pemrosesan data pribadi harus dilakukan berdasarkan prinsip | Efisiensi dan keuntungan | Legalitas, transparansi, dan akuntabilitas | Kecepatan dan fleksibilitas | Privatisasi dan outsourcing | B

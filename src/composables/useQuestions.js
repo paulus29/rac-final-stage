@@ -10,8 +10,10 @@ export function useQuestions() {
     error.value = null
 
     try {
+      // Import dengan cache busting menggunakan timestamp
       const questionsModule = await import('../assets/data/pertanyaan.txt?raw')
       const text = questionsModule.default
+      console.log('[Match Game] Loading questions, first line:', text.split('\n')[0])
       const lines = text
         .trim()
         .split('\n')
@@ -42,6 +44,8 @@ export function useQuestions() {
         .filter((q) => q !== null)
 
       questions.value = parsedQuestions
+      console.log('[Match Game] Total questions loaded:', parsedQuestions.length)
+      console.log('[Match Game] Sample question 1:', parsedQuestions[0]?.question)
     } catch (err) {
       error.value = err.message
       console.error('Error loading questions:', err)

@@ -10,7 +10,7 @@
       <!-- Konten modal bergaya match-game -->
       <div
         :class="[
-          'relative w-full max-w-xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 rounded-xl p-4 sm:p-6 shadow-2xl overflow-hidden',
+          'relative w-full max-w-4xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 rounded-xl p-4 sm:p-6 shadow-2xl overflow-hidden',
           source === 'checkpoint' ? 'border-emerald-600' : 'border-amber-600',
         ]"
       >
@@ -208,17 +208,20 @@
       @click="isMinimized = false"
       :class="[
         'px-4 py-2 rounded-full bg-white/90 backdrop-blur border shadow-md font-semibold flex items-center gap-2 hover:bg-white',
-        source === 'checkpoint' ? 'border-emerald-400 text-emerald-900' : 'border-amber-400 text-amber-900'
+        source === 'checkpoint'
+          ? 'border-emerald-400 text-emerald-900'
+          : 'border-amber-400 text-amber-900',
       ]"
       title="Tampilkan kembali"
     >
       <span>{{ source === 'checkpoint' ? '🏁 Checkpoint' : '❓ Tantangan' }}</span>
-      <span 
+      <span
         :class="[
           'text-xs px-2 py-0.5 rounded-full text-white',
-          source === 'checkpoint' ? 'bg-emerald-500' : 'bg-amber-500'
+          source === 'checkpoint' ? 'bg-emerald-500' : 'bg-amber-500',
         ]"
-      >Buka</span>
+        >Buka</span
+      >
     </button>
   </div>
 </template>

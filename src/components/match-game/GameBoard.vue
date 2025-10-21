@@ -96,16 +96,16 @@ onBeforeUnmount(() => {
     <GameControls @reset-game="resetToNameInput" />
   </div>
 
-  <div class="max-w-6xl mx-auto p-2 sm:p-4 text-center overflow-x-hidden">
+  <div class="min-h-screen flex flex-col justify-center max-w-6xl mx-auto p-2 sm:p-4 text-center overflow-x-hidden">
     <div class="mb-4 sm:mb-6">
       <GameStats v-if="gameStarted" :timer="timer" :formatTime="formatTime" />
     </div>
 
     <div
       v-if="gameStarted"
-      class="flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 lg:gap-6 xl:gap-8"
+      class="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-6 xl:gap-8"
     >
-      <div class="order-1 lg:order-1 flex items-center">
+      <div class="order-1 lg:order-1 flex items-center justify-center">
         <PlayerPanel
           :playerName="player1Name"
           :points="player1Points"
@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <div class="order-3 lg:order-2 flex items-center">
+      <div class="order-3 lg:order-2 flex items-center justify-center">
         <div
           class="p-6 sm:p-8 rounded-xl shadow-xl space-y-4 max-w-lg sm:max-w-2xl lg:max-w-3xl bg-gradient-to-br from-white/90 to-lime-50/80 border-2 border-emerald-600/30 backdrop-blur-md"
         >
@@ -144,7 +144,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div class="order-2 lg:order-3 flex items-center">
+      <div class="order-2 lg:order-3 flex items-center justify-center">
         <PlayerPanel
           :playerName="player2Name"
           :points="player2Points"

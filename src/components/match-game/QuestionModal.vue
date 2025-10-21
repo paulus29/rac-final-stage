@@ -57,6 +57,7 @@ const feedbackMessage = ref('')
 // Tampilkan jawaban benar pada salah ke-3
 const showCorrectAnswer = ref(false)
 const wrongCountBefore = computed(() => mg.getWrongCountForPosition(props.cardPosition))
+const isThirdWrong = ref(false)
 
 // Timer state - 60 detik untuk menjawab pertanyaan
 const timeLeft = ref(60)
@@ -118,12 +119,10 @@ const handleGameMasterAnswer = (correct) => {
   } else {
     const willBeThirdWrong = wrongCountBefore.value + 1 >= 3
     if (willBeThirdWrong) {
-      feedbackMessage.value = '❌ Jawaban Salah!'
+      feedbackMessage.value = '❌ Jawaban Salah! (Kesalahan ke-3)'
       showCorrectAnswer.value = true
-      // Beri waktu untuk membaca jawaban yang benar, baru emit wrong agar store mengganti soal
-      setTimeout(() => {
-        emit('answer-wrong')
-      }, 2500)
+      isThirdWrong.value = true
+      // Tidak auto-close, tunggu user klik tombol "Lanjut"
     } else {
       feedbackMessage.value = '❌ Jawaban Salah!'
       setTimeout(() => {
@@ -136,6 +135,10 @@ const handleGameMasterAnswer = (correct) => {
 const handleClose = () => {
   stopTimer() // Hentikan timer ketika modal ditutup
   emit('close-modal')
+}
+
+const handleContinue = () => {
+  emit('answer-wrong')
 }
 
 // Lifecycle hooks
@@ -154,7 +157,7 @@ onUnmounted(() => {
     <div v-if="!isMinimized" class="fixed inset-0 flex items-center justify-center z-50 p-4">
       <!-- Modal Content dengan animasi scale -->
       <div
-        class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-xl w-full backdrop-blur-sm transform transition-all duration-300"
+        class="bg-gradient-to-br from-amber-50 to-orange-50 bg-opacity-95 border-2 border-amber-600 rounded-xl p-4 sm:p-6 shadow-2xl max-w-4xl w-full backdrop-blur-sm transform transition-all duration-300"
       >
         <!-- Header dengan nomor kartu dan pemain -->
         <div class="flex justify-between items-center mb-4">
@@ -168,7 +171,13 @@ onUnmounted(() => {
             <!-- Minimize (kiri) -->
             <button
               @click="isMinimized = true"
-              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              :disabled="isThirdWrong"
+              :class="[
+                'w-8 h-8 rounded-md flex items-center justify-center border border-amber-300',
+                isThirdWrong 
+                  ? 'text-gray-400 bg-gray-200/50 cursor-not-allowed' 
+                  : 'text-amber-800 hover:text-amber-900 bg-white/80 hover:bg-white'
+              ]"
               title="Minimize"
             >
               ▁
@@ -176,7 +185,13 @@ onUnmounted(() => {
             <!-- Close (kanan) -->
             <button
               @click="handleClose"
-              class="text-amber-800 hover:text-amber-900 w-8 h-8 rounded-md bg-white/80 hover:bg-white flex items-center justify-center border border-amber-300"
+              :disabled="isThirdWrong"
+              :class="[
+                'w-8 h-8 rounded-md flex items-center justify-center border border-amber-300',
+                isThirdWrong 
+                  ? 'text-gray-400 bg-gray-200/50 cursor-not-allowed' 
+                  : 'text-amber-800 hover:text-amber-900 bg-white/80 hover:bg-white'
+              ]"
               title="Tutup"
               aria-label="Tutup"
             >
@@ -292,6 +307,23 @@ onUnmounted(() => {
             >
               {{ answerText }}
             </div>
+            <div v-if="isThirdWrong" class="mt-3 text-center">
+              <p class="text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
+                💡 Kartu ini akan mendapatkan pertanyaan baru
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tombol Lanjut untuk salah ke-3 -->
+        <div v-if="isThirdWrong" class="border-t border-amber-200 pt-4">
+          <div class="flex justify-center">
+            <button
+              @click="handleContinue"
+              class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg flex items-center gap-2"
+            >
+              ➡️ Lanjut
+            </button>
           </div>
         </div>
 

@@ -68,7 +68,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const pendingCardIndex = ref(null)
 
   // Questions deck (Q&A)
-  const { loadQuestions, getQuestionById, getRandomQuestion } = useQuestions()
+  const { questions, loadQuestions, getQuestionById } = useQuestions()
 
   // Players state
   const currentPlayer = ref(1)
@@ -91,6 +91,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   // Per-card question & clue state
   // Structure: { [position: number]: { questionId: number, revealed: number[], wrong: number } }
   const cardQuestionState = ref({})
+  const nextQuestionId = ref(1)
 
   const ensureCardQuestionState = (position) => {
     if (!position) return
@@ -131,21 +132,59 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     return st.revealed
   }
 
-  const swapQuestionForCard = (position) => {
+  const getAllUsedQuestionIds = () => {
+    const used = new Set()
+    const totalCards = cards.value.length
+    for (let pos = 1; pos <= totalCards; pos++) {
+      const st = cardQuestionState.value[pos]
+      if (st && st.questionId) used.add(st.questionId)
+      else used.add(pos)
+    }
+    return used
+  }
+
+  const assignNextSequentialQuestionForCard = (position) => {
     ensureCardQuestionState(position)
     const st = cardQuestionState.value[position]
     if (!st) return
-    let next = getRandomQuestion()
-    let guard = 0
-    while (next && next.id === st.questionId && guard < 10) {
-      next = getRandomQuestion()
-      guard++
+
+    if (!nextQuestionId.value || nextQuestionId.value <= cards.value.length) {
+      nextQuestionId.value = cards.value.length + 1
     }
-    if (next && next.id) st.questionId = next.id
+
+    const total = questions.value?.length || 0
+    const used = getAllUsedQuestionIds()
+    if (st.questionId) used.add(st.questionId)
+
+    let assignedId = null
+    if (total > 0) {
+      for (let id = nextQuestionId.value; id <= total; id++) {
+        if (!used.has(id)) {
+          assignedId = id
+          break
+        }
+      }
+      if (assignedId == null) {
+        for (let id = 1; id <= total; id++) {
+          if (!used.has(id)) {
+            assignedId = id
+            break
+          }
+        }
+      }
+    }
+
+    if (assignedId != null) {
+      st.questionId = assignedId
+      nextQuestionId.value = assignedId + 1
+    }
     st.revealed = []
     st.wrong = 0
-    // Reset poin kartu ke 100 saat pertanyaan diganti
     cardPoints.value[position] = 100
+  }
+
+  const swapQuestionForCard = (position) => {
+    assignNextSequentialQuestionForCard(position)
   }
 
   // Getters
@@ -199,11 +238,15 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     isFirstAttemptInTurn.value = true
     isProcessingClick.value = false
 
+    // Reset card question state untuk reload pertanyaan
+    cardQuestionState.value = {}
+
     // Init poin per kartu: set 100 untuk setiap posisi kartu
     cardPoints.value = {}
     for (let pos = 1; pos <= cards.value.length; pos++) {
       cardPoints.value[pos] = 100
     }
+    nextQuestionId.value = cards.value.length + 1
   }
 
   const startTimer = () => {
@@ -250,6 +293,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     stopMatchGameBackgroundMusic()
     // Clear localStorage saat reset
     clearStorage()
+    // Reload pertanyaan dari file
+    loadQuestions()
   }
 
   const handlePlayerNames = ({ player1Name: p1, player2Name: p2 }) => {
@@ -267,6 +312,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     stopMatchGameBackgroundMusic()
     // Clear localStorage saat reset dari modal
     clearStorage()
+    // Reload pertanyaan dari file
+    loadQuestions()
   }
 
   const handleCardClick = (cardIndex) => {
@@ -556,6 +603,22 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       if (saved.cardPoints) cardPoints.value = saved.cardPoints
       if (saved.cardQuestionState) cardQuestionState.value = saved.cardQuestionState
 
+      if (saved.nextQuestionId !== undefined) {
+        nextQuestionId.value = saved.nextQuestionId
+      } else {
+        let maxId = cards.value.length
+        try {
+          const entries = cardQuestionState.value || {}
+          for (const k in entries) {
+            const qid = entries[k]?.questionId
+            if (typeof qid === 'number') {
+              if (qid > maxId) maxId = qid
+            }
+          }
+        } catch (e) {}
+        nextQuestionId.value = maxId + 1
+      }
+
       // Restore turn/kesempatan state
       if (saved.currentTurnAttempts !== undefined)
         currentTurnAttempts.value = saved.currentTurnAttempts
@@ -612,6 +675,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
         currentTurnAttempts,
         showContinueChoice,
         isFirstAttemptInTurn,
+        nextQuestionId,
       ],
       () => {
         const stateToSave = {
@@ -638,6 +702,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
           currentTurnAttempts: currentTurnAttempts.value,
           showContinueChoice: showContinueChoice.value,
           isFirstAttemptInTurn: isFirstAttemptInTurn.value,
+          nextQuestionId: nextQuestionId.value,
         }
         saveToStorage(stateToSave)
       },
