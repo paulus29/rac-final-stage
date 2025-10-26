@@ -20,7 +20,7 @@
             <div class="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">
               🃏
             </div>
-            <h3 class="text-2xl font-bold text-white mb-4">Stage 2: Match Game</h3>
+            <h3 class="text-2xl font-bold text-white mb-4">Stage 2: Risk Matcher</h3>
             <div
               class="bg-emerald-500 text-white px-6 py-3 rounded-full font-semibold group-hover:bg-emerald-600 transition-colors duration-300 inline-block"
             >
@@ -38,7 +38,7 @@
             <div class="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">
               🐍
             </div>
-            <h3 class="text-2xl font-bold text-white mb-4">Stage 3: Ular Tangga</h3>
+            <h3 class="text-2xl font-bold text-white mb-4">Stage 3: Risk RACer</h3>
             <div
               class="bg-purple-500 text-white px-6 py-3 rounded-full font-semibold group-hover:bg-purple-600 transition-colors duration-300 inline-block"
             >

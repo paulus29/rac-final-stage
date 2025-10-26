@@ -1,6 +1,8 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useMatchGameStore } from '@/stores/matchGame'
 import { useSoundEffects } from '@/composables/useSoundEffects'
 
 const showMenu = ref(false)
@@ -9,6 +11,11 @@ const emit = defineEmits(['reset-game'])
 
 const router = useRouter()
 const { stopMatchGameBackgroundMusic } = useSoundEffects()
+
+// Store
+const mg = useMatchGameStore()
+// Alias refs dari store agar aman dan eksplisit
+const { isPaused: isPausedRef, gameStarted: gameStartedRef, gameCompleted: gameCompletedRef } = storeToRefs(mg)
 
 const goHome = () => {
   showMenu.value = false
@@ -21,6 +28,27 @@ const openReset = () => {
   showMenu.value = false
   emit('reset-game')
 }
+
+const togglePause = () => {
+  const paused = isPausedRef?.value ?? false
+  if (paused) {
+    mg?.resumeGame?.()
+  } else {
+    mg?.pauseGame?.()
+  }
+  showMenu.value = false
+}
+
+const handleForceEnd = () => {
+  if (confirm('Apakah Anda yakin ingin mengakhiri game sekarang?')) {
+    mg?.forceEndGame?.()
+    showMenu.value = false
+  }
+}
+
+// Helper computed
+const isPaused = computed(() => !!(isPausedRef?.value))
+const isGameActive = computed(() => (gameStartedRef?.value ?? false) && !(gameCompletedRef?.value ?? false))
 
 onMounted(() => {
   const onDocClick = (e) => {
@@ -81,6 +109,29 @@ onBeforeUnmount(() => {
         v-if="showMenu"
         class="absolute right-0 mt-2 w-64 bg-white/90 backdrop-blur rounded-xl shadow-lg ring-1 ring-black/10 overflow-hidden origin-top-right"
       >
+        <!-- Pause/Resume - hanya muncul jika game aktif -->
+        <button
+          v-if="isGameActive"
+          @click="togglePause"
+          class="w-full text-left px-4 py-3 hover:bg-white text-gray-800 font-medium flex items-center gap-2 transition-colors"
+        >
+          <span v-if="isPaused">▶️</span>
+          <span v-else>⏸️</span>
+          <span>{{ isPaused ? 'Lanjutkan Game' : 'Pause Game' }}</span>
+        </button>
+        <div v-if="isGameActive" class="h-px bg-black/10"></div>
+        
+        <!-- Force End - hanya muncul jika game aktif -->
+        <button
+          v-if="isGameActive"
+          @click="handleForceEnd"
+          class="w-full text-left px-4 py-3 hover:bg-white text-red-600 font-medium flex items-center gap-2 transition-colors"
+        >
+          <span>⏹️</span>
+          <span>Akhiri Game</span>
+        </button>
+        <div v-if="isGameActive" class="h-px bg-black/10"></div>
+        
         <button
           @click="goHome"
           class="w-full text-left px-4 py-3 hover:bg-white text-gray-800 font-medium flex items-center gap-2 transition-colors"

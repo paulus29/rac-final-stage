@@ -4,13 +4,13 @@ Koordinator aktivitas Business Continuity (BC) secara korporasi di BCA adalah ..
 Salah satu penyebab adanya risiko operasional adalah akibat ketidakcukupan dan/atau tidak berfungsinya ... yang mempengaruhi operasional bank. | Proses internal
 Pejabat atau petugas yang bertanggung jawab untuk memastikan pemenuhan kepatuhan atas prinsip pelindungan data pribadi dan mitigasi risiko pelanggaran pelindungan data pribadi, disebut ... | Data Protection Officer
 Salah satu sumber bahaya ... adalah beban kerja berlebih | Psikososial
-Nilai minimum kerugian atas kejadian risiko operasional yang perlu dilaporkan ke dalam Aplikasi ORMIS - LED+ untuk tipe kejadian Non Fraud Litigasi | Semua Nominal
+Nilai minimum kerugian atas kejadian risiko operasional yang perlu dilaporkan ke dalam Aplikasi ORMIS - LED+ untuk tipe kejadian Non Fraud Litigasi adalah | Semua Nominal
 Apa teknik untuk menguji keamanan sistem | Penetration Testing
 RTO singkatan dari | Recovery Time Objective
 Kerugian setelah memperhitungkan dampak dari pemulihan, berupa jumlah kerugian yang telah menjadi tanggungan BCA, yang salah satunya diindikasikan dengan adanya penghapusan pos terbuka yang telah ditetapkan | Kerugian Aktual
 Aplikasi mobile banking Bank ABC memindai wajah untuk verifikasi. Jenis data pribadi spesifik apa yang dikumpulkan? | Data Biometrik
 Crisis Management Coordinator (CMC) dijabat oleh | Kepala Divisi MRK
-Kejadian risiko operasional yang memiliki unsur kesengajaan dan diproses secara hukum melalui pengadilan merupakan pengertian untuk tipe kejadian risiko operasional | Fraud Litigas
+Kejadian risiko operasional yang memiliki unsur kesengajaan dan diproses secara hukum melalui pengadilan merupakan pengertian untuk tipe kejadian risiko operasional | Fraud Litigasi
 Budi diminta untuk melampirkan SKCK. Dokumen tersebut termasuk data pribadi bersifat spesifik yang disebut ... | Data Spesifik
 Posisi duduk yang tidak sesuai merupakan salah satu bahaya ... yang ada di kantor. | Ergonomi
 Analisis kontrol risiko untuk RCSA dilakukan oleh | Risk Owner
@@ -25,6 +25,6 @@ Peraturan Pemerintah terkait Sistem Manajemen K3 di Indonesia adalah PP No ... T
 Terdapat 3 hal yang harus dikecualikan dari perhitungan kerugian potensial, salah satunya adalah | Premi Asuransi
 metode keamanan yang mengharuskan pengguna memberikan dua atau lebih bentuk verifikasi identitas untuk mengakses sebuah akun atau sistem | Multi-Factor Authentication
 Skenario yang digunakan untuk menggambarkan situasi gangguan yang muncul tiba-tiba adalah | Unpredictable
-Jumlah kerugian yang mungkin/akan ditanggung oleh BCA sehubungan dengan terjadinya kejadian risiko operasional, sebelum memperhitungkan segala bentuk pemulihan merupakan pengertian dari | Kerugian Potensial
-Jumlah kerugian yang mungkin/akan ditanggung oleh BCA sehubungan dengan terjadinya kejadian risiko operasional, sebelum memperhitungkan recovery merupakan pengertian dari | MITM Attack
+Jumlah kerugian yang mungkin/akan ditanggung oleh BCA sehubungan dengan terjadinya kejadian risiko operasional, sebelum memperhitungkan recovery merupakan pengertian dari | Kerugian Potensial
+Serangan apa yang dilakukan dengan cara menyadap komunikasi antara dua pihak secara diam-diam? | MITM Attack
 Tempat kerja cadangan saat BCP diaktivasi adalah | Secondary Work Place

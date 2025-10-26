@@ -5,7 +5,6 @@ let matchGameBackgroundMusicInstance = null // Match Game
 
 // Composable untuk memutar sound effects
 export function useSoundEffects() {
-
   const playSound = (soundPath, volume = 0.5) => {
     try {
       const audio = new Audio(soundPath)
@@ -93,8 +92,10 @@ export function useSoundEffects() {
   }
 
   const playVictoryAllRanking = () => {
-    const soundPath = new URL('../assets/music/snake-ladder/victory-all-rangking.mp3', import.meta.url)
-      .href
+    const soundPath = new URL(
+      '../assets/music/snake-ladder/victory-all-rangking.mp3',
+      import.meta.url,
+    ).href
     playSound(soundPath, 0.8)
   }
 
@@ -107,7 +108,7 @@ export function useSoundEffects() {
           import.meta.url,
         ).href
         backgroundMusicInstance = new Audio(soundPath)
-        backgroundMusicInstance.volume = 0.3 // Volume default background music
+        backgroundMusicInstance.volume = 0.7 // Volume default background music
         backgroundMusicInstance.loop = true
         backgroundMusicInstance.play().catch((error) => {
           console.warn('Failed to play background music:', error)
@@ -149,7 +150,7 @@ export function useSoundEffects() {
     }
   }
 
-  const fadeInBackgroundMusic = async (targetVolume = 0.3, duration = 1000) => {
+  const fadeInBackgroundMusic = async (targetVolume = 0.7, duration = 1000) => {
     if (!backgroundMusicInstance) return
     backgroundMusicInstance.volume = 0
     const steps = 20
@@ -176,7 +177,7 @@ export function useSoundEffects() {
           import.meta.url,
         ).href
         matchGameBackgroundMusicInstance = new Audio(soundPath)
-        matchGameBackgroundMusicInstance.volume = 0.25 // Volume default background music match game
+        matchGameBackgroundMusicInstance.volume = 0.7 // Volume default background music match game
         matchGameBackgroundMusicInstance.loop = true
         matchGameBackgroundMusicInstance.play().catch((error) => {
           console.warn('Failed to play match game background music:', error)
@@ -218,7 +219,7 @@ export function useSoundEffects() {
     }
   }
 
-  const fadeInMatchGameBackgroundMusic = async (targetVolume = 0.25, duration = 1000) => {
+  const fadeInMatchGameBackgroundMusic = async (targetVolume = 0.7, duration = 1000) => {
     if (!matchGameBackgroundMusicInstance) return
     matchGameBackgroundMusicInstance.volume = 0
     const steps = 20

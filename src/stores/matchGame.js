@@ -55,6 +55,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   const timer = ref(0)
   let timerId = null
   const isCardDisabled = ref(false)
+  const isPaused = ref(false)
 
   // Points system
   // Poin per kartu (key: position -> points), default 100 per kartu
@@ -92,6 +93,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
   // Structure: { [position: number]: { questionId: number, revealed: number[], wrong: number } }
   const cardQuestionState = ref({})
   const nextQuestionId = ref(1)
+  // Cumulative set of used question IDs (persisted). Do not decrement when swapped out
+  const usedQuestionIds = ref([])
 
   const ensureCardQuestionState = (position) => {
     if (!position) return
@@ -143,6 +146,11 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     return used
   }
 
+  const addUsedQuestionId = (id) => {
+    if (typeof id !== 'number') return
+    if (!usedQuestionIds.value.includes(id)) usedQuestionIds.value.push(id)
+  }
+
   const assignNextSequentialQuestionForCard = (position) => {
     ensureCardQuestionState(position)
     const st = cardQuestionState.value[position]
@@ -177,6 +185,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     if (assignedId != null) {
       st.questionId = assignedId
       nextQuestionId.value = assignedId + 1
+      addUsedQuestionId(assignedId)
     }
     st.revealed = []
     st.wrong = 0
@@ -201,6 +210,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     }
     return rows
   })
+  const usedQuestionCount = computed(() => usedQuestionIds.value.length)
+  const totalQuestions = computed(() => questions.value?.length || 0)
 
   // Helpers
   const shuffleArray = (array) => {
@@ -212,12 +223,13 @@ export const useMatchGameStore = defineStore('matchGame', () => {
 
   const initializeGame = () => {
     // Generate letters A-G (7 pairs)
-    const letters = []
-    for (let i = 0; i < 7; i++) {
-      const letter = String.fromCharCode(65 + i) // A=65, B=66, ..., G=71
-      letters.push(letter, letter)
-    }
-    shuffleArray(letters)
+    // const letters = []
+    // for (let i = 0; i < 7; i++) {
+    //   const letter = String.fromCharCode(65 + i) // A=65, B=66, ..., G=71
+    //   letters.push(letter, letter)
+    // }
+    // shuffleArray(letters)
+    const letters = ['C', 'A', 'E', 'G', 'B', 'F', 'D', 'E', 'A', 'C', 'F', 'B', 'D', 'G']
     cards.value = letters.map((letter) => ({ letter, isFlipped: false, isMatched: false }))
     openedCards.value = []
     matchedPairs.value = 0
@@ -237,22 +249,41 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     showContinueChoice.value = false
     isFirstAttemptInTurn.value = true
     isProcessingClick.value = false
+    isPaused.value = false
 
     // Reset card question state untuk reload pertanyaan
     cardQuestionState.value = {}
+    // Reset cumulative used list
+    usedQuestionIds.value = []
+    // Pre-assign 14 pertanyaan awal: pos -> id (fallback ke pos jika id tidak ada)
+    const totalQ = totalQuestions.value
+    const totalCards = cards.value.length
+    for (let pos = 1; pos <= totalCards; pos++) {
+      const fallbackId = pos
+      const q = getQuestionById(pos)
+      const qid = typeof q?.id === 'number' ? q.id : fallbackId
+      cardQuestionState.value[pos] = { questionId: qid, revealed: [], wrong: 0 }
+      addUsedQuestionId(qid)
+    }
 
     // Init poin per kartu: set 100 untuk setiap posisi kartu
     cardPoints.value = {}
     for (let pos = 1; pos <= cards.value.length; pos++) {
       cardPoints.value[pos] = 100
     }
-    nextQuestionId.value = cards.value.length + 1
+    // Mulai pointer setelah id terbesar yang telah digunakan atau setelah jumlah kartu
+    const maxUsed = usedQuestionIds.value.length
+      ? Math.max(...usedQuestionIds.value)
+      : cards.value.length
+    nextQuestionId.value = Math.max(cards.value.length + 1, maxUsed + 1)
   }
 
   const startTimer = () => {
     if (timerId) return
     timerId = setInterval(() => {
-      timer.value += 1
+      if (!isPaused.value) {
+        timer.value += 1
+      }
     }, 1000)
   }
 
@@ -320,6 +351,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     if (
       isProcessingClick.value ||
       isCardDisabled.value ||
+      isPaused.value ||
       cards.value[cardIndex].isFlipped ||
       cards.value[cardIndex].isMatched ||
       showQuestionModal.value ||
@@ -411,7 +443,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
           // Play sound: game selesai
           playFinishGame()
           // Tunggu finish sound selesai (sekitar 2 detik), lalu fade in background
-          setTimeout(() => fadeInMatchGameBackgroundMusic(0.25, 1000), 2000)
+          setTimeout(() => fadeInMatchGameBackgroundMusic(0.7, 1000), 2000)
         })
 
         // Winner by total points; tie-breaker by total matches
@@ -510,6 +542,59 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     switchPlayer()
   }
 
+  const pauseGame = () => {
+    if (gameCompleted.value || !gameStarted.value) return
+    // Tutup modal pertanyaan jika sedang terbuka saat pause
+    if (showQuestionModal.value) {
+      handleCloseModal()
+    }
+    isPaused.value = true
+  }
+
+  const resumeGame = () => {
+    if (gameCompleted.value || !gameStarted.value) return
+    isPaused.value = false
+  }
+
+  const forceEndGame = () => {
+    if (gameCompleted.value || !gameStarted.value) return
+
+    // Tutup modal pertanyaan jika sedang terbuka
+    if (showQuestionModal.value) {
+      showQuestionModal.value = false
+      currentQuestion.value = null
+      pendingCardIndex.value = null
+    }
+
+    // Tutup modal pilihan turn jika sedang terbuka
+    if (showContinueChoice.value) {
+      showContinueChoice.value = false
+    }
+
+    // Set game sebagai selesai
+    gameCompleted.value = true
+    stopTimer()
+    resetTurnState()
+
+    // Tentukan pemenang berdasarkan state saat ini
+    if (player1Points.value > player2Points.value) {
+      winner.value = 1
+    } else if (player2Points.value > player1Points.value) {
+      winner.value = 2
+    } else {
+      // tie on points -> compare matches
+      if (player1Matches.value > player2Matches.value) winner.value = 1
+      else if (player2Matches.value > player1Matches.value) winner.value = 2
+      else winner.value = 'tie'
+    }
+
+    // Fade out background music, play finish sound, lalu fade in
+    fadeOutMatchGameBackgroundMusic(500).then(() => {
+      playFinishGame()
+      setTimeout(() => fadeInMatchGameBackgroundMusic(0.7, 1000), 2000)
+    })
+  }
+
   const init = () => {
     loadQuestions()
   }
@@ -602,6 +687,21 @@ export const useMatchGameStore = defineStore('matchGame', () => {
       // Restore card points and question state
       if (saved.cardPoints) cardPoints.value = saved.cardPoints
       if (saved.cardQuestionState) cardQuestionState.value = saved.cardQuestionState
+      if (saved.usedQuestionIds) {
+        usedQuestionIds.value = saved.usedQuestionIds
+      } else {
+        // Rebuild used list from current mapping if missing (backward compat)
+        try {
+          usedQuestionIds.value = []
+          const s = cardQuestionState.value || {}
+          const set = new Set()
+          for (const k in s) {
+            const qid = s[k]?.questionId
+            if (typeof qid === 'number') set.add(qid)
+          }
+          usedQuestionIds.value = Array.from(set)
+        } catch (e) {}
+      }
 
       if (saved.nextQuestionId !== undefined) {
         nextQuestionId.value = saved.nextQuestionId
@@ -626,6 +726,9 @@ export const useMatchGameStore = defineStore('matchGame', () => {
         showContinueChoice.value = saved.showContinueChoice
       if (saved.isFirstAttemptInTurn !== undefined)
         isFirstAttemptInTurn.value = saved.isFirstAttemptInTurn
+
+      // Restore pause state
+      if (saved.isPaused !== undefined) isPaused.value = saved.isPaused
 
       // Load pertanyaan jika game sudah dimulai (namesSet = true)
       if (saved.namesSet) {
@@ -676,6 +779,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
         showContinueChoice,
         isFirstAttemptInTurn,
         nextQuestionId,
+        isPaused,
       ],
       () => {
         const stateToSave = {
@@ -703,6 +807,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
           showContinueChoice: showContinueChoice.value,
           isFirstAttemptInTurn: isFirstAttemptInTurn.value,
           nextQuestionId: nextQuestionId.value,
+          isPaused: isPaused.value,
+          usedQuestionIds: usedQuestionIds.value,
         }
         saveToStorage(stateToSave)
       },
@@ -726,6 +832,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     attempts,
     timer,
     isCardDisabled,
+    isPaused,
 
     showQuestionModal,
     currentQuestion,
@@ -745,6 +852,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
 
     // getters
     cardRows,
+    usedQuestionCount,
+    totalQuestions,
 
     // actions
     init,
@@ -775,5 +884,8 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     switchPlayer,
     handleContinueTurn,
     handleEndTurn,
+    pauseGame,
+    resumeGame,
+    forceEndGame,
   }
 })

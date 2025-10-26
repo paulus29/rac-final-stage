@@ -7,7 +7,6 @@ import Card from './GameCard.vue'
 import PlayerPanel from './PlayerPanel.vue'
 import GameCompleteModal from './GameCompleteModal.vue'
 import GameControls from './GameControls.vue'
-import GameStats from './GameStats.vue'
 import PlayerNameInput from './PlayerNameInput.vue'
 import QuestionModal from './QuestionModal.vue'
 import TurnChoiceModal from './TurnChoiceModal.vue'
@@ -27,6 +26,7 @@ const {
   attempts,
   timer,
   isCardDisabled,
+  isPaused,
   showQuestionModal,
   currentQuestion,
   pendingCardIndex,
@@ -46,6 +46,8 @@ const {
   isProcessingClick,
   cardRows,
   pointGainEvent,
+  usedQuestionCount,
+  totalQuestions,
 } = storeToRefs(mg)
 
 // Map actions for template compatibility
@@ -92,14 +94,25 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-[100]">
+  <div class="fixed top-4 right-4 z-[100] flex items-start gap-3">
+    <div v-if="gameStarted" class="hidden sm:flex flex-col items-end gap-2">
+      <div
+        class="px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-amber-300 text-amber-900 text-xs font-semibold shadow"
+      >
+        ⏱️ {{ formatTime(timer) }}<span v-if="isPaused" class="ml-1">⏸️</span>
+      </div>
+      <div
+        class="px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-amber-300 text-amber-900 text-xs font-semibold shadow"
+        title="Jumlah pertanyaan yang sedang digunakan"
+      >
+        ❓ {{ usedQuestionCount }} / {{ totalQuestions }}
+      </div>
+    </div>
     <GameControls @reset-game="resetToNameInput" />
   </div>
 
   <div class="min-h-screen flex flex-col justify-center max-w-6xl mx-auto p-2 sm:p-4 text-center overflow-x-hidden">
-    <div class="mb-4 sm:mb-6">
-      <GameStats v-if="gameStarted" :timer="timer" :formatTime="formatTime" />
-    </div>
+    
 
     <div
       v-if="gameStarted"
@@ -168,7 +181,7 @@ onBeforeUnmount(() => {
       :player2Attempts="player2Attempts"
       :timer="timer"
       :formatTime="formatTime"
-      @reset-game="handleResetFromModal"
+      @reset-game="resetToNameInput"
     />
 
     <PlayerNameInput v-if="!namesSet" @start-game="handlePlayerNames" />
@@ -192,5 +205,37 @@ onBeforeUnmount(() => {
       @continue-turn="handleContinueTurn"
       @end-turn="handleEndTurn"
     />
+
+    <!-- Pause Overlay -->
+    <Transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="isPaused && gameStarted && !gameCompleted"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center"
+      >
+        <div
+          class="bg-white/95 rounded-2xl shadow-2xl p-8 max-w-md mx-4 transform transition-all duration-300"
+        >
+          <div class="text-center">
+            <div class="text-6xl mb-4">⏸️</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Game Di-Pause</h2>
+            <p class="text-gray-600 mb-6">Timer dan pertanyaan dihentikan sementara</p>
+            <button
+              @click="mg.resumeGame()"
+              class="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg flex items-center gap-2 mx-auto"
+            >
+              <span>▶️</span>
+              <span>Lanjutkan Game</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
