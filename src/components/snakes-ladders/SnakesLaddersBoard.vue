@@ -293,7 +293,7 @@ const movePlayerForward = async () => {
         await fadeOutBackgroundMusic(500)
         playVictory1st()
         // Tunggu victory sound selesai (sekitar 3 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.7, 1000), 3000)
+        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 3000)
       }
       
       // Cek finalisasi (dua pemain sudah finish)
@@ -304,7 +304,7 @@ const movePlayerForward = async () => {
         await fadeOutBackgroundMusic(500)
         playVictoryAllRanking()
         // Tunggu victory sound selesai (sekitar 5 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.7, 1000), 5000)
+        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 5000)
       }
     } else {
       // Check challenge marker setelah mendarat (hanya jika belum finish)
@@ -540,7 +540,7 @@ const onRewardChoose = async ({ action, targetId }) => {
         await fadeOutBackgroundMusic(500)
         playVictory1st()
         // Tunggu victory sound selesai (sekitar 3 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.7, 1000), 3000)
+        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 3000)
       }
       
       // Finalize if two players finished
@@ -551,7 +551,7 @@ const onRewardChoose = async ({ action, targetId }) => {
         await fadeOutBackgroundMusic(500)
         playVictoryAllRanking()
         // Tunggu victory sound selesai (sekitar 5 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.7, 1000), 5000)
+        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 5000)
       }
     }
   }

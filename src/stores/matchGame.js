@@ -443,7 +443,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
           // Play sound: game selesai
           playFinishGame()
           // Tunggu finish sound selesai (sekitar 2 detik), lalu fade in background
-          setTimeout(() => fadeInMatchGameBackgroundMusic(0.7, 1000), 2000)
+          setTimeout(() => fadeInMatchGameBackgroundMusic(0.1, 1000), 2000)
         })
 
         // Winner by total points; tie-breaker by total matches
@@ -591,7 +591,7 @@ export const useMatchGameStore = defineStore('matchGame', () => {
     // Fade out background music, play finish sound, lalu fade in
     fadeOutMatchGameBackgroundMusic(500).then(() => {
       playFinishGame()
-      setTimeout(() => fadeInMatchGameBackgroundMusic(0.7, 1000), 2000)
+      setTimeout(() => fadeInMatchGameBackgroundMusic(0.1, 1000), 2000)
     })
   }
 

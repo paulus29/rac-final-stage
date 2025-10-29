@@ -8,7 +8,7 @@ Nilai minimum kerugian atas kejadian risiko operasional yang perlu dilaporkan ke
 Apa teknik untuk menguji keamanan sistem | Penetration Testing
 RTO singkatan dari | Recovery Time Objective
 Kerugian setelah memperhitungkan dampak dari pemulihan, berupa jumlah kerugian yang telah menjadi tanggungan BCA, yang salah satunya diindikasikan dengan adanya penghapusan pos terbuka yang telah ditetapkan | Kerugian Aktual
-Aplikasi mobile banking Bank ABC memindai wajah untuk verifikasi. Jenis data pribadi spesifik apa yang dikumpulkan? | Data Biometrik
+Aplikasi mobile banking Bank ABC memindai wajah untuk verifikasi. Data biometrik seperti wajah merupakan jenis data ... dalam PDP ? | Data Spesifik
 Crisis Management Coordinator (CMC) dijabat oleh | Kepala Divisi MRK
 Kejadian risiko operasional yang memiliki unsur kesengajaan dan diproses secara hukum melalui pengadilan merupakan pengertian untuk tipe kejadian risiko operasional | Fraud Litigasi
 Budi diminta untuk melampirkan SKCK. Dokumen tersebut termasuk data pribadi bersifat spesifik yang disebut ... | Data Spesifik

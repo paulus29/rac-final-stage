@@ -108,27 +108,34 @@ export function useSoundEffects() {
           import.meta.url,
         ).href
         backgroundMusicInstance = new Audio(soundPath)
-        backgroundMusicInstance.volume = 0.7 // Volume default background music
+        backgroundMusicInstance.volume = 0 // Volume default background music
         backgroundMusicInstance.loop = true
         backgroundMusicInstance.play().catch((error) => {
           console.warn('Failed to play background music:', error)
         })
+        fadeInBackgroundMusic(0.1, 1000)
       } catch (error) {
         console.error('Error creating background music:', error)
       }
     } else {
       // Resume jika sudah ada instance
+      backgroundMusicInstance.volume = 0
       backgroundMusicInstance.play().catch((error) => {
         console.warn('Failed to resume background music:', error)
       })
+      fadeInBackgroundMusic(0.1, 1000)
     }
   }
 
   const stopBackgroundMusic = () => {
     if (backgroundMusicInstance) {
-      backgroundMusicInstance.pause()
-      backgroundMusicInstance.currentTime = 0
-      backgroundMusicInstance = null
+      fadeOutBackgroundMusic(300).then(() => {
+        if (backgroundMusicInstance) {
+          backgroundMusicInstance.pause()
+          backgroundMusicInstance.currentTime = 0
+          backgroundMusicInstance = null
+        }
+      })
     }
   }
 
@@ -150,7 +157,7 @@ export function useSoundEffects() {
     }
   }
 
-  const fadeInBackgroundMusic = async (targetVolume = 0.7, duration = 1000) => {
+  const fadeInBackgroundMusic = async (targetVolume = 0.1, duration = 1000) => {
     if (!backgroundMusicInstance) return
     backgroundMusicInstance.volume = 0
     const steps = 20
@@ -177,27 +184,34 @@ export function useSoundEffects() {
           import.meta.url,
         ).href
         matchGameBackgroundMusicInstance = new Audio(soundPath)
-        matchGameBackgroundMusicInstance.volume = 0.7 // Volume default background music match game
+        matchGameBackgroundMusicInstance.volume = 0 // Volume default background music match game
         matchGameBackgroundMusicInstance.loop = true
         matchGameBackgroundMusicInstance.play().catch((error) => {
           console.warn('Failed to play match game background music:', error)
         })
+        fadeInMatchGameBackgroundMusic(0.1, 1000)
       } catch (error) {
         console.error('Error creating match game background music:', error)
       }
     } else {
       // Resume jika sudah ada instance
+      matchGameBackgroundMusicInstance.volume = 0
       matchGameBackgroundMusicInstance.play().catch((error) => {
         console.warn('Failed to resume match game background music:', error)
       })
+      fadeInMatchGameBackgroundMusic(0.1, 1000)
     }
   }
 
   const stopMatchGameBackgroundMusic = () => {
     if (matchGameBackgroundMusicInstance) {
-      matchGameBackgroundMusicInstance.pause()
-      matchGameBackgroundMusicInstance.currentTime = 0
-      matchGameBackgroundMusicInstance = null
+      fadeOutMatchGameBackgroundMusic(300).then(() => {
+        if (matchGameBackgroundMusicInstance) {
+          matchGameBackgroundMusicInstance.pause()
+          matchGameBackgroundMusicInstance.currentTime = 0
+          matchGameBackgroundMusicInstance = null
+        }
+      })
     }
   }
 
@@ -219,7 +233,7 @@ export function useSoundEffects() {
     }
   }
 
-  const fadeInMatchGameBackgroundMusic = async (targetVolume = 0.7, duration = 1000) => {
+  const fadeInMatchGameBackgroundMusic = async (targetVolume = 0.1, duration = 1000) => {
     if (!matchGameBackgroundMusicInstance) return
     matchGameBackgroundMusicInstance.volume = 0
     const steps = 20
