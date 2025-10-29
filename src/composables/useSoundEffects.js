@@ -1,3 +1,6 @@
+import { watch } from 'vue'
+import { useVolumeSettings } from './useVolumeSettings'
+
 // Module-level variables untuk background music (singleton pattern)
 // Ini memastikan hanya ada satu instance audio yang di-share antar semua komponen
 let backgroundMusicInstance = null // Snake Ladder
@@ -5,10 +8,13 @@ let matchGameBackgroundMusicInstance = null // Match Game
 
 // Composable untuk memutar sound effects
 export function useSoundEffects() {
-  const playSound = (soundPath, volume = 0.5) => {
+  const { bgmVolume, sfxVolume } = useVolumeSettings()
+  const playSound = (soundPath, baseVolume = 0.5) => {
     try {
       const audio = new Audio(soundPath)
-      audio.volume = Math.max(0, Math.min(1, volume)) // Clamp volume 0-1
+      // Kalikan base volume dengan sfxVolume setting
+      const finalVolume = baseVolume * sfxVolume.value
+      audio.volume = Math.max(0, Math.min(1, finalVolume)) // Clamp volume 0-1
       audio.play().catch((error) => {
         console.warn('Failed to play sound:', soundPath, error)
       })
@@ -18,10 +24,12 @@ export function useSoundEffects() {
   }
 
   // Play sound with loop (returns audio instance for manual control)
-  const playSoundLoop = (soundPath, volume = 0.5) => {
+  const playSoundLoop = (soundPath, baseVolume = 0.5) => {
     try {
       const audio = new Audio(soundPath)
-      audio.volume = Math.max(0, Math.min(1, volume))
+      // Kalikan base volume dengan sfxVolume setting
+      const finalVolume = baseVolume * sfxVolume.value
+      audio.volume = Math.max(0, Math.min(1, finalVolume))
       audio.loop = true
       audio.play().catch((error) => {
         console.warn('Failed to play looped sound:', soundPath, error)
@@ -113,7 +121,7 @@ export function useSoundEffects() {
         backgroundMusicInstance.play().catch((error) => {
           console.warn('Failed to play background music:', error)
         })
-        fadeInBackgroundMusic(0.1, 1000)
+        fadeInBackgroundMusic(bgmVolume.value, 1000)
       } catch (error) {
         console.error('Error creating background music:', error)
       }
@@ -123,7 +131,7 @@ export function useSoundEffects() {
       backgroundMusicInstance.play().catch((error) => {
         console.warn('Failed to resume background music:', error)
       })
-      fadeInBackgroundMusic(0.1, 1000)
+      fadeInBackgroundMusic(bgmVolume.value, 1000)
     }
   }
 
@@ -157,7 +165,9 @@ export function useSoundEffects() {
     }
   }
 
-  const fadeInBackgroundMusic = async (targetVolume = 0.1, duration = 1000) => {
+  const fadeInBackgroundMusic = async (targetVolume, duration = 1000) => {
+    // Gunakan bgmVolume jika tidak ada targetVolume
+    if (targetVolume === undefined) targetVolume = bgmVolume.value
     if (!backgroundMusicInstance) return
     backgroundMusicInstance.volume = 0
     const steps = 20
@@ -189,7 +199,7 @@ export function useSoundEffects() {
         matchGameBackgroundMusicInstance.play().catch((error) => {
           console.warn('Failed to play match game background music:', error)
         })
-        fadeInMatchGameBackgroundMusic(0.1, 1000)
+        fadeInMatchGameBackgroundMusic(bgmVolume.value, 1000)
       } catch (error) {
         console.error('Error creating match game background music:', error)
       }
@@ -199,7 +209,7 @@ export function useSoundEffects() {
       matchGameBackgroundMusicInstance.play().catch((error) => {
         console.warn('Failed to resume match game background music:', error)
       })
-      fadeInMatchGameBackgroundMusic(0.1, 1000)
+      fadeInMatchGameBackgroundMusic(bgmVolume.value, 1000)
     }
   }
 
@@ -233,7 +243,9 @@ export function useSoundEffects() {
     }
   }
 
-  const fadeInMatchGameBackgroundMusic = async (targetVolume = 0.1, duration = 1000) => {
+  const fadeInMatchGameBackgroundMusic = async (targetVolume, duration = 1000) => {
+    // Gunakan bgmVolume jika tidak ada targetVolume
+    if (targetVolume === undefined) targetVolume = bgmVolume.value
     if (!matchGameBackgroundMusicInstance) return
     matchGameBackgroundMusicInstance.volume = 0
     const steps = 20
@@ -250,6 +262,16 @@ export function useSoundEffects() {
       }
     }
   }
+
+  // Watch bgmVolume dan update volume background music secara real-time
+  watch(bgmVolume, (newVolume) => {
+    if (backgroundMusicInstance && !backgroundMusicInstance.paused) {
+      backgroundMusicInstance.volume = Math.max(0, Math.min(1, newVolume))
+    }
+    if (matchGameBackgroundMusicInstance && !matchGameBackgroundMusicInstance.paused) {
+      matchGameBackgroundMusicInstance.volume = Math.max(0, Math.min(1, newVolume))
+    }
+  })
 
   return {
     playSound,

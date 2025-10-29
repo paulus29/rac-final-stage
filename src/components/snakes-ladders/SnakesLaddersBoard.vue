@@ -45,6 +45,47 @@
             v-if="showMenu"
             class="absolute right-0 mt-2 w-64 bg-white/90 backdrop-blur rounded-xl shadow-lg ring-1 ring-black/10 overflow-hidden origin-top-right"
           >
+            <!-- Volume Settings -->
+            <div class="px-4 py-3">
+              <div class="text-xs font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                <span>🔊</span>
+                <span>Pengaturan Volume</span>
+              </div>
+              
+              <!-- BGM Slider -->
+              <div class="mb-3">
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-xs text-gray-700">Musik Latar (BGM)</label>
+                  <span class="text-xs font-medium text-gray-800">{{ Math.round(bgmVolume * 100) }}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  :value="bgmVolume * 100"
+                  @input="setBgmVolume($event.target.value / 100)"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+              
+              <!-- SFX Slider -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-xs text-gray-700">Efek Suara (SFX)</label>
+                  <span class="text-xs font-medium text-gray-800">{{ Math.round(sfxVolume * 100) }}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  :value="sfxVolume * 100"
+                  @input="setSfxVolume($event.target.value / 100)"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+            </div>
+            <div class="h-px bg-black/10"></div>
+            
             <button
               @click="goHome"
               class="w-full text-left px-4 py-3 hover:bg-white text-gray-800 font-medium flex items-center gap-2 transition-colors"
@@ -162,6 +203,7 @@ import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useSnakesLaddersStore } from '@/stores/snakesLadders'
 import { useSoundEffects } from '@/composables/useSoundEffects'
+import { useVolumeSettings } from '@/composables/useVolumeSettings'
 import GameMasterControls from './GameMasterControls.vue'
 import GameBoardGrid from './GameBoardGrid.vue'
 import ResetConfirmModal from './ResetConfirmModal.vue'
@@ -191,6 +233,9 @@ const {
   fadeOutBackgroundMusic,
   fadeInBackgroundMusic,
 } = useSoundEffects()
+
+// Volume settings
+const { bgmVolume, sfxVolume, setBgmVolume, setSfxVolume } = useVolumeSettings()
 
 // Pinia store
 const sl = useSnakesLaddersStore()
@@ -293,7 +338,7 @@ const movePlayerForward = async () => {
         await fadeOutBackgroundMusic(500)
         playVictory1st()
         // Tunggu victory sound selesai (sekitar 3 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 3000)
+        setTimeout(() => fadeInBackgroundMusic(bgmVolume.value, 1000), 3000)
       }
       
       // Cek finalisasi (dua pemain sudah finish)
@@ -304,7 +349,7 @@ const movePlayerForward = async () => {
         await fadeOutBackgroundMusic(500)
         playVictoryAllRanking()
         // Tunggu victory sound selesai (sekitar 5 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 5000)
+        setTimeout(() => fadeInBackgroundMusic(bgmVolume.value, 1000), 5000)
       }
     } else {
       // Check challenge marker setelah mendarat (hanya jika belum finish)
@@ -540,7 +585,7 @@ const onRewardChoose = async ({ action, targetId }) => {
         await fadeOutBackgroundMusic(500)
         playVictory1st()
         // Tunggu victory sound selesai (sekitar 3 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 3000)
+        setTimeout(() => fadeInBackgroundMusic(bgmVolume.value, 1000), 3000)
       }
       
       // Finalize if two players finished
@@ -551,7 +596,7 @@ const onRewardChoose = async ({ action, targetId }) => {
         await fadeOutBackgroundMusic(500)
         playVictoryAllRanking()
         // Tunggu victory sound selesai (sekitar 5 detik), lalu fade in background
-        setTimeout(() => fadeInBackgroundMusic(0.1, 1000), 5000)
+        setTimeout(() => fadeInBackgroundMusic(bgmVolume.value, 1000), 5000)
       }
     }
   }
@@ -663,3 +708,43 @@ const onRewardChoose = async ({ action, targetId }) => {
 
 // Helper round-robin disediakan oleh store: sl.getNextActivePlayerId
 </script>
+
+<style scoped>
+/* Slider Styling */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #f59e0b 0%, #f59e0b var(--value), #e5e7eb var(--value), #e5e7eb 100%);
+  border-radius: 4px;
+}
+</style>
