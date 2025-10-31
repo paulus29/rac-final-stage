@@ -8,23 +8,23 @@ Nilai minimum kerugian atas kejadian risiko operasional yang perlu dilaporkan ke
 Apa teknik untuk menguji keamanan sistem | Penetration Testing
 RTO singkatan dari | Recovery Time Objective
 Kerugian setelah memperhitungkan dampak dari pemulihan, berupa jumlah kerugian yang telah menjadi tanggungan BCA, yang salah satunya diindikasikan dengan adanya penghapusan pos terbuka yang telah ditetapkan | Kerugian Aktual
-Aplikasi mobile banking Bank ABC memindai wajah untuk verifikasi. Data biometrik seperti wajah merupakan jenis data ... dalam PDP ? | Data Spesifik
+Aplikasi mobile banking Bank ABC memindai wajah untuk verifikasi. Data tersebut merupakan bagian dari jenis data ... dari PDP. ? | Data Spesifik
 Crisis Management Coordinator (CMC) dijabat oleh | Kepala Divisi MRK
 Kejadian risiko operasional yang memiliki unsur kesengajaan dan diproses secara hukum melalui pengadilan merupakan pengertian untuk tipe kejadian risiko operasional | Fraud Litigasi
-Budi diminta untuk melampirkan memasukan nama lengkap, tanggal lahir, dan alamat pada form pembukaan rekening. Data tersebut termasuk jenis data ... pada PDP | Data Umum
+Budi diminta untuk memasukkan nama lengkap, tanggal lahir, dan alamat pada form pembukaan rekening. Data tersebut termasuk jenis data ... dari PDP | Data Umum
 Posisi duduk yang tidak sesuai merupakan salah satu bahaya ... yang ada di kantor. | Ergonomi
 Analisis kontrol risiko untuk RCSA dilakukan oleh | Risk Owner
 Apa istilah untuk serangan secara terus - menerus terhadap suatu layanan yang bertujuan agar layanan tersebut tidak dapat diakses? | DDoS Attack
 Kepala Divisi dalam struktur tim BC disebut juga sebagai | BC Work Unit 
 Penilaian sendiri risiko operasional adalah salah satu metode yang digunakan untuk mengelola risiko operasional, di mana pemilik risiko melakukan identifikasi, pengukuran, pemantauan, dan ... | Pengendalian Risiko
-Pemerolehan, pengumpulan, pengolahan, penganalisisan, dan penyimpanan merupakan salah satu bagian dari ... data pribadi. | Kegiatan Pemrosesan
+Pemerolehan, pengumpulan, pengolahan, penganalisisan, dan penyimpanan data pribadi merupakan bagian dari kegiatan ... | Pemrosesan Data Pribadi
 Kepanjangan dari BCP adalah ... | Business Continuity Plan
 Batas Waktu Penginputan Data LED+ pada ORMIS LED+untuk metode penginputan perkejadian yaitu 7 hari kerja sejak | Kejadian Teridentifikasi
-serangan siber yang mengeksploitasi kerentanan aplikasi dengan menyuntikkan kode berbahaya melalui kolom input pengguna | SQL Injection
+Apa kebijakan yang mendorong karyawan untuk menjaga area kerja bebas dari dokumen sensitif agar mencegah kebocoran informasi | Clean Desk
 Peraturan Pemerintah terkait Sistem Manajemen K3 di Indonesia adalah PP No ... Tahun 2012 | Lima Puluh
 Terdapat 3 hal yang harus dikecualikan dari perhitungan kerugian potensial, salah satunya adalah | Premi Asuransi
 metode keamanan yang mengharuskan pengguna memberikan dua atau lebih bentuk verifikasi identitas untuk mengakses sebuah akun atau sistem | Multi-Factor Authentication
 Skenario yang digunakan untuk menggambarkan situasi gangguan yang muncul tiba-tiba adalah | Unpredictable
 Jumlah kerugian yang mungkin/akan ditanggung oleh BCA sehubungan dengan terjadinya kejadian risiko operasional, sebelum memperhitungkan recovery merupakan pengertian dari | Kerugian Potensial
-Serangan apa yang dilakukan dengan cara menyadap komunikasi antara dua pihak secara diam-diam? | MITM Attack
+Berapa nomor Undang-Undang tentang PDP yang disahkan pada tahun 2022? | Dua Puluh Tujuh
 Tempat kerja cadangan saat BCP diaktivasi adalah | Secondary Work Place
